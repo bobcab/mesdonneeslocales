@@ -26,5 +26,14 @@ pnpm-debug.log*
 .idea/
 *.swp
 
-# build caches (GeoJSON fetched at build, OG image regen, etc.)
-.cache/
+# build caches
+# .cache/ EST commité — c'est la source de vérité au build (notamment DO Static Site).
+# Cf. note-claude-code-deploiement-do.md, étape 1.
+# Pour rafraîchir localement : npm run fetch:hubeau:all, npm run fetch:drees:all
+# Les modifications du cache seront visibles dans `git status` et doivent
+# être commitées + pushées pour qu'elles arrivent en prod.
+#
+# On exclut quand même les sources Excel/téléchargements bruts qui ne servent
+# pas au build (les JSON consolidés sont au-dessus dans .cache/<source>/).
+.cache/*-xlsx/
+.cache/geojson/
