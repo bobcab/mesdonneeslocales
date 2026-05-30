@@ -1,0 +1,258 @@
+---
+import { getEntry } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import MetadataBar from '../../../components/MetadataBar.astro';
+import KeyFigures from '../../../components/KeyFigures.astro';
+import UnderstandBlock from '../../../components/UnderstandBlock.astro';
+import MethodologyBlock from '../../../components/MethodologyBlock.astro';
+import RelatedBlock from '../../../components/RelatedBlock.astro';
+import SignalBlock from '../../../components/SignalBlock.astro';
+import DatasetJsonLd from '../../../components/DatasetJsonLd.astro';
+import CopyLinkScript from '../../../components/CopyLinkScript.astro';
+import MapDesertsMedicaux from '../../../components/MapDesertsMedicaux.astro';
+import DesertsMapPanel from '../../../components/DesertsMapPanel.astro';
+// On peut réutiliser CommuneSearchBAN tel quel — il redirige vers
+// /cartographies/qualite-eau/{code}/ par défaut. Pour une cible différente, on
+// préfère ici un input simple (la BAN ne sait pas que MDL a un index pour cette
+// carto). Une version commune sera extraite plus tard. Pour MVP : input + datalist
+// sur les 10 communes connues.
+import { listCommunesSummary, getLastImportDate, getMeta } from '../../../lib/drees-apl';
+
+const carto = await getEntry('cartographies', 'deserts-medicaux');
+if (!carto) throw new Error('Cartographie deserts-medicaux manquante dans la collection');
+const d = carto.data;
+const communes = listCommunesSummary();
+const lastImport = getLastImportDate();
+const meta = getMeta();
+
+const site = Astro.site?.toString() ?? 'https://mesdonneeslocales.fr/';
+const pageUrl = `${site}cartographies/deserts-medicaux/`;
+---
+
+<Base title={d.title} description={d.shortDescription ?? d.description.slice(0, 200)}>
+  <article class="py-8 md:py-12">
+    <div class="container-page max-w-5xl">
+      <Breadcrumbs
+        items={[
+          { href: '/', label: 'Accueil' },
+          { href: '/cartographies/', label: 'Cartographies' },
+          { label: d.title },
+        ]}
+      />
+
+      {/* Header */}
+      <header class="mb-8">
+        <div class="mb-3 flex flex-wrap items-center gap-2">
+          <span class="pill-brand">{d.category}</span>
+          {d.subCategories.map((sub) => <span class="pill">{sub}</span>)}
+          <span class="pill-accent">Nouveau</span>
+        </div>
+        <h1 class="text-3xl font-bold text-ink-900 md:text-4xl leading-tight">{d.title}</h1>
+        {d.shortDescription && (
+          <p class="mt-4 text-lg text-ink-700 leading-relaxed max-w-3xl">{d.shortDescription}</p>
+        )}
+      </header>
+
+      <MetadataBar carto={carto} />
+      <KeyFigures figures={d.keyFigures} />
+
+      {/* Recherche commune — pour MVP, simple input + datalist sur les communes connues.
+          Un autocomplete BAN générique viendra quand on extraira CommuneSearchBAN en composant paramétré. */}
+      <section
+        aria-labelledby="search-commune-title"
+        class="my-10 rounded-md border border-brand-500 bg-brand-50 p-6"
+      >
+        <h2 id="search-commune-title" class="text-2xl font-bold text-ink-900 mb-2">
+          Quelle est l'accessibilité aux médecins chez vous ?
+        </h2>
+        <p class="text-sm text-ink-700 mb-4">
+          Tapez le nom ou le code INSEE de votre commune. {communes.length} commune{communes.length > 1 ? 's' : ''} {communes.length > 1 ? 'sont' : 'est'} actuellement
+          disponible{communes.length > 1 ? 's' : ''} dans l'échantillon — la couverture complète
+          des 34 967 communes métropolitaines arrivera prochainement.
+        </p>
+
+        <form data-deserts-search class="flex flex-col gap-3 sm:flex-row" action="#">
+          <label for="deserts-q" class="sr-only">Nom ou code INSEE de la commune</label>
+          <div class="relative flex-1">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-ink-500"
+              aria-hidden="true"
+            >
+              <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd"/>
+            </svg>
+            <input
+              type="search"
+              id="deserts-q"
+              autocomplete="off"
+              placeholder="Mende, Rocamadour, 75101..."
+              class="w-full rounded-md border border-ink-300 bg-surface py-3 pl-10 pr-4 text-ink-900 placeholder:text-ink-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+              list="deserts-commune-list"
+            />
+            <datalist id="deserts-commune-list">
+              {communes.map((c) => (
+                <option value={`${c.name} (${c.department})`} data-code={c.code}>{c.code}</option>
+              ))}
+            </datalist>
+          </div>
+          <button type="submit" class="btn-primary">Voir ma commune</button>
+        </form>
+
+        <div
+          data-deserts-search-error
+          class="hidden mt-3 rounded-md bg-danger-50 border-l-4 border-danger-500 p-3 text-sm text-ink-700"
+        >
+          Commune non trouvée dans l'échantillon. Essayez le nom exact ou le code INSEE (à 5 chiffres ou 2A/2B + 3 chiffres).
+        </div>
+      </section>
+
+      {/* Carte interactive + panneau */}
+      <section aria-labelledby="map-title" class="my-10" data-deserts-map-page>
+        <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+          <h2 id="map-title" class="text-xl font-bold text-ink-900">Carte interactive</h2>
+          <p class="text-sm text-ink-500">
+            Cliquez sur un point ou un cluster pour zoomer ; clic point → fiche commune.
+          </p>
+        </div>
+
+        <div class="grid gap-6 lg:grid-cols-[1fr_320px]">
+          <MapDesertsMedicaux />
+          <div class="lg:block">
+            <DesertsMapPanel />
+          </div>
+        </div>
+      </section>
+
+      {/* Bloc pédagogique (note §6.3) */}
+      <section
+        aria-labelledby="apl-explain"
+        class="my-10 rounded-md border-l-4 border-brand-500 bg-brand-50 p-6"
+      >
+        <h2 id="apl-explain" class="text-xl font-bold text-ink-900 mb-2">
+          Comment lire l'indicateur APL ?
+        </h2>
+        <p class="text-sm text-ink-700 mb-3">
+          L'APL (Accessibilité Potentielle Localisée) exprime le nombre de consultations potentielles
+          par habitant et par an. Pour un médecin généraliste, la moyenne nationale est de
+          <strong> 3,8 consultations/personne/an</strong>. En dessous de <strong>2,5</strong>, la
+          DREES considère qu'on est en désert médical.
+        </p>
+        <p class="text-sm text-ink-700">
+          Exemple : si l'APL d'une commune est de 2,0, le système de santé local peut fournir environ
+          2 000 consultations de médecine générale par an pour 1 000 habitants. Pour une population
+          qui consulte en moyenne 4 fois par an, le déficit théorique est de 2 000 consultations.
+        </p>
+      </section>
+
+      {/* Liste des communes (échantillon) */}
+      <section aria-labelledby="communes-title" class="my-10">
+        <h2 id="communes-title" class="text-xl font-bold text-ink-900 mb-4">
+          Aperçu des communes disponibles
+        </h2>
+        <p class="text-sm text-ink-500 mb-6">
+          {communes.length.toLocaleString('fr-FR')} commune{communes.length > 1 ? 's' : ''} accessible{communes.length > 1 ? 's' : ''} dans cet échantillon.
+          La couverture complète des 34 967 communes métropolitaines (millésimes 2022 et 2023) arrivera lors du prochain import.
+        </p>
+
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {communes.slice(0, 30).map((c) => {
+            const isAlert = c.categoryMG === 'critique' || c.categoryMG === 'desert';
+            return (
+              <a
+                href={`/cartographies/deserts-medicaux/${c.code}/`}
+                class={`group flex items-center justify-between gap-3 rounded-md border p-4 no-underline transition-colors ${isAlert ? 'border-danger-500 bg-danger-50' : 'border-ink-300 bg-surface hover:border-brand-500'}`}
+              >
+                <div class="min-w-0">
+                  <p class="font-semibold text-ink-900 group-hover:text-brand-500 truncate">{c.name}</p>
+                  <p class="text-xs text-ink-500">{c.departmentName} ({c.department})</p>
+                </div>
+                <span class="text-sm font-semibold tabular-nums text-ink-900 shrink-0">
+                  {c.aplMG?.toFixed(2) ?? '—'}
+                </span>
+              </a>
+            );
+          })}
+        </div>
+
+        {lastImport && (
+          <p class="mt-6 text-xs text-ink-500">
+            Données importées le <time datetime={lastImport.toISOString()}>{lastImport.toLocaleDateString('fr-FR')}</time>.
+            {meta?.millesimesDispos && (
+              <> Millésimes disponibles : {meta.millesimesDispos.join(', ')}.</>
+            )}
+          </p>
+        )}
+      </section>
+
+      {/* Comprendre la donnée */}
+      <UnderstandBlock says={d.says} saysNot={d.saysNot} />
+
+      {/* Méthodologie */}
+      <MethodologyBlock methodology={d.methodology} />
+
+      {/* Sources + cartographies liées */}
+      <RelatedBlock carto={carto} />
+
+      {/* Signaler */}
+      <SignalBlock carto={carto} />
+    </div>
+  </article>
+
+  <DatasetJsonLd carto={carto} />
+  <CopyLinkScript />
+</Base>
+
+<script>
+  /**
+   * Pilote la page :
+   *  - recherche commune (input + datalist) → redirige vers fiche commune si trouvée
+   *  - commune-selected event de la carte → redirige vers fiche commune
+   */
+
+  // Recherche par input
+  document.querySelector<HTMLFormElement>('[data-deserts-search]')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const input = document.querySelector<HTMLInputElement>('#deserts-q');
+    const errorEl = document.querySelector<HTMLElement>('[data-deserts-search-error]');
+    if (!input || !errorEl) return;
+
+    const value = input.value.trim();
+    if (!value) return;
+
+    // Cas code INSEE direct (5 chiffres ou 2A/2B + 3 chiffres)
+    const codeMatch = value.match(/^(\d{5}|2[AB]\d{3})$/i);
+    if (codeMatch) {
+      window.location.href = `/cartographies/deserts-medicaux/${codeMatch[1].toUpperCase()}/`;
+      return;
+    }
+
+    // Cas datalist
+    const datalist = document.querySelector<HTMLDataListElement>('#deserts-commune-list');
+    const option = Array.from(datalist?.options ?? []).find((opt) => opt.value === value);
+    if (option) {
+      window.location.href = `/cartographies/deserts-medicaux/${option.text}/`;
+      return;
+    }
+
+    errorEl.classList.remove('hidden');
+  });
+
+  // Carte → redirection au clic d'un point
+  function initMapPage() {
+    const root = document.querySelector<HTMLElement>('[data-deserts-map-page]');
+    if (!root) return;
+    root.addEventListener('commune-selected', ((e: CustomEvent<{ code: string }>) => {
+      const code = e.detail.code;
+      if (code) window.location.href = `/cartographies/deserts-medicaux/${code}/`;
+    }) as EventListener);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMapPage);
+  } else {
+    initMapPage();
+  }
+</script>

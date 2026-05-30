@@ -1,0 +1,138 @@
+---
+/**
+ * Panneau contextuel de la carte déserts médicaux.
+ *
+ * Affiche un résumé national (nb communes, % en désert, moyenne nationale) et
+ * la répartition par catégorie. Pas d'état par département cliqué (on n'a pas
+ * d'agrégation département → commune sur la carte ; les communes redirigent
+ * directement vers leur fiche au clic).
+ *
+ * Structure plus simple que `EauMapPanel` : un seul état (résumé global +
+ * top communes en alerte + appel à la recherche).
+ */
+import {
+  listCommunesSummary,
+  aggregateByDepartment,
+  CATEGORY_COLORS,
+  CATEGORY_LABELS,
+  type APLCategory,
+} from '../lib/drees-apl';
+
+const communes = listCommunesSummary();
+const aggregates = aggregateByDepartment();
+
+// Stats globales
+const total = communes.length;
+const cats: Record<APLCategory, number> = {
+  critique: 0, desert: 0, sous_densite: 0, correct: 0, bon: 0,
+};
+let aplSum = 0;
+let aplCount = 0;
+for (const c of communes) {
+  if (c.categoryMG) cats[c.categoryMG]++;
+  if (c.aplMG != null) { aplSum += c.aplMG; aplCount++; }
+}
+const nationalMean = aplCount > 0 ? aplSum / aplCount : 0;
+const desertsTotal = cats.critique + cats.desert;
+const desertsRate = total > 0 ? desertsTotal / total : 0;
+
+// Top départements les plus dégradés (par taux de désert)
+const topDeserts = [...aggregates]
+  .filter((a) => a.totalCommunes >= 1)
+  .sort((a, b) => b.desertsRate - a.desertsRate)
+  .slice(0, 5);
+
+// Top communes en alerte (catégorie critique ou desert)
+const topAlertCommunes = communes
+  .filter((c) => c.categoryMG === 'critique' || c.categoryMG === 'desert')
+  .sort((a, b) => (a.aplMG ?? Infinity) - (b.aplMG ?? Infinity))
+  .slice(0, 8);
+---
+
+<aside
+  data-deserts-panel
+  aria-label="Panneau contextuel de la carte déserts médicaux"
+  class="rounded-md border border-ink-300 bg-surface lg:max-h-[640px] lg:overflow-y-auto"
+>
+  <div class="p-5">
+    <p class="kicker mb-2">Vue d'ensemble — médecins généralistes</p>
+    <h3 class="text-lg font-bold text-ink-900 mb-4">France — données disponibles</h3>
+
+    <dl class="grid grid-cols-2 gap-3 mb-4">
+      <div class="rounded-md bg-surface-muted p-3">
+        <dt class="kicker">Communes connues</dt>
+        <dd class="text-2xl font-bold text-ink-900">{total.toLocaleString('fr-FR')}</dd>
+      </div>
+      <div class="rounded-md bg-surface-muted p-3">
+        <dt class="kicker">En désert médical</dt>
+        <dd class="text-2xl font-bold" style={`color: ${CATEGORY_COLORS.desert};`}>
+          {desertsTotal.toLocaleString('fr-FR')}
+        </dd>
+        <p class="text-xs text-ink-500 mt-1">({(desertsRate * 100).toFixed(0)}%)</p>
+      </div>
+      <div class="rounded-md bg-surface-muted p-3 col-span-2">
+        <dt class="kicker">APL moyen (échantillon)</dt>
+        <dd class="text-2xl font-bold text-ink-900">{nationalMean.toFixed(2)}</dd>
+        <p class="text-xs text-ink-500 mt-1">consultations / habitant / an</p>
+      </div>
+    </dl>
+
+    <h4 class="kicker mb-2">Répartition par catégorie</h4>
+    <ul class="space-y-1 mb-4">
+      {(['critique', 'desert', 'sous_densite', 'correct', 'bon'] as APLCategory[]).map((cat) => {
+        const n = cats[cat];
+        const pct = total > 0 ? (n / total) * 100 : 0;
+        return (
+          <li class="flex items-center gap-2 text-sm">
+            <span class="inline-block h-3 w-3 shrink-0 rounded-full" style={`background-color: ${CATEGORY_COLORS[cat]};`}></span>
+            <span class="flex-1 text-ink-700">{CATEGORY_LABELS[cat]}</span>
+            <span class="text-ink-500 tabular-nums">{n} ({pct.toFixed(0)}%)</span>
+          </li>
+        );
+      })}
+    </ul>
+
+    {topAlertCommunes.length > 0 && (
+      <>
+        <h4 class="kicker mb-2">Communes en alerte</h4>
+        <ul class="space-y-1 mb-4">
+          {topAlertCommunes.map((c) => (
+            <li>
+              <a
+                href={`/cartographies/deserts-medicaux/${c.code}/`}
+                class="flex items-center justify-between gap-2 rounded-md bg-surface-muted px-2 py-1.5 text-sm no-underline hover:bg-brand-50"
+              >
+                <span class="font-medium text-ink-900 truncate">{c.name}</span>
+                <span
+                  class="text-xs tabular-nums shrink-0 text-white px-2 py-0.5 rounded-full"
+                  style={`background-color: ${CATEGORY_COLORS[c.categoryMG!]};`}
+                >
+                  {c.aplMG?.toFixed(2) ?? '—'}
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </>
+    )}
+
+    {topDeserts.length > 0 && (
+      <>
+        <h4 class="kicker mb-2">Départements les plus touchés</h4>
+        <ul class="space-y-1">
+          {topDeserts.map((d) => (
+            <li class="flex items-center justify-between gap-2 text-sm">
+              <span class="text-ink-700 truncate">
+                <span class="text-ink-500 tabular-nums">{d.code}</span>
+                {' '}{d.name}
+              </span>
+              <span class="text-ink-500 tabular-nums shrink-0">
+                {(d.desertsRate * 100).toFixed(0)}% · APL {d.meanAPL.toFixed(2)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </>
+    )}
+  </div>
+</aside>

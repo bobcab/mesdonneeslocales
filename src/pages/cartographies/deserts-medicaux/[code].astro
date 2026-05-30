@@ -1,0 +1,364 @@
+---
+import Base from '../../../layouts/Base.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import JsonLd from '../../../components/JsonLd.astro';
+import CopyLinkScript from '../../../components/CopyLinkScript.astro';
+import Sparkline from '../../../components/Sparkline.astro';
+import {
+  listAvailableCommunes,
+  getCommuneData,
+  getLatestMG,
+  getProfessionTrend,
+  buildCommuneCsv,
+  getLastImportDate,
+  aggregateByDepartment,
+  categorizeAPL,
+  PROFESSION_ORDER,
+  PROFESSION_LABELS,
+  CATEGORY_LABELS,
+  CATEGORY_COLORS,
+  type CommuneAPL,
+  type Profession,
+} from '../../../lib/drees-apl';
+
+export async function getStaticPaths() {
+  return listAvailableCommunes().map((code) => ({
+    params: { code },
+    props: { code },
+  }));
+}
+
+interface Props {
+  code: string;
+}
+
+const { code } = Astro.props;
+const data = getCommuneData(code) as CommuneAPL;
+
+if (!data) {
+  throw new Error(`Aucune donnée DREES APL pour la commune ${code}`);
+}
+
+const lastImport = getLastImportDate();
+
+const dateFmt = new Intl.DateTimeFormat('fr-FR', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+
+const aplMG = getLatestMG(data);
+const categoryMG = data.categoryMG;
+const lastMillesime = data.millesimes.at(-1);
+const lastYear = lastMillesime?.annee;
+const firstYear = data.millesimes[0]?.annee;
+
+// Agrégat département pour contextualiser (note §9 — éviter le jugement isolé)
+const allDeptAggregates = aggregateByDepartment();
+const deptAgg = allDeptAggregates.find((d) => d.code === data.department);
+
+// Moyennes nationales — calcul léger sur l'échantillon disponible
+const allCommunes = listAvailableCommunes()
+  .map((c) => getCommuneData(c))
+  .filter((c): c is CommuneAPL => c !== null);
+const allMG = allCommunes.map(getLatestMG).filter((v): v is number => v != null);
+const nationalMeanMG = allMG.length > 0 ? allMG.reduce((s, v) => s + v, 0) / allMG.length : null;
+
+const site = Astro.site?.toString() ?? 'https://mesdonneeslocales.fr/';
+const pageUrl = `${site}cartographies/deserts-medicaux/${code}/`;
+
+// CSV téléchargeable
+const csv = buildCommuneCsv(data);
+const csvDataUri = `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`;
+const csvFilename = `mesdonneeslocales-apl-${code}-${lastYear ?? ''}.csv`;
+
+const title = `Accessibilité aux soins — ${data.name} (${data.department})`;
+const description = categoryMG
+  ? `${data.name} : ${CATEGORY_LABELS[categoryMG]} pour les médecins généralistes (APL ${aplMG?.toFixed(2)} en ${lastYear}).`
+  : `Indicateurs d'accessibilité aux soins de premier recours à ${data.name}.`;
+
+function formatAPL(value: number | null | undefined): string {
+  if (value == null || !isFinite(value)) return '—';
+  return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(value);
+}
+
+// Variation MG entre les deux millésimes (en valeur, et en % relative)
+const mgTrend = getProfessionTrend(data, 'medecin_generaliste');
+const mgFirst = mgTrend[0]?.value ?? null;
+const mgLast = mgTrend.at(-1)?.value ?? null;
+const mgDelta = mgFirst != null && mgLast != null ? mgLast - mgFirst : null;
+const mgDeltaPct = mgFirst != null && mgLast != null && mgFirst !== 0 ? (mgLast - mgFirst) / mgFirst : null;
+
+// JSON-LD Dataset spécifique à la commune
+const datasetJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Dataset',
+  name: title,
+  description,
+  url: pageUrl,
+  inLanguage: 'fr-FR',
+  isAccessibleForFree: true,
+  license: 'https://www.etalab.gouv.fr/licence-ouverte-open-licence/',
+  creator: {
+    '@type': 'Organization',
+    name: 'DREES — Direction de la Recherche, des Études, de l\'Évaluation et des Statistiques',
+    url: 'https://drees.solidarites-sante.gouv.fr/',
+  },
+  publisher: { '@id': `${site}#organization` },
+  spatialCoverage: {
+    '@type': 'Place',
+    name: `${data.name} (${data.department})`,
+  },
+  ...(lastImport && { dateModified: lastImport.toISOString().slice(0, 10) }),
+};
+
+// Style du badge selon la catégorie MG
+const badge = categoryMG
+  ? { label: CATEGORY_LABELS[categoryMG], hex: CATEGORY_COLORS[categoryMG] }
+  : { label: 'Donnée manquante', hex: '#9ca3af' };
+
+// Sous-titre contextuel (moyennes)
+const contextParts: string[] = [];
+if (deptAgg && deptAgg.meanAPL > 0) {
+  contextParts.push(`Moyenne ${data.departmentName} : ${deptAgg.meanAPL.toFixed(2)}`);
+}
+if (nationalMeanMG != null) {
+  contextParts.push(`Moyenne nationale (échantillon) : ${nationalMeanMG.toFixed(2)}`);
+}
+---
+
+<Base title={title} description={description}>
+  <article class="py-8 md:py-12">
+    <div class="container-page max-w-4xl">
+      <Breadcrumbs
+        items={[
+          { href: '/', label: 'Accueil' },
+          { href: '/cartographies/', label: 'Cartographies' },
+          { href: '/cartographies/deserts-medicaux/', label: 'Déserts médicaux' },
+          { label: data.name },
+        ]}
+      />
+
+      {/* Header */}
+      <header class="mb-8">
+        <div class="mb-3 flex flex-wrap items-center gap-2">
+          <span class="pill-brand">Santé</span>
+          <span class="pill">Accessibilité aux soins</span>
+          <span class="text-sm text-ink-500">Code INSEE {data.code}</span>
+        </div>
+        <h1 class="text-3xl font-bold text-ink-900 md:text-4xl">
+          Accessibilité aux soins — {data.name}
+        </h1>
+        <p class="mt-2 text-ink-500">
+          {data.departmentName} ({data.department})
+          {lastYear && (
+            <>
+              {' · '}Indicateur APL {lastYear}
+            </>
+          )}
+        </p>
+      </header>
+
+      {/* Statut global médecins généralistes */}
+      <section
+        aria-labelledby="status-title"
+        class="mb-8 rounded-md border-l-4 p-6"
+        style={`background-color: ${badge.hex}1a; border-left-color: ${badge.hex};`}
+      >
+        <div class="flex items-start gap-4">
+          <div
+            class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-2xl font-bold text-white"
+            style={`background-color: ${badge.hex};`}
+            aria-hidden="true"
+          >
+            {aplMG != null ? aplMG.toFixed(1) : '?'}
+          </div>
+          <div>
+            <h2 id="status-title" class="text-xl font-bold text-ink-900">
+              {badge.label}
+            </h2>
+            <p class="mt-1 text-sm text-ink-700">
+              {aplMG != null ? (
+                <>
+                  Les habitants de {data.name} ont en moyenne accès à
+                  <strong> {formatAPL(aplMG)} consultations</strong>
+                  {' '}de médecine générale par habitant et par an (millésime {lastYear}).
+                </>
+              ) : (
+                <>Donnée d'accessibilité aux médecins généralistes manquante pour cette commune.</>
+              )}
+            </p>
+            {contextParts.length > 0 && (
+              <p class="mt-2 text-xs text-ink-500">{contextParts.join(' · ')}</p>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Chiffres clés */}
+      <section aria-labelledby="figures-title" class="mb-8">
+        <h2 id="figures-title" class="sr-only">Chiffres clés</h2>
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div class="rounded-md border border-ink-300 bg-surface p-4">
+            <p class="text-3xl font-bold text-ink-900 leading-none">{formatAPL(aplMG)}</p>
+            <p class="mt-2 text-xs text-ink-500">APL médecins généralistes ({lastYear})</p>
+          </div>
+          <div class="rounded-md border border-ink-300 bg-surface p-4">
+            <p class={`text-3xl font-bold leading-none ${mgDelta != null && mgDelta < 0 ? 'text-danger-700' : mgDelta != null && mgDelta > 0 ? 'text-success-700' : 'text-ink-500'}`}>
+              {mgDelta == null ? '—' : `${mgDelta >= 0 ? '+' : ''}${mgDelta.toFixed(2)}`}
+            </p>
+            <p class="mt-2 text-xs text-ink-500">
+              Variation {firstYear} → {lastYear}
+              {mgDeltaPct != null && (
+                <>
+                  {' '}({mgDeltaPct >= 0 ? '+' : ''}{(mgDeltaPct * 100).toFixed(1)} %)
+                </>
+              )}
+            </p>
+          </div>
+          <div class="rounded-md border border-ink-300 bg-surface p-4">
+            <p class="text-3xl font-bold text-ink-900 leading-none">{data.millesimes.length}</p>
+            <p class="mt-2 text-xs text-ink-500">millésimes disponibles</p>
+          </div>
+          <div class="rounded-md border border-ink-300 bg-surface p-4">
+            <p class="text-3xl font-bold text-ink-900 leading-none">{PROFESSION_ORDER.length}</p>
+            <p class="mt-2 text-xs text-ink-500">professions mesurées</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Tableau des 5 professions */}
+      <section aria-labelledby="professions-title" class="mb-8">
+        <h2 id="professions-title" class="text-xl font-bold text-ink-900 mb-4">
+          Accessibilité par profession ({lastYear})
+        </h2>
+        <div class="overflow-x-auto rounded-md border border-ink-300">
+          <table class="min-w-full divide-y divide-ink-300 text-sm">
+            <thead class="bg-surface-muted">
+              <tr>
+                <th scope="col" class="px-4 py-3 text-left font-semibold text-ink-900">Profession</th>
+                <th scope="col" class="px-4 py-3 text-right font-semibold text-ink-900">APL {lastYear}</th>
+                <th scope="col" class="px-4 py-3 text-right font-semibold text-ink-900">APL {firstYear}</th>
+                <th scope="col" class="px-4 py-3 text-left font-semibold text-ink-900">Évolution</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-ink-300/60 bg-surface">
+              {PROFESSION_ORDER.map((prof) => {
+                const trend = getProfessionTrend(data, prof);
+                const last = trend.at(-1)?.value ?? null;
+                const first = trend[0]?.value ?? null;
+                const delta = first != null && last != null ? last - first : null;
+                const cat = prof === 'medecin_generaliste' ? categorizeAPL(last) : null;
+                return (
+                  <tr>
+                    <td class="px-4 py-3">
+                      <span class="font-medium text-ink-900">{PROFESSION_LABELS[prof]}</span>
+                      {cat && (
+                        <span
+                          class="ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium text-white"
+                          style={`background-color: ${CATEGORY_COLORS[cat]};`}
+                        >
+                          {CATEGORY_LABELS[cat]}
+                        </span>
+                      )}
+                    </td>
+                    <td class="px-4 py-3 text-right tabular-nums text-ink-900 font-semibold whitespace-nowrap">
+                      {formatAPL(last)}
+                    </td>
+                    <td class="px-4 py-3 text-right tabular-nums text-ink-500 whitespace-nowrap">
+                      {formatAPL(first)}
+                    </td>
+                    <td class="px-4 py-3">
+                      <div class="flex items-center gap-2">
+                        {trend.length >= 2 ? (
+                          <Sparkline points={trend} label={`Évolution APL ${PROFESSION_LABELS[prof]} ${firstYear}-${lastYear}`} />
+                        ) : (
+                          <span class="text-xs text-ink-500">—</span>
+                        )}
+                        {delta != null && (
+                          <span class={`text-xs tabular-nums ${delta < 0 ? 'text-danger-700' : delta > 0 ? 'text-success-700' : 'text-ink-500'}`}>
+                            {delta >= 0 ? '+' : ''}{delta.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <p class="mt-3 text-xs text-ink-500">
+          L'APL est exprimé en consultations potentielles par habitant et par an.
+          Les seuils de catégorisation (désert médical, sous-densité, etc.) s'appliquent
+          uniquement aux médecins généralistes ; les autres professions ont leurs propres échelles.
+        </p>
+      </section>
+
+      {/* Partage + téléchargement */}
+      <section aria-labelledby="share-title" class="mb-8 rounded-md border border-ink-300 bg-surface p-5">
+        <h2 id="share-title" class="text-lg font-bold text-ink-900 mb-3">Partager et télécharger</h2>
+        <div class="flex flex-wrap gap-3">
+          <a href={csvDataUri} download={csvFilename} class="btn-primary text-sm inline-flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4" aria-hidden="true">
+              <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.235a.75.75 0 1 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.129V2.75Z"/>
+              <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z"/>
+            </svg>
+            Télécharger en CSV
+          </a>
+          <button type="button" class="btn-outline text-sm" data-copy-link data-url={pageUrl}>
+            Copier le lien
+          </button>
+          <a href="/cartographies/deserts-medicaux/" class="btn-ghost text-sm">
+            ← Toutes les communes
+          </a>
+        </div>
+        <p class="mt-3 text-xs text-ink-500">
+          Le CSV contient les valeurs APL des {PROFESSION_ORDER.length} professions pour
+          {' '}{data.millesimes.length} millésime{data.millesimes.length > 1 ? 's' : ''}
+          {' '}(sources : DREES, licence Etalab 2.0).
+        </p>
+      </section>
+
+      {/* Comprendre l'indicateur — bloc pédagogique (note §6.3) */}
+      <section aria-labelledby="understand-title" class="mb-8 rounded-md border-l-4 border-brand-500 bg-brand-50 p-5">
+        <h2 id="understand-title" class="text-lg font-bold text-ink-900 mb-2">
+          Comment lire l'indicateur APL ?
+        </h2>
+        <p class="text-sm text-ink-700 mb-3">
+          L'APL (Accessibilité Potentielle Localisée) exprime le nombre de consultations potentielles
+          par habitant et par an. Pour les médecins généralistes, la moyenne nationale est d'environ
+          <strong> 3,8 consultations/personne/an</strong>. En dessous de
+          <strong> 2,5</strong>, la DREES considère qu'on est en désert médical.
+        </p>
+        <p class="text-sm text-ink-700">
+          Par exemple, un APL de 2,0 signifie que pour 1 000 habitants, le système de santé local
+          peut fournir environ 2 000 consultations de médecine générale par an. Pour une population
+          qui consulte en moyenne 4 fois par an, le déficit théorique serait donc de 2 000 consultations.
+        </p>
+      </section>
+
+      {/* Source */}
+      <section aria-labelledby="source-title" class="rounded-md bg-surface-muted p-5 text-sm">
+        <h2 id="source-title" class="font-semibold text-ink-900 mb-2">Source des données</h2>
+        <p class="text-ink-700">
+          DREES — Direction de la Recherche, des Études, de l'Évaluation et des Statistiques,
+          {' '}<a href="https://data.drees.solidarites-sante.gouv.fr/explore/dataset/530_l-accessibilite-potentielle-localisee-apl/" target="_blank" rel="noopener noreferrer">dataset 530</a> ·
+          {' '}Licence Ouverte 2.0 (Etalab).
+        </p>
+        <p class="mt-2 text-xs text-ink-500">
+          L'APL est un indicateur d'offre théorique : il n'inclut ni les médecins hospitaliers,
+          ni les remplaçants non rattachés à un cabinet, ni les téléconsultations.
+        </p>
+        {lastImport && (
+          <p class="mt-2 text-xs text-ink-500">
+            Données importées le <time datetime={lastImport.toISOString()}>{dateFmt.format(lastImport)}</time>.
+          </p>
+        )}
+      </section>
+    </div>
+  </article>
+
+  <JsonLd data={datasetJsonLd} />
+  <CopyLinkScript />
+</Base>

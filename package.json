@@ -15,7 +15,10 @@
     "deploy:only": "node scripts/deploy.mjs",
     "fetch:hubeau": "node scripts/fetch-hubeau.mjs",
     "fetch:hubeau:all": "node scripts/fetch-hubeau.mjs --all",
-    "fetch:hubeau:sample": "node scripts/fetch-hubeau.mjs --sample=100"
+    "fetch:hubeau:sample": "node scripts/fetch-hubeau.mjs --sample=100",
+    "fetch:drees": "node scripts/fetch-drees-apl.mjs",
+    "fetch:drees:all": "node scripts/fetch-drees-apl.mjs --all",
+    "fetch:drees:sample": "node scripts/fetch-drees-apl.mjs --sample=100"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",
@@ -28,6 +31,7 @@
     "@tailwindcss/typography": "^0.5.19",
     "basic-ftp": "^6.0.1",
     "cross-env": "^10.1.0",
-    "dotenv": "^17.4.2"
+    "dotenv": "^17.4.2",
+    "xlsx": "^0.18.5"
   }
 }

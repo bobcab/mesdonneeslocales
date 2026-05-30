@@ -1,0 +1,353 @@
+---
+/**
+ * Carte de France interactive pour la cartographie déserts médicaux.
+ *
+ * Couches :
+ *   - fond uni warm beige
+ *   - silhouette départements grise (contexte géo, non cliquable)
+ *   - points communes colorés par catégorie APL (médecins généralistes)
+ *     → clusters au dézoom (taille = nb communes, couleur = catégorie médiane)
+ *     → points individuels au zoom proche
+ *
+ * Données :
+ *   - points chargés via `/data/deserts-medicaux-points.json` (endpoint Astro statique)
+ *
+ * Émet :
+ *   - `commune-selected` { code } au clic sur un point
+ *   (la page parent redirige vers /cartographies/deserts-medicaux/{code}/)
+ */
+import { aggregateByDepartment, CATEGORY_COLORS } from '../lib/drees-apl';
+
+// Agrégat par département pour la légende contextuelle (résumé national → départemental)
+const aggregates = aggregateByDepartment();
+const aggregatesMap: Record<string, { rate: number; total: number; deserts: number; mean: number; name: string }> = {};
+for (const a of aggregates) {
+  aggregatesMap[a.code] = {
+    rate: a.desertsRate,
+    total: a.totalCommunes,
+    deserts: a.desertsCommunes,
+    mean: a.meanAPL,
+    name: a.name,
+  };
+}
+---
+
+<div
+  data-map-deserts
+  role="application"
+  aria-label="Carte de France des communes selon l'indicateur d'accessibilité aux médecins généralistes (APL DREES). Cliquez sur un point pour ouvrir la fiche commune."
+  class="relative h-[480px] w-full overflow-hidden rounded-md border border-ink-300 bg-surface-muted lg:h-[640px]"
+>
+  <div data-map class="absolute inset-0"></div>
+
+  {/* Légende */}
+  <div class="absolute bottom-3 left-3 max-w-[240px] rounded-md bg-surface/95 px-3 py-2 text-xs text-ink-700 shadow-sm backdrop-blur">
+    <p class="kicker mb-2">Accessibilité médecins généralistes (APL)</p>
+    <ul class="space-y-1">
+      <li class="flex items-center gap-2">
+        <span class="inline-block h-3 w-3 rounded-full" style={`background-color: ${CATEGORY_COLORS.critique}`}></span>
+        <span>&lt; 1,5 — Désert critique</span>
+      </li>
+      <li class="flex items-center gap-2">
+        <span class="inline-block h-3 w-3 rounded-full" style={`background-color: ${CATEGORY_COLORS.desert}`}></span>
+        <span>1,5 – 2,5 — Désert</span>
+      </li>
+      <li class="flex items-center gap-2">
+        <span class="inline-block h-3 w-3 rounded-full" style={`background-color: ${CATEGORY_COLORS.sous_densite}`}></span>
+        <span>2,5 – 4 — Sous-densité</span>
+      </li>
+      <li class="flex items-center gap-2">
+        <span class="inline-block h-3 w-3 rounded-full" style={`background-color: ${CATEGORY_COLORS.correct}`}></span>
+        <span>4 – 6 — Correct</span>
+      </li>
+      <li class="flex items-center gap-2">
+        <span class="inline-block h-3 w-3 rounded-full" style={`background-color: ${CATEGORY_COLORS.bon}`}></span>
+        <span>≥ 6 — Bon</span>
+      </li>
+    </ul>
+    <p class="mt-2 text-[10px] text-ink-500">
+      Les communes sont regroupées au dézoom (nombre = total dans le cluster).
+    </p>
+  </div>
+
+  {/* Contrôles */}
+  <div class="absolute right-3 top-3 flex flex-col gap-1">
+    <button type="button" data-zoom-in aria-label="Zoomer" class="h-11 w-11 md:h-9 md:w-9 rounded-md bg-surface text-ink-900 shadow-sm hover:bg-brand-50 hover:text-brand-500 active:scale-[0.96]">+</button>
+    <button type="button" data-zoom-out aria-label="Dézoomer" class="h-11 w-11 md:h-9 md:w-9 rounded-md bg-surface text-ink-900 shadow-sm hover:bg-brand-50 hover:text-brand-500 active:scale-[0.96]">−</button>
+    <button type="button" data-zoom-reset aria-label="Réinitialiser la vue" class="h-11 w-11 md:h-9 md:w-9 rounded-md bg-surface text-ink-900 shadow-sm hover:bg-brand-50 hover:text-brand-500 active:scale-[0.96]">⌂</button>
+  </div>
+
+  <div data-map-loading class="absolute inset-0 flex items-center justify-center bg-surface-muted">
+    <p class="text-sm text-ink-500" aria-live="polite">Chargement de la carte…</p>
+  </div>
+
+  {/* JSON inline pour les agrégats département (le panneau lit ces données) */}
+  <script type="application/json" data-aggregates set:html={JSON.stringify(aggregatesMap)}></script>
+</div>
+
+<style is:global>
+  [data-map-deserts] [data-map] {
+    position: absolute;
+    inset: 0;
+  }
+  [data-map-deserts] .maplibregl-canvas:focus {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: -2px;
+  }
+  [data-map-deserts] .maplibregl-ctrl-attrib {
+    display: none;
+  }
+</style>
+
+<script>
+  import * as maplibregl from 'maplibre-gl';
+  import type { Map as MapInstance, StyleSpecification } from 'maplibre-gl';
+  import 'maplibre-gl/dist/maplibre-gl.css';
+
+  // Couleurs catégories APL — doivent matcher src/lib/drees-apl.ts CATEGORY_COLORS
+  const COLORS = {
+    critique: '#993c1d',
+    desert: '#d85a30',
+    sous_densite: '#f0997b',
+    correct: '#fcd34d',
+    bon: '#1d9e75',
+    nodata: '#9ca3af',
+    deptStroke: '#9ca3af',
+  };
+
+  const FRANCE_BOUNDS: [number, number, number, number] = [-5.2, 41.3, 9.6, 51.1];
+
+  function initMap(root: HTMLElement) {
+    const container = root.querySelector<HTMLElement>('[data-map]');
+    const loading = root.querySelector<HTMLElement>('[data-map-loading]');
+    if (!container) return;
+
+    if (typeof maplibregl?.Map !== 'function') {
+      console.error('[MapDesertsMedicaux] maplibregl.Map is not a constructor');
+      return;
+    }
+
+    const style: StyleSpecification = {
+      version: 8,
+      name: 'mdl-deserts',
+      sources: {},
+      layers: [
+        { id: 'background', type: 'background', paint: { 'background-color': '#f5f4f0' } },
+      ],
+    };
+
+    const map: MapInstance = new maplibregl.Map({
+      container,
+      style,
+      center: [2.5, 46.5],
+      zoom: 4.8,
+      maxZoom: 10,
+      minZoom: 3,
+      maxBounds: [
+        [-15, 38],
+        [20, 53],
+      ],
+      attributionControl: false,
+    });
+
+    map.on('error', (e) => console.error('[MapDesertsMedicaux] map error', e));
+
+    function whenReady(cb: () => void) {
+      if (map.loaded()) cb();
+      else map.once('load', cb);
+    }
+
+    whenReady(async () => {
+      // 1. Silhouette départements (contexte géo léger, non interactif)
+      try {
+        const res = await fetch('/data/departements.geojson');
+        if (res.ok) {
+          const geo = await res.json();
+          map.addSource('depts', { type: 'geojson', data: geo });
+          map.addLayer({
+            id: 'depts-fill',
+            type: 'fill',
+            source: 'depts',
+            paint: { 'fill-color': '#eef2ff', 'fill-opacity': 0.5 },
+          });
+          map.addLayer({
+            id: 'depts-stroke',
+            type: 'line',
+            source: 'depts',
+            paint: { 'line-color': COLORS.deptStroke, 'line-width': 0.6 },
+          });
+        }
+      } catch (err) {
+        console.warn('[MapDesertsMedicaux] départements geojson skipped:', err);
+      }
+
+      // 2. Points communes (chargés depuis l'endpoint statique)
+      try {
+        map.addSource('communes', {
+          type: 'geojson',
+          data: '/data/deserts-medicaux-points.json',
+          cluster: true,
+          clusterRadius: 40,
+          clusterMaxZoom: 8,
+          // Agrégat : compte par catégorie pour colorer le cluster
+          clusterProperties: {
+            critiqueCount: ['+', ['case', ['==', ['get', 'category'], 'critique'], 1, 0]],
+            desertCount: ['+', ['case', ['==', ['get', 'category'], 'desert'], 1, 0]],
+            sousCount: ['+', ['case', ['==', ['get', 'category'], 'sous_densite'], 1, 0]],
+            correctCount: ['+', ['case', ['==', ['get', 'category'], 'correct'], 1, 0]],
+            bonCount: ['+', ['case', ['==', ['get', 'category'], 'bon'], 1, 0]],
+          },
+        });
+      } catch (err) {
+        console.error('[MapDesertsMedicaux] cluster source error:', err);
+        loading?.querySelector('p')?.replaceChildren(
+          document.createTextNode('Impossible de charger les données communes.'),
+        );
+        return;
+      }
+
+      // Cluster (couleur dominante = la plus représentée)
+      // Pour simplifier : si critique + desert > 50% → rouge, sinon mean approx
+      map.addLayer({
+        id: 'communes-clusters',
+        type: 'circle',
+        source: 'communes',
+        filter: ['has', 'point_count'],
+        paint: {
+          'circle-color': [
+            'case',
+            // Si > 30% en désert ou critique → couleur désert
+            ['>=', ['/', ['+', ['get', 'critiqueCount'], ['get', 'desertCount']], ['get', 'point_count']], 0.3],
+            COLORS.desert,
+            // Si > 50% en bon → couleur bon
+            ['>=', ['/', ['get', 'bonCount'], ['get', 'point_count']], 0.5],
+            COLORS.bon,
+            // Sinon couleur intermédiaire (sous-densité)
+            COLORS.sous_densite,
+          ],
+          'circle-radius': [
+            'step',
+            ['get', 'point_count'],
+            14, 10,
+            18, 50,
+            24, 200,
+            32,
+          ],
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#ffffff',
+          'circle-opacity': 0.92,
+        },
+      });
+      // Compteur dans le cluster
+      map.addLayer({
+        id: 'communes-cluster-count',
+        type: 'symbol',
+        source: 'communes',
+        filter: ['has', 'point_count'],
+        layout: {
+          'text-field': ['get', 'point_count_abbreviated'],
+          'text-size': 12,
+          'text-font': ['sans-serif'],
+        },
+        paint: { 'text-color': '#ffffff' },
+      });
+
+      // Points individuels (zoom proche, non clusterisés)
+      map.addLayer({
+        id: 'communes-points',
+        type: 'circle',
+        source: 'communes',
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+          'circle-radius': [
+            'case',
+            ['boolean', ['feature-state', 'hover'], false],
+            9,
+            6,
+          ],
+          'circle-color': [
+            'match',
+            ['get', 'category'],
+            'critique', COLORS.critique,
+            'desert', COLORS.desert,
+            'sous_densite', COLORS.sous_densite,
+            'correct', COLORS.correct,
+            'bon', COLORS.bon,
+            COLORS.nodata,
+          ],
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#ffffff',
+        },
+      });
+
+      // Click cluster → zoom in
+      map.on('click', 'communes-clusters', async (e) => {
+        if (!e.features?.[0]) return;
+        const id = e.features[0].properties?.cluster_id;
+        const src = map.getSource('communes') as maplibregl.GeoJSONSource;
+        try {
+          const zoom = await src.getClusterExpansionZoom(id as number);
+          map.easeTo({
+            center: (e.features[0].geometry as GeoJSON.Point).coordinates as [number, number],
+            zoom: Math.min(zoom, 9.5),
+            duration: 500,
+          });
+        } catch {
+          // ignore
+        }
+      });
+      map.on('mouseenter', 'communes-clusters', () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+      map.on('mouseleave', 'communes-clusters', () => {
+        map.getCanvas().style.cursor = '';
+      });
+
+      // Hover sur points individuels
+      let hoveredId: string | null = null;
+      map.on('mousemove', 'communes-points', (e) => {
+        if (!e.features?.[0]) return;
+        const id = String(e.features[0].id ?? e.features[0].properties?.code ?? '');
+        if (hoveredId && hoveredId !== id) {
+          map.setFeatureState({ source: 'communes', id: hoveredId }, { hover: false });
+        }
+        hoveredId = id;
+        if (id) map.setFeatureState({ source: 'communes', id }, { hover: true });
+        map.getCanvas().style.cursor = 'pointer';
+      });
+      map.on('mouseleave', 'communes-points', () => {
+        if (hoveredId) map.setFeatureState({ source: 'communes', id: hoveredId }, { hover: false });
+        hoveredId = null;
+        map.getCanvas().style.cursor = '';
+      });
+
+      // Click point → redirection
+      map.on('click', 'communes-points', (e) => {
+        if (!e.features?.[0]) return;
+        const code = e.features[0].properties?.code;
+        if (typeof code === 'string') {
+          root.dispatchEvent(new CustomEvent('commune-selected', { detail: { code }, bubbles: true }));
+        }
+      });
+
+      loading?.remove();
+    });
+
+    // Contrôles
+    root.querySelector('[data-zoom-in]')?.addEventListener('click', () => map.zoomIn());
+    root.querySelector('[data-zoom-out]')?.addEventListener('click', () => map.zoomOut());
+    root.querySelector('[data-zoom-reset]')?.addEventListener('click', () => {
+      map.fitBounds(FRANCE_BOUNDS, { padding: 20, duration: 600 });
+    });
+  }
+
+  function init() {
+    document.querySelectorAll<HTMLElement>('[data-map-deserts]').forEach(initMap);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+</script>
