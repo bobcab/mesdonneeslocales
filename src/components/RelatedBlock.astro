@@ -1,0 +1,66 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+interface Props {
+  carto: CollectionEntry<'cartographies'>;
+}
+
+const { carto } = Astro.props;
+const d = carto.data;
+const currentSlug = carto.id.replace(/\.md$/, '');
+
+// Cartographies liées : même catégorie, hors page courante
+const allCartos = await getCollection('cartographies');
+const related = allCartos
+  .filter((c) => c.id !== carto.id && c.data.category === d.category)
+  .sort((a, b) => a.data.order - b.data.order)
+  .slice(0, 4);
+---
+
+<section aria-labelledby="related-title" class="my-12 grid gap-8 md:grid-cols-2">
+  {/* Colonne 1 — Sources et références (depuis frontmatter furtherReading) */}
+  {d.furtherReading.length > 0 && (
+    <div>
+      <h2 id="related-title" class="text-xl font-bold text-ink-900 mb-4">
+        Sources et références
+      </h2>
+      <ul class="space-y-2 text-sm">
+        {d.furtherReading.map((link) => (
+          <li class="flex items-start gap-2">
+            <span aria-hidden="true" class="mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500"></span>
+            <a href={link.url} target="_blank" rel="noopener noreferrer" class="text-ink-700 underline decoration-brand-500/40 underline-offset-2 hover:decoration-brand-500">
+              {link.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+
+  {/* Colonne 2 — Cartographies de la même catégorie */}
+  {related.length > 0 && (
+    <div>
+      <h2 class="text-xl font-bold text-ink-900 mb-4">
+        Autres cartographies « {d.category} »
+      </h2>
+      <ul class="space-y-2 text-sm">
+        {related.map((c) => {
+          const slug = c.id.replace(/\.md$/, '');
+          return (
+            <li class="flex items-start gap-2">
+              <span aria-hidden="true" class="mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500"></span>
+              <a href={`/cartographies/${slug}/`} class="text-ink-700 underline decoration-brand-500/40 underline-offset-2 hover:decoration-brand-500">
+                {c.data.title}
+              </a>
+            </li>
+          );
+        })}
+        <li class="pt-2">
+          <a href="/cartographies/" class="text-sm font-medium text-brand-500 hover:text-brand-400">
+            Voir toutes les cartographies →
+          </a>
+        </li>
+      </ul>
+    </div>
+  )}
+</section>

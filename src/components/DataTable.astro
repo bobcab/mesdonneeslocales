@@ -1,0 +1,123 @@
+---
+import type { GeoJson } from '../lib/geojson';
+import { getProp } from '../lib/geojson';
+
+interface Column {
+  key: string;
+  label: string;
+}
+
+interface Props {
+  geojson: GeoJson;
+  columns: Column[];
+  /** Nombre de lignes affichées initialement. Le reste est révélé via "Voir tout". */
+  initialRows?: number;
+  /** Nom du fichier CSV à télécharger. */
+  csvFilename?: string;
+}
+
+const { geojson, columns, initialRows = 50, csvFilename = 'donnees.csv' } = Astro.props;
+
+const totalRows = geojson.features.length;
+
+// Construit les lignes au format texte uniformément.
+function formatCell(value: unknown): string {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'number') return new Intl.NumberFormat('fr-FR').format(value);
+  return String(value);
+}
+
+const rows = geojson.features.map((feature) =>
+  columns.map((col) => formatCell(getProp(feature, col.key))),
+);
+
+// CSV téléchargeable, encodé en data URI (pas besoin de back-end).
+function toCsv(): string {
+  const header = columns.map((c) => `"${c.label.replace(/"/g, '""')}"`).join(',');
+  const body = rows
+    .map((row) => row.map((cell) => `"${cell.replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+  return `${header}\n${body}`;
+}
+
+const csv = toCsv();
+const csvDataUri = `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`;
+
+const showAllInitially = totalRows <= initialRows;
+---
+
+<section aria-labelledby="datatable-title" class="my-12" data-datatable>
+  <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+    <h2 id="datatable-title" class="text-xl font-bold text-ink-900">
+      Données brutes (alternative accessible)
+    </h2>
+    <a
+      href={csvDataUri}
+      download={csvFilename}
+      class="text-sm font-medium text-brand-500 hover:text-brand-400 inline-flex items-center gap-1"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4" aria-hidden="true">
+        <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.235a.75.75 0 1 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.129V2.75Z"/>
+        <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z"/>
+      </svg>
+      Télécharger en CSV
+    </a>
+  </div>
+
+  <p class="text-sm text-ink-500 mb-4">
+    Toutes les données affichées sur la cartographie, sous forme de tableau navigable. Cette
+    présentation est l'alternative textuelle accessible aux utilisateurs d'aides techniques.
+  </p>
+
+  <div class="overflow-x-auto rounded-sm border border-ink-300">
+    <table class="min-w-full divide-y divide-ink-300 text-sm">
+      <thead class="bg-surface-muted">
+        <tr>
+          {columns.map((col) => (
+            <th scope="col" class="px-4 py-3 text-left font-semibold text-ink-900">{col.label}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-ink-300/60 bg-surface">
+        {rows.map((row, i) => (
+          <tr class:list={[i >= initialRows && 'hidden', 'data-row']} data-row-index={i}>
+            {row.map((cell) => (
+              <td class="px-4 py-2 text-ink-700">{cell}</td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  {!showAllInitially && (
+    <div class="mt-4 flex items-center justify-between gap-2">
+      <p class="text-sm text-ink-500" data-row-counter>
+        <span data-rows-shown>{initialRows}</span> sur <span data-rows-total>{totalRows}</span> lignes affichées
+      </p>
+      <button
+        type="button"
+        class="btn-outline text-sm"
+        data-show-all
+        data-initial-rows={initialRows}
+        data-total-rows={totalRows}
+      >
+        Voir tout ({totalRows})
+      </button>
+    </div>
+  )}
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-datatable]').forEach((root) => {
+    const btn = root.querySelector<HTMLButtonElement>('[data-show-all]');
+    const shown = root.querySelector<HTMLElement>('[data-rows-shown]');
+    if (!btn || !shown) return;
+    btn.addEventListener('click', () => {
+      const rows = root.querySelectorAll<HTMLElement>('.data-row.hidden');
+      rows.forEach((r) => r.classList.remove('hidden'));
+      shown.textContent = btn.dataset.totalRows ?? '';
+      btn.remove();
+    });
+  });
+</script>

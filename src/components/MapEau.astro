@@ -1,0 +1,419 @@
+---
+/**
+ * Carte de France interactive pour la cartographie eau potable.
+ *
+ * Couches :
+ *   - fond uni warm beige
+ *   - choroplèthe départements (couleur selon le taux de conformité des communes connues)
+ *   - points pour les communes dont on a les données (vert si conforme, orange sinon)
+ *
+ * Données injectées au build :
+ *   - `aggregates` : { code, name, totalCommunes, compliantCommunes, complianceRate }[]
+ *   - `points` : { code, name, lon, lat, compliant }[]
+ *
+ * Émet :
+ *   - `dept-selected` { code }
+ *   - `commune-selected` { code }
+ *   (panneau contextuel et redirections gérés par la page parent)
+ */
+import { aggregateByDepartment } from '../lib/hubeau';
+
+const aggregates = aggregateByDepartment();
+
+// Les agrégats restent inline (96 départements = ~5 KB)
+// Les points communes (potentiellement 34 000) sont chargés via /data/eau-points.json
+const aggregatesMap: Record<string, { rate: number; total: number; compliant: number; name: string }> = {};
+for (const a of aggregates) {
+  aggregatesMap[a.code] = {
+    rate: a.complianceRate,
+    total: a.totalCommunes,
+    compliant: a.compliantCommunes,
+    name: a.name,
+  };
+}
+---
+
+<div
+  data-map-eau
+  role="application"
+  aria-label="Carte de France des communes avec données de qualité de l'eau potable. Cliquez sur un département ou un point commune."
+  class="relative h-[480px] w-full overflow-hidden rounded-sm border border-ink-300 bg-surface-muted lg:h-[600px]"
+>
+  <div data-map class="absolute inset-0"></div>
+
+  {/* Légende */}
+  <div class="absolute bottom-3 left-3 max-w-[220px] rounded-sm bg-surface/95 px-3 py-2 text-xs text-ink-700 shadow-sm backdrop-blur">
+    <p class="kicker mb-2">Taux de conformité par département</p>
+    <div class="flex items-center gap-1 mb-2">
+      <span class="block h-3 w-6 bg-ink-300"></span>
+      <span>Sans donnée</span>
+    </div>
+    <div class="flex items-center gap-1 mb-2">
+      <span class="block h-3 w-6 bg-warning-500"></span>
+      <span>&lt; 100 %</span>
+    </div>
+    <div class="flex items-center gap-1 mb-3">
+      <span class="block h-3 w-6 bg-success-500"></span>
+      <span>100 %</span>
+    </div>
+    <p class="kicker mb-1">Communes</p>
+    <div class="flex items-center gap-2 mb-1">
+      <span class="inline-block h-3 w-3 rounded-full bg-success-500 ring-2 ring-white"></span>
+      <span>Conforme · </span>
+      <span class="inline-block h-3 w-3 rounded-full bg-danger-500 ring-2 ring-white"></span>
+      <span>Non conforme</span>
+    </div>
+    <p class="text-[10px] text-ink-500">Les communes sont regroupées au dézoom (chiffre = nombre).</p>
+  </div>
+
+  {/* Contrôles */}
+  <div class="absolute right-3 top-3 flex flex-col gap-1">
+    <button type="button" data-zoom-in aria-label="Zoomer" class="h-11 w-11 md:h-9 md:w-9 rounded-sm bg-surface text-ink-900 shadow-sm hover:bg-brand-50 hover:text-brand-500 active:scale-[0.96]">+</button>
+    <button type="button" data-zoom-out aria-label="Dézoomer" class="h-11 w-11 md:h-9 md:w-9 rounded-sm bg-surface text-ink-900 shadow-sm hover:bg-brand-50 hover:text-brand-500 active:scale-[0.96]">−</button>
+    <button type="button" data-zoom-reset aria-label="Réinitialiser la vue" class="h-11 w-11 md:h-9 md:w-9 rounded-sm bg-surface text-ink-900 shadow-sm hover:bg-brand-50 hover:text-brand-500 active:scale-[0.96]">⌂</button>
+  </div>
+
+  <div data-map-loading class="absolute inset-0 flex items-center justify-center bg-surface-muted">
+    <p class="text-sm text-ink-500" aria-live="polite">Chargement de la carte…</p>
+  </div>
+
+  {/* Agrégats département inline (léger). Points communes chargés via /data/eau-points.json */}
+  <script type="application/json" data-aggregates set:html={JSON.stringify(aggregatesMap)}></script>
+</div>
+
+<style is:global>
+  [data-map-eau] [data-map] {
+    position: absolute;
+    inset: 0;
+  }
+  [data-map-eau] .maplibregl-canvas:focus {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: -2px;
+  }
+  [data-map-eau] .maplibregl-ctrl-attrib {
+    display: none;
+  }
+</style>
+
+<script>
+  import * as maplibregl from 'maplibre-gl';
+  import type { Map as MapInstance, StyleSpecification } from 'maplibre-gl';
+  import 'maplibre-gl/dist/maplibre-gl.css';
+
+  // Couleurs alignées sur la palette UX
+  // Couleurs sémantiques cartographiques (conservées) + neutres Piste A.
+  // Le bleu indigo de sélection vient directement de la palette brand-* (#4f46e5).
+  const COLORS = {
+    deptStroke: '#374151',         // ink-700
+    deptStrokeSelected: '#111827', // ink-900
+    deptFillNoData: '#9ca3af',     // ink-300
+    deptFillSuccess: '#1D9E75',    // success-500 (teal sémantique)
+    deptFillWarning: '#F0997B',    // warning-500 (coral sémantique)
+    pointCompliant: '#1D9E75',
+    pointNonCompliant: '#D85A30',
+    pointRing: '#ffffff',
+  };
+
+  const FRANCE_BOUNDS: [number, number, number, number] = [-5.2, 41.3, 9.6, 51.1];
+
+  interface Aggregates {
+    [code: string]: { rate: number; total: number; compliant: number; name: string };
+  }
+
+  function initMap(root: HTMLElement) {
+    const container = root.querySelector<HTMLElement>('[data-map]');
+    const loading = root.querySelector<HTMLElement>('[data-map-loading]');
+    if (!container) return;
+
+    if (typeof maplibregl?.Map !== 'function') {
+      console.error('[MapEau] maplibregl.Map is not a constructor — bad import?');
+      return;
+    }
+
+    const aggregatesEl = root.querySelector<HTMLScriptElement>('[data-aggregates]');
+    const aggregates: Aggregates = aggregatesEl ? JSON.parse(aggregatesEl.textContent ?? '{}') : {};
+
+    const style: StyleSpecification = {
+      version: 8,
+      name: 'mdl-eau',
+      sources: {},
+      layers: [
+        { id: 'background', type: 'background', paint: { 'background-color': '#F5F4F0' } },
+      ],
+    };
+
+    const map: MapInstance = new maplibregl.Map({
+      container,
+      style,
+      center: [2.5, 46.5],
+      zoom: 4.8,
+      maxZoom: 10,
+      minZoom: 3,
+      maxBounds: [
+        [-15, 38],
+        [20, 53],
+      ],
+      attributionControl: false,
+    });
+
+    map.on('error', (e) => console.error('[MapEau] map error', e));
+
+    function whenReady(cb: () => void) {
+      if (map.loaded()) cb();
+      else map.once('load', cb);
+    }
+
+    whenReady(async () => {
+      let geo: GeoJSON.FeatureCollection;
+      try {
+        const res = await fetch('/data/departements.geojson');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        geo = await res.json();
+      } catch (err) {
+        console.error('[MapEau] départements geojson fetch failed:', err);
+        loading?.querySelector('p')?.replaceChildren(
+          document.createTextNode('Impossible de charger la carte. Réessayez plus tard.'),
+        );
+        return;
+      }
+
+      // On annote chaque feature avec les agrégats départementaux (utilisé pour le style)
+      const annotated = {
+        ...geo,
+        features: geo.features.map((f) => ({
+          ...f,
+          properties: {
+            ...f.properties,
+            rate: aggregates[(f.properties as { code: string }).code]?.rate ?? -1, // -1 = sans donnée
+          },
+        })),
+      };
+
+      map.addSource('depts', { type: 'geojson', data: annotated as GeoJSON.FeatureCollection, promoteId: 'code' });
+
+      map.addLayer({
+        id: 'depts-fill',
+        type: 'fill',
+        source: 'depts',
+        paint: {
+          'fill-color': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false],
+            '#4f46e5', // brand-500 — département sélectionné (indigo Piste A)
+            ['<', ['get', 'rate'], 0],
+            COLORS.deptFillNoData,
+            ['>=', ['get', 'rate'], 1],
+            COLORS.deptFillSuccess,
+            COLORS.deptFillWarning,
+          ],
+          'fill-opacity': 0.65,
+        },
+      });
+
+      map.addLayer({
+        id: 'depts-stroke',
+        type: 'line',
+        source: 'depts',
+        paint: {
+          'line-color': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false],
+            COLORS.deptStrokeSelected,
+            COLORS.deptStroke,
+          ],
+          'line-width': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false],
+            2.5,
+            0.8,
+          ],
+        },
+      });
+
+      // Layer points communes avec clustering MapLibre natif.
+      // À grande échelle (~34 000 communes), l'agrégation visuelle évite la saturation.
+      // On charge les points via un endpoint statique pour ne pas alourdir le HTML.
+      map.addSource('communes', {
+        type: 'geojson',
+        data: '/data/eau-points.json',
+        cluster: true,
+        clusterRadius: 40,
+        clusterMaxZoom: 8,
+        clusterProperties: {
+          // Compte des communes conformes dans le cluster (utilisé pour la couleur)
+          compliantCount: ['+', ['get', 'compliant']],
+        },
+      });
+
+      // Cluster (cercles colorés selon taux conformité interne)
+      map.addLayer({
+        id: 'communes-clusters',
+        type: 'circle',
+        source: 'communes',
+        filter: ['has', 'point_count'],
+        paint: {
+          'circle-color': [
+            'case',
+            ['>=', ['/', ['get', 'compliantCount'], ['get', 'point_count']], 1],
+            COLORS.pointCompliant,
+            ['>=', ['/', ['get', 'compliantCount'], ['get', 'point_count']], 0.7],
+            COLORS.deptFillWarning,
+            COLORS.pointNonCompliant,
+          ],
+          'circle-radius': [
+            'step',
+            ['get', 'point_count'],
+            14, 10,   // < 10 → 14px
+            18, 50,   // < 50 → 18px
+            24, 200,  // < 200 → 24px
+            32,       // sinon → 32px
+          ],
+          'circle-stroke-width': 2,
+          'circle-stroke-color': COLORS.pointRing,
+          'circle-opacity': 0.92,
+        },
+      });
+      // Compteur de communes dans le cluster
+      map.addLayer({
+        id: 'communes-cluster-count',
+        type: 'symbol',
+        source: 'communes',
+        filter: ['has', 'point_count'],
+        layout: {
+          'text-field': ['get', 'point_count_abbreviated'],
+          'text-size': 12,
+          'text-font': ['sans-serif'],
+        },
+        paint: { 'text-color': '#ffffff' },
+      });
+
+      // Points individuels (non clusterisés, au zoom proche)
+      map.addLayer({
+        id: 'communes-points',
+        type: 'circle',
+        source: 'communes',
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+          'circle-radius': [
+            'case',
+            ['boolean', ['feature-state', 'hover'], false],
+            9,
+            6,
+          ],
+          'circle-color': [
+            'case',
+            ['==', ['get', 'compliant'], 1],
+            COLORS.pointCompliant,
+            COLORS.pointNonCompliant,
+          ],
+          'circle-stroke-width': 2,
+          'circle-stroke-color': COLORS.pointRing,
+        },
+      });
+
+      // Au clic sur un cluster : zoom in jusqu'à l'éclatement
+      map.on('click', 'communes-clusters', async (e) => {
+        if (!e.features?.[0]) return;
+        const id = e.features[0].properties?.cluster_id;
+        const src = map.getSource('communes') as maplibregl.GeoJSONSource;
+        try {
+          const zoom = await src.getClusterExpansionZoom(id as number);
+          map.easeTo({
+            center: (e.features[0].geometry as GeoJSON.Point).coordinates as [number, number],
+            zoom: Math.min(zoom, 9.5),
+            duration: 500,
+          });
+        } catch {
+          // ignore
+        }
+      });
+      map.on('mouseenter', 'communes-clusters', () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+      map.on('mouseleave', 'communes-clusters', () => {
+        map.getCanvas().style.cursor = '';
+      });
+
+      // Hover département
+      let hoveredDept: string | null = null;
+      map.on('mousemove', 'depts-fill', (e) => {
+        if (!e.features?.[0]) return;
+        const id = String(e.features[0].id);
+        if (hoveredDept && hoveredDept !== id) {
+          map.setFeatureState({ source: 'depts', id: hoveredDept }, { hover: false });
+        }
+        hoveredDept = id;
+        map.setFeatureState({ source: 'depts', id }, { hover: true });
+        map.getCanvas().style.cursor = 'pointer';
+      });
+      map.on('mouseleave', 'depts-fill', () => {
+        if (hoveredDept) map.setFeatureState({ source: 'depts', id: hoveredDept }, { hover: false });
+        hoveredDept = null;
+        map.getCanvas().style.cursor = '';
+      });
+
+      // Hover commune (priorité sur dept-fill)
+      let hoveredCommune: string | null = null;
+      map.on('mousemove', 'communes-points', (e) => {
+        if (!e.features?.[0]) return;
+        const id = String(e.features[0].id);
+        if (hoveredCommune && hoveredCommune !== id) {
+          map.setFeatureState({ source: 'communes', id: hoveredCommune }, { hover: false });
+        }
+        hoveredCommune = id;
+        map.setFeatureState({ source: 'communes', id }, { hover: true });
+        map.getCanvas().style.cursor = 'pointer';
+      });
+      map.on('mouseleave', 'communes-points', () => {
+        if (hoveredCommune) map.setFeatureState({ source: 'communes', id: hoveredCommune }, { hover: false });
+        hoveredCommune = null;
+      });
+
+      // Selection département
+      let selectedDept: string | null = null;
+      function selectDept(code: string | null) {
+        if (selectedDept) {
+          map.setFeatureState({ source: 'depts', id: selectedDept }, { selected: false });
+        }
+        selectedDept = code;
+        if (code) {
+          map.setFeatureState({ source: 'depts', id: code }, { selected: true });
+        }
+        root.dispatchEvent(new CustomEvent('dept-selected', { detail: { code }, bubbles: true }));
+      }
+      (root as HTMLElement & { __clearMapSelection?: () => void }).__clearMapSelection = () => selectDept(null);
+
+      map.on('click', 'depts-fill', (e) => {
+        if (!e.features?.[0]) return;
+        const code = String(e.features[0].id);
+        selectDept(code);
+      });
+
+      // Click commune → redirection directe via event (la page parent gère)
+      map.on('click', 'communes-points', (e) => {
+        if (!e.features?.[0]) return;
+        const code = String(e.features[0].id);
+        root.dispatchEvent(new CustomEvent('commune-selected', { detail: { code }, bubbles: true }));
+      });
+
+      loading?.remove();
+    });
+
+    // Contrôles
+    root.querySelector('[data-zoom-in]')?.addEventListener('click', () => map.zoomIn());
+    root.querySelector('[data-zoom-out]')?.addEventListener('click', () => map.zoomOut());
+    root.querySelector('[data-zoom-reset]')?.addEventListener('click', () => {
+      map.fitBounds(FRANCE_BOUNDS, { padding: 20, duration: 600 });
+    });
+  }
+
+  function init() {
+    document.querySelectorAll<HTMLElement>('[data-map-eau]').forEach(initMap);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+</script>

@@ -1,0 +1,90 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import OrganizationJsonLd from '../components/OrganizationJsonLd.astro';
+import WebSiteJsonLd from '../components/WebSiteJsonLd.astro';
+import RegisterServiceWorker from '../components/RegisterServiceWorker.astro';
+import KeyboardShortcuts from '../components/KeyboardShortcuts.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  bodyClass?: string;
+  ogImage?: string;
+  ogImageAlt?: string;
+  /** True pour la home — ajoute le JSON-LD WebSite + SearchAction. */
+  isHome?: boolean;
+}
+
+const {
+  title,
+  description = 'MESDONNEESLOCALES.FR met à disposition des citoyens des cartographies de données publiques fiables et actualisées.',
+  bodyClass = '',
+  ogImage,
+  ogImageAlt = 'Mes données locales — Données publiques cartographiées',
+  isHome = false,
+} = Astro.props;
+
+const fullTitle = title === 'Mes données locales' ? title : `${title} | Mes données locales`;
+const siteUrl = Astro.site ?? new URL('https://mesdonneeslocales.fr');
+const canonical = new URL(Astro.url.pathname, siteUrl).toString();
+const ogImageUrl = new URL(ogImage ?? '/og-default.png', siteUrl).toString();
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/favicon.png" sizes="32x32" />
+    <link rel="alternate icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#4f46e5" />
+
+    {/* Préchargement des fonts critiques (auto-hébergées, RGPD-friendly) */}
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/open-sans.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/poppins-600.woff2" crossorigin />
+
+    {/* Open Graph */}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Mes données locales" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={ogImageAlt} />
+
+    {/* Twitter Card */}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+    <meta name="twitter:image:alt" content={ogImageAlt} />
+
+    {/* Données structurées Schema.org — sur toutes les pages */}
+    <OrganizationJsonLd />
+    {isHome && <WebSiteJsonLd />}
+
+    <slot name="head" />
+  </head>
+  <body class={bodyClass}>
+    <a href="#main" class="skip-link">Aller au contenu principal</a>
+    <Header />
+    <main id="main" tabindex="-1" class="pt-16 md:pt-20">
+      <slot />
+    </main>
+    <Footer />
+    <RegisterServiceWorker />
+    <KeyboardShortcuts />
+  </body>
+</html>

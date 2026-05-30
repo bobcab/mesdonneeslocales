@@ -1,0 +1,124 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import DatasetJsonLd from '../../components/DatasetJsonLd.astro';
+import CopyLinkScript from '../../components/CopyLinkScript.astro';
+import MetadataBar from '../../components/MetadataBar.astro';
+import KeyFigures from '../../components/KeyFigures.astro';
+import MviewerEmbed from '../../components/MviewerEmbed.astro';
+import ShareBlock from '../../components/ShareBlock.astro';
+import UnderstandBlock from '../../components/UnderstandBlock.astro';
+import DataTable from '../../components/DataTable.astro';
+import MethodologyBlock from '../../components/MethodologyBlock.astro';
+import RelatedBlock from '../../components/RelatedBlock.astro';
+import SignalBlock from '../../components/SignalBlock.astro';
+import { loadGeoJson } from '../../lib/geojson';
+
+export async function getStaticPaths() {
+  const cartos = await getCollection('cartographies');
+  // Les cartos `type: 'native'` ont leur propre page dédiée (ex. qualite-eau/index.astro)
+  // → on ne les inclut pas dans cette route MViewer générique.
+  return cartos
+    .filter((carto) => carto.data.type !== 'native')
+    .map((carto) => ({
+      params: { slug: carto.id.replace(/\.md$/, '') },
+      props: { carto },
+    }));
+}
+
+interface Props {
+  carto: CollectionEntry<'cartographies'>;
+}
+
+const { carto } = Astro.props;
+const { Content } = await render(carto);
+const d = carto.data;
+const slug = carto.id.replace(/\.md$/, '');
+
+const site = Astro.site?.toString() ?? 'https://mesdonneeslocales.fr/';
+const pageUrl = `${site}cartographies/${slug}/`;
+
+// Charge le GeoJSON au build si disponible (cf. note v3 §11.2)
+const geojson = d.geojsonUrl ? await loadGeoJson(d.geojsonUrl) : null;
+---
+
+<Base
+  title={d.title}
+  description={d.shortDescription ?? d.description.slice(0, 200)}
+>
+  <article class="py-8 md:py-12">
+    <div class="container-page max-w-5xl">
+      <Breadcrumbs
+        items={[
+          { href: '/', label: 'Accueil' },
+          { href: '/cartographies/', label: 'Cartographies' },
+          { label: d.title },
+        ]}
+      />
+
+      {/* Bloc 1 — Titre + résumé */}
+      <header class="mb-8">
+        <div class="mb-3 flex flex-wrap items-center gap-2">
+          <span class="pill-brand">{d.category}</span>
+          {d.subCategories.map((sub) => <span class="pill">{sub}</span>)}
+          {d.status === 'new' && <span class="pill-success">Nouveau</span>}
+          {d.status === 'maintenance' && <span class="pill-warning">En maintenance</span>}
+        </div>
+        <h1 class="text-3xl font-bold text-ink-900 md:text-4xl leading-tight">{d.title}</h1>
+        {d.shortDescription && (
+          <p class="mt-4 text-lg text-ink-700 leading-relaxed max-w-3xl">{d.shortDescription}</p>
+        )}
+      </header>
+
+      {/* Bloc 2 — Barre de métadonnées (4 colonnes) */}
+      <MetadataBar carto={carto} />
+
+      {/* Bloc 3 — Chiffres clés AVANT la carte (Synthèse UX p.13) */}
+      <KeyFigures figures={d.keyFigures} />
+
+      {/* Bloc 4 — Cartographie interactive (iframe mviewer) */}
+      <MviewerEmbed src={d.mapUrl} title={`Cartographie interactive — ${d.title}`} />
+
+      {/* Bloc 5 — Partager (lien, embed, download, attribution) */}
+      <ShareBlock carto={carto} pageUrl={pageUrl} />
+
+      {/* Bloc 6 — Comprendre : ce qu'elle dit / ne dit pas */}
+      <UnderstandBlock says={d.says} saysNot={d.saysNot} />
+
+      {/* Description longue rendue depuis le markdown */}
+      {carto.body && carto.body.trim().length > 0 && (
+        <section aria-labelledby="about-title" class="my-12">
+          <h2 id="about-title" class="text-xl font-bold text-ink-900 mb-4">
+            À propos de cette donnée
+          </h2>
+          <div class="prose-editorial">
+            <Content />
+          </div>
+        </section>
+      )}
+
+      {/* Bloc 7 — Tableau de données accessible (uniquement si GeoJSON dispo + colonnes définies) */}
+      {geojson && d.tableColumns.length > 0 && (
+        <DataTable
+          geojson={geojson}
+          columns={d.tableColumns}
+          csvFilename={`mesdonneeslocales-${slug}.csv`}
+        />
+      )}
+
+      {/* Bloc 8 — Méthodologie spécifique */}
+      <MethodologyBlock methodology={d.methodology} />
+
+      {/* Bloc 9 — Sources + cartographies liées */}
+      <RelatedBlock carto={carto} />
+
+      {/* Bloc 10 — Signaler un problème */}
+      <SignalBlock carto={carto} />
+    </div>
+  </article>
+
+  <DatasetJsonLd carto={carto} />
+  <CopyLinkScript />
+</Base>

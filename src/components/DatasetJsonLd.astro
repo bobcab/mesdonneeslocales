@@ -1,0 +1,59 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import JsonLd from './JsonLd.astro';
+import { getImage } from 'astro:assets';
+
+interface Props {
+  carto: CollectionEntry<'cartographies'>;
+}
+
+const { carto } = Astro.props;
+const d = carto.data;
+const slug = carto.id.replace(/\.md$/, '');
+
+const site = Astro.site?.toString() ?? 'https://mesdonneeslocales.fr/';
+const url = `${site}cartographies/${slug}/`;
+
+let imageUrl: string | undefined;
+if (d.image) {
+  const optimized = await getImage({ src: d.image, format: 'webp', width: 1200 });
+  imageUrl = new URL(optimized.src, site).toString();
+}
+
+const data: Record<string, unknown> = {
+  '@context': 'https://schema.org',
+  '@type': 'Dataset',
+  name: d.title,
+  description: d.shortDescription ?? d.description.split('\n')[0],
+  url,
+  inLanguage: 'fr-FR',
+  keywords: d.keywords.length > 0 ? d.keywords.join(', ') : undefined,
+  isAccessibleForFree: true,
+  license: d.source.licenseUrl,
+  creator: {
+    '@type': 'Organization',
+    name: d.source.name,
+    url: d.source.url,
+  },
+  publisher: { '@id': `${site}#organization` },
+  spatialCoverage: {
+    '@type': 'Place',
+    name: d.spatialCoverage,
+  },
+  ...(d.publishedAt && { datePublished: d.publishedAt.toISOString().slice(0, 10) }),
+  ...(d.lastDataUpdate && { dateModified: d.lastDataUpdate.toISOString().slice(0, 10) }),
+  ...(imageUrl && { image: imageUrl }),
+  ...(d.downloadFormats.length > 0 && {
+    distribution: d.downloadFormats.map((fmt) => ({
+      '@type': 'DataDownload',
+      encodingFormat: fmt,
+      contentUrl: d.mapUrl,
+    })),
+  }),
+};
+
+// Nettoyer les clés undefined pour ne pas polluer le JSON-LD
+const cleaned = Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined));
+---
+
+<JsonLd data={cleaned} />

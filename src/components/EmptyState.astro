@@ -1,0 +1,102 @@
+---
+/**
+ * État vide / erreur / information — composant unifié pour les pages où rien ne s'affiche.
+ *
+ * Synthèse UX §06 patterns d'erreur (p.23) : "jamais de cul-de-sac" — toute erreur ou
+ * absence propose au moins deux actions (une qui ramène, une qui fait progresser).
+ *
+ * Variantes :
+ *   - `search` : recherche sans résultat (icône loupe, ton neutre)
+ *   - `error`  : erreur API / réseau (icône warning, ton danger)
+ *   - `info`   : information neutre (icône info, ton brand)
+ *
+ * Usage :
+ *   <EmptyState
+ *     variant="search"
+ *     title="Aucune cartographie ne correspond"
+ *     description="Essayez d'autres mots-clés ou retirez des filtres."
+ *     actions={[
+ *       { label: 'Réinitialiser les filtres', onClick: 'data-reset', primary: true },
+ *       { label: 'Proposer une thématique', href: 'mailto:...' },
+ *     ]}
+ *   />
+ */
+
+interface ActionLink {
+  label: string;
+  href: string;
+  external?: boolean;
+  primary?: boolean;
+}
+
+interface Props {
+  variant?: 'search' | 'error' | 'info';
+  title: string;
+  description?: string;
+  actions?: ActionLink[];
+  /** Texte aria-live (sinon le composant n'est pas annoncé). */
+  liveAnnounce?: string;
+}
+
+const { variant = 'info', title, description, actions = [], liveAnnounce } = Astro.props;
+
+const variantStyles = {
+  search: { wrapper: 'border-ink-300 bg-surface-muted', icon: 'text-ink-500' },
+  error: { wrapper: 'border-l-4 border-danger-500 bg-danger-50', icon: 'text-danger-700' },
+  info: { wrapper: 'border-l-4 border-brand-500 bg-brand-50', icon: 'text-brand-500' },
+};
+const s = variantStyles[variant];
+---
+
+<div
+  class:list={['rounded-sm border p-6', s.wrapper]}
+  role={variant === 'error' ? 'alert' : 'status'}
+  aria-live={liveAnnounce ? (variant === 'error' ? 'assertive' : 'polite') : undefined}
+>
+  <div class="flex items-start gap-4">
+    <span class:list={['shrink-0', s.icon]} aria-hidden="true">
+      {variant === 'search' && (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-8 w-8">
+          <circle cx="11" cy="11" r="7" />
+          <line x1="16.5" y1="16.5" x2="21" y2="21" />
+        </svg>
+      )}
+      {variant === 'error' && (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-8 w-8">
+          <path d="M12 9v4" />
+          <path d="M12 17h.01" />
+          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+        </svg>
+      )}
+      {variant === 'info' && (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-8 w-8">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="16" x2="12" y2="12" />
+          <line x1="12" y1="8" x2="12.01" y2="8" />
+        </svg>
+      )}
+    </span>
+
+    <div class="flex-1 min-w-0">
+      <h3 class="text-base font-semibold text-ink-900">{title}</h3>
+      {description && <p class="mt-1 text-sm text-ink-700">{description}</p>}
+
+      {actions.length > 0 && (
+        <div class="mt-4 flex flex-wrap gap-2">
+          {actions.map((a) => (
+            <a
+              href={a.href}
+              target={a.external ? '_blank' : undefined}
+              rel={a.external ? 'noopener noreferrer' : undefined}
+              class:list={[a.primary ? 'btn-primary' : 'btn-outline', 'text-sm']}
+            >
+              {a.label}
+            </a>
+          ))}
+        </div>
+      )}
+
+      {liveAnnounce && <p class="sr-only">{liveAnnounce}</p>}
+    </div>
+  </div>
+</div>

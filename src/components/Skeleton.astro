@@ -1,0 +1,81 @@
+---
+/**
+ * Skeleton générique — placeholder visuel pendant un chargement.
+ *
+ * Variantes :
+ *   - `text` : barres de texte de différentes longueurs (paramètre `lines`)
+ *   - `card` : silhouette d'une card (image + titre + 2 lignes texte + bouton)
+ *   - `list` : 3-5 lignes empilées
+ *   - `block` : un simple rectangle (paramètres width / height)
+ *
+ * Respecte `prefers-reduced-motion` (animation pulse désactivée).
+ * Marqué `aria-hidden="true"` — l'état de chargement réel doit être annoncé séparément
+ * via aria-live="polite" dans le composant parent.
+ *
+ * Usage :
+ *   <Skeleton variant="card" />
+ *   <Skeleton variant="text" lines={4} />
+ *   <Skeleton variant="block" class="h-48 w-full" />
+ */
+
+interface Props {
+  variant?: 'text' | 'card' | 'list' | 'block';
+  lines?: number;
+  class?: string;
+}
+
+const { variant = 'block', lines = 3, class: className = '' } = Astro.props;
+
+// Largeurs variées pour donner un effet réaliste (titre court, paragraphes longs, etc.)
+const TEXT_WIDTHS = ['w-full', 'w-11/12', 'w-10/12', 'w-9/12', 'w-8/12', 'w-7/12'];
+---
+
+<div aria-hidden="true" class:list={[className]}>
+  {variant === 'block' && (
+    <div class="skeleton" class:list={[!className && 'h-12 w-full']} />
+  )}
+
+  {variant === 'text' && (
+    <div class="space-y-2">
+      {Array.from({ length: lines }).map((_, i) => (
+        <div class:list={['skeleton h-4', TEXT_WIDTHS[i % TEXT_WIDTHS.length]]} />
+      ))}
+    </div>
+  )}
+
+  {variant === 'list' && (
+    <ul class="space-y-3">
+      {Array.from({ length: lines }).map(() => (
+        <li class="flex items-center gap-3">
+          <span class="skeleton h-10 w-10 shrink-0 rounded-full" />
+          <span class="flex-1 space-y-2">
+            <span class="skeleton block h-3 w-1/2" />
+            <span class="skeleton block h-3 w-3/4" />
+          </span>
+        </li>
+      ))}
+    </ul>
+  )}
+
+  {variant === 'card' && (
+    <div class="overflow-hidden rounded-sm bg-surface shadow-md ring-1 ring-ink-300/40">
+      <div class="skeleton aspect-[16/10] w-full" />
+      <div class="space-y-3 p-6">
+        <div class="flex gap-2">
+          <span class="skeleton h-5 w-16 rounded-full" />
+          <span class="skeleton h-5 w-12 rounded-full" />
+        </div>
+        <div class="skeleton h-6 w-3/4" />
+        <div class="space-y-2">
+          <div class="skeleton h-3 w-full" />
+          <div class="skeleton h-3 w-11/12" />
+          <div class="skeleton h-3 w-9/12" />
+        </div>
+        <div class="flex gap-2 pt-2">
+          <span class="skeleton h-10 w-24" />
+          <span class="skeleton h-10 w-28" />
+        </div>
+      </div>
+    </div>
+  )}
+</div>

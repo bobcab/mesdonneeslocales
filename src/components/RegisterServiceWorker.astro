@@ -1,0 +1,24 @@
+---
+/**
+ * Enregistrement du service worker (auto-update silencieux).
+ *
+ * Le SW est précaché par defer après load pour ne pas pénaliser le LCP.
+ * Pas de logique de prompt utilisateur — `skipWaiting` + `clients.claim` côté
+ * SW assurent le remplacement transparent au prochain rechargement.
+ *
+ * Désactivé en dev (`import.meta.env.DEV`) pour éviter de cacher Vite HMR.
+ */
+const isDev = import.meta.env.DEV;
+---
+
+{!isDev && (
+  <script is:inline>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker
+          .register('/service-worker.js', { scope: '/' })
+          .catch((err) => console.warn('[SW] register failed', err));
+      });
+    }
+  </script>
+)}

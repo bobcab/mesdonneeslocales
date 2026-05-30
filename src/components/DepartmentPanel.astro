@@ -1,0 +1,108 @@
+---
+import { getCollection } from 'astro:content';
+import { getAllDepartments } from '../lib/departments';
+
+/**
+ * Panneau contextuel de la carte de France.
+ *
+ * Stratégie : on rend l'état initial (résumé national) + un panneau caché par département
+ * dans le DOM. Le composant MapFrance (îlot client) togle les classes `.hidden` au clic
+ * sur un département. Aucun framework, aucune hydratation lourde.
+ */
+
+const cartos = (await getCollection('cartographies')).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+const departments = getAllDepartments();
+
+const dateFmt = new Intl.DateTimeFormat('fr-FR', { month: 'short', year: 'numeric' });
+---
+
+<aside
+  data-department-panel
+  aria-label="Panneau contextuel"
+  class="rounded-sm border border-ink-300 bg-surface lg:h-[600px] lg:overflow-y-auto"
+>
+  {/* ÉTAT INITIAL — résumé national */}
+  <div data-panel-state="initial" class="p-5">
+    <p class="kicker mb-2">Vue d'ensemble</p>
+    <h2 class="text-lg font-bold text-ink-900 mb-3">France métropolitaine</h2>
+    <p class="text-sm text-ink-700 mb-4">
+      Sélectionnez un département sur la carte pour voir les cartographies disponibles à cette
+      échelle.
+    </p>
+
+    <h3 class="kicker mb-2">Cartographies actives</h3>
+    <ul class="space-y-3">
+      {cartos.map((c) => {
+        const slug = c.id.replace(/\.md$/, '');
+        return (
+          <li class="rounded-sm bg-surface-muted p-3">
+            <a
+              href={`/cartographies/${slug}/`}
+              class="text-sm font-semibold text-ink-900 no-underline hover:text-brand-500"
+            >
+              {c.data.title}
+            </a>
+            <p class="mt-1 text-xs text-ink-500">{c.data.category}</p>
+          </li>
+        );
+      })}
+    </ul>
+  </div>
+
+  {/* ÉTATS PAR DÉPARTEMENT — un par dept, cachés par défaut */}
+  {departments.map((dept) => (
+    <div
+      data-panel-state="department"
+      data-dept-code={dept.code}
+      class="hidden p-5"
+    >
+      <p class="kicker mb-2">Département sélectionné</p>
+      <h2 class="text-lg font-bold text-ink-900 mb-1">{dept.name}</h2>
+      <p class="text-sm text-ink-500 mb-4">{dept.code} · {dept.region}</p>
+
+      <div class="rounded-sm bg-surface-muted p-3 mb-4">
+        <p class="kicker mb-1">En bref</p>
+        <p class="text-sm text-ink-700">
+          <strong class="text-ink-900">{dept.population.toLocaleString('fr-FR')}</strong> milliers d'habitants
+        </p>
+      </div>
+
+      <h3 class="kicker mb-2">Cartographies disponibles ici</h3>
+      <ul class="space-y-3">
+        {cartos.map((c) => {
+          const slug = c.id.replace(/\.md$/, '');
+          // MVP : toutes les cartos sont nationales. On affiche un message générique.
+          return (
+            <li class="rounded-sm bg-surface-muted p-3">
+              <a
+                href={`/cartographies/${slug}/`}
+                class="text-sm font-semibold text-ink-900 no-underline hover:text-brand-500"
+              >
+                {c.data.title}
+              </a>
+              <p class="mt-1 text-xs text-ink-700">
+                Données disponibles à l'échelle nationale, consultables département par département
+                sur la carte interactive.
+              </p>
+              {c.data.lastDataUpdate && (
+                <p class="mt-1 text-xs text-ink-500">
+                  Dernière mise à jour : {dateFmt.format(c.data.lastDataUpdate)}
+                </p>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+
+      <button
+        type="button"
+        data-clear-selection
+        class="btn-ghost mt-6 text-sm w-full"
+      >
+        ← Retour à la vue nationale
+      </button>
+    </div>
+  ))}
+</aside>

@@ -1,0 +1,57 @@
+---
+/**
+ * Raccourcis clavier globaux (synthèse UX §06).
+ *
+ *   `/` (slash)  → met le focus sur le 1er champ de recherche visible de la page
+ *                  (input[type="search"]). Le scroll est ajusté pour qu'il soit visible.
+ *   `Escape`     → ferme les `<details open>` (accordéons) qui ont le focus dedans.
+ *
+ * Ces raccourcis ne s'activent PAS si l'utilisateur est déjà en train de taper dans un
+ * input, textarea ou élément contentEditable — on évite ainsi tout conflit.
+ *
+ * Pas d'interception sur les pages qui n'ont pas de champ recherche : si rien n'est trouvé,
+ * la touche garde son comportement par défaut.
+ */
+---
+
+<script>
+  function isTyping(target: EventTarget | null): boolean {
+    const el = target as HTMLElement | null;
+    if (!el) return false;
+    const tag = el.tagName;
+    return (
+      tag === 'INPUT' ||
+      tag === 'TEXTAREA' ||
+      tag === 'SELECT' ||
+      el.isContentEditable === true
+    );
+  }
+
+  document.addEventListener('keydown', (e) => {
+    // /  → focus recherche
+    if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      if (isTyping(e.target)) return;
+      const search = document.querySelector<HTMLInputElement>(
+        'input[type="search"]:not([disabled])',
+      );
+      if (search) {
+        e.preventDefault();
+        search.focus({ preventScroll: false });
+        search.select();
+        search.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    // Escape → ferme tout <details> contenant le focus (FAQ, panneaux dépliables, etc.)
+    if (e.key === 'Escape') {
+      const active = document.activeElement;
+      if (!active) return;
+      const details = active.closest('details[open]') as HTMLDetailsElement | null;
+      if (details) {
+        details.open = false;
+        const summary = details.querySelector('summary');
+        summary?.focus();
+      }
+    }
+  });
+</script>

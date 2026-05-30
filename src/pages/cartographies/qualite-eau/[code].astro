@@ -1,0 +1,329 @@
+---
+import Base from '../../../layouts/Base.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import JsonLd from '../../../components/JsonLd.astro';
+import CopyLinkScript from '../../../components/CopyLinkScript.astro';
+import Sparkline from '../../../components/Sparkline.astro';
+import {
+  listAvailableCommunes,
+  getCommuneData,
+  buildLastSampleCsv,
+  PRINCIPAL_PARAM_CODES,
+  isPfasCode,
+  getLastImportDate,
+  type HubeauCommune,
+  type HubeauParam,
+} from '../../../lib/hubeau';
+
+export async function getStaticPaths() {
+  return listAvailableCommunes().map((code) => ({
+    params: { code },
+    props: { code },
+  }));
+}
+
+interface Props {
+  code: string;
+}
+
+const { code } = Astro.props;
+const data = getCommuneData(code) as HubeauCommune;
+
+if (!data || data.empty || !data.name) {
+  throw new Error(`Aucune donnée Hub'Eau pour la commune ${code}`);
+}
+
+const lastImport = getLastImportDate();
+
+const dateFmt = new Intl.DateTimeFormat('fr-FR', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+
+const sampleDate = data.lastSampleDate ? new Date(data.lastSampleDate) : null;
+
+// Sépare paramètres principaux / PFAS / autres
+const principal: HubeauParam[] = [];
+const pfas: HubeauParam[] = [];
+const others: HubeauParam[] = [];
+for (const code of Object.keys(data.params)) {
+  const p = data.params[code];
+  if (PRINCIPAL_PARAM_CODES.includes(code as (typeof PRINCIPAL_PARAM_CODES)[number])) {
+    principal.push(p);
+  } else if (isPfasCode(code)) {
+    pfas.push(p);
+  } else {
+    others.push(p);
+  }
+}
+// Tri principal selon l'ordre de PRINCIPAL_PARAM_CODES
+principal.sort(
+  (a, b) =>
+    PRINCIPAL_PARAM_CODES.indexOf(a.code as (typeof PRINCIPAL_PARAM_CODES)[number]) -
+    PRINCIPAL_PARAM_CODES.indexOf(b.code as (typeof PRINCIPAL_PARAM_CODES)[number]),
+);
+
+const site = Astro.site?.toString() ?? 'https://mesdonneeslocales.fr/';
+const pageUrl = `${site}cartographies/qualite-eau/${code}/`;
+
+// CSV téléchargeable du dernier prélèvement (data URI, généré au build)
+const csv = buildLastSampleCsv(data);
+const csvDataUri = `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`;
+const csvFilename = `mesdonneeslocales-eau-${code}-${data.lastSampleDate?.slice(0, 10) ?? ''}.csv`;
+
+const title = `Qualité de l'eau potable — ${data.name} (${data.department})`;
+const description = data.conclusion ?? "Résultats du dernier prélèvement officiel du contrôle sanitaire.";
+
+// Helper d'affichage
+function formatValue(p: HubeauParam): string {
+  if (typeof p.value === 'number') {
+    return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 3 }).format(p.value);
+  }
+  return String(p.value);
+}
+
+// JSON-LD Dataset spécifique à la commune
+const datasetJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Dataset',
+  name: title,
+  description,
+  url: pageUrl,
+  inLanguage: 'fr-FR',
+  isAccessibleForFree: true,
+  license: 'https://www.etalab.gouv.fr/licence-ouverte-open-licence/',
+  creator: {
+    '@type': 'Organization',
+    name: "Ministère chargé de la santé — Agences régionales de santé (ARS)",
+    url: 'https://hubeau.eaufrance.fr/page/api-qualite-eau-potable',
+  },
+  publisher: { '@id': `${site}#organization` },
+  spatialCoverage: {
+    '@type': 'Place',
+    name: `${data.name} (${data.department})`,
+  },
+  ...(sampleDate && { dateModified: sampleDate.toISOString().slice(0, 10) }),
+};
+
+// Petit utilitaire visuel pour le statut conformité
+const statusBadge = data.compliantOverall
+  ? { label: 'Eau conforme', class: 'bg-success-500 text-white', icon: '✓' }
+  : { label: 'Eau non conforme', class: 'bg-danger-500 text-white', icon: '!' };
+---
+
+<Base title={title} description={description}>
+  <article class="py-8 md:py-12">
+    <div class="container-page max-w-4xl">
+      <Breadcrumbs
+        items={[
+          { href: '/', label: 'Accueil' },
+          { href: '/cartographies/', label: 'Cartographies' },
+          { href: '/cartographies/qualite-eau/', label: "Qualité de l'eau potable" },
+          { label: data.name ?? code },
+        ]}
+      />
+
+      {/* Header */}
+      <header class="mb-8">
+        <div class="mb-3 flex flex-wrap items-center gap-2">
+          <span class="pill-brand">Santé</span>
+          <span class="pill">Eau potable</span>
+          <span class="text-sm text-ink-500">Code INSEE {data.code}</span>
+        </div>
+        <h1 class="text-3xl font-bold text-ink-900 md:text-4xl">
+          Qualité de l'eau potable — {data.name}
+        </h1>
+        <p class="mt-2 text-ink-500">
+          {data.departmentName} ({data.department})
+          {data.distributor && (
+            <>
+              {' · '}Distributeur : <span class="font-medium text-ink-700">{data.distributor}</span>
+            </>
+          )}
+        </p>
+      </header>
+
+      {/* Statut global de conformité */}
+      <section aria-labelledby="status-title" class={`mb-8 rounded-sm p-6 ${data.compliantOverall ? 'bg-success-50 border-l-4 border-success-500' : 'bg-danger-50 border-l-4 border-danger-500'}`}>
+        <div class="flex items-start gap-4">
+          <div class={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-2xl font-bold ${statusBadge.class}`} aria-hidden="true">
+            {statusBadge.icon}
+          </div>
+          <div>
+            <h2 id="status-title" class="text-xl font-bold text-ink-900">{statusBadge.label}</h2>
+            <p class="mt-1 text-sm text-ink-700">{data.conclusion}</p>
+            {sampleDate && (
+              <p class="mt-2 text-xs text-ink-500">
+                Dernier prélèvement : <time datetime={sampleDate.toISOString()}>{dateFmt.format(sampleDate)}</time>
+              </p>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Chiffres clés */}
+      <section aria-labelledby="figures-title" class="mb-8">
+        <h2 id="figures-title" class="sr-only">Chiffres clés</h2>
+        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div class="rounded-sm border border-ink-300 bg-surface p-4">
+            <p class="text-3xl font-bold text-ink-900 leading-none">{data.samplesCount ?? 0}</p>
+            <p class="mt-2 text-xs text-ink-500">prélèvements récents</p>
+          </div>
+          <div class="rounded-sm border border-ink-300 bg-surface p-4">
+            <p class="text-3xl font-bold text-ink-900 leading-none">{data.paramsCount ?? 0}</p>
+            <p class="mt-2 text-xs text-ink-500">paramètres mesurés</p>
+          </div>
+          <div class="rounded-sm border border-ink-300 bg-surface p-4">
+            <p class="text-3xl font-bold leading-none {principal.length > 0 ? 'text-success-500' : 'text-ink-500'}">{principal.length}</p>
+            <p class="mt-2 text-xs text-ink-500">paramètres principaux</p>
+          </div>
+          <div class="rounded-sm border border-ink-300 bg-surface p-4">
+            <p class={`text-3xl font-bold leading-none ${pfas.length > 0 ? 'text-warning-500' : 'text-ink-500'}`}>{pfas.length}</p>
+            <p class="mt-2 text-xs text-ink-500">paramètres PFAS{pfas.length > 0 ? ' analysés' : ''}</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Paramètres principaux */}
+      {principal.length > 0 && (
+        <section aria-labelledby="principal-title" class="mb-8">
+          <h2 id="principal-title" class="text-xl font-bold text-ink-900 mb-4">Paramètres principaux</h2>
+          <div class="overflow-x-auto rounded-sm border border-ink-300">
+            <table class="min-w-full divide-y divide-ink-300 text-sm">
+              <thead class="bg-surface-muted">
+                <tr>
+                  <th scope="col" class="px-4 py-3 text-left font-semibold text-ink-900">Paramètre</th>
+                  <th scope="col" class="px-4 py-3 text-right font-semibold text-ink-900">Valeur</th>
+                  <th scope="col" class="px-4 py-3 text-left font-semibold text-ink-900">Référence</th>
+                  <th scope="col" class="px-4 py-3 text-left font-semibold text-ink-900">Évolution</th>
+                  <th scope="col" class="px-4 py-3 text-center font-semibold text-ink-900">Conformité</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-ink-300/60 bg-surface">
+                {principal.map((p) => {
+                  const series = data.history?.[p.code] ?? [];
+                  return (
+                    <tr>
+                      <td class="px-4 py-3">
+                        <span class="font-medium text-ink-900">{p.label}</span>
+                        <span class="ml-2 text-xs text-ink-500">{p.code}</span>
+                      </td>
+                      <td class="px-4 py-3 text-right tabular-nums text-ink-700 whitespace-nowrap">
+                        <strong>{formatValue(p)}</strong> <span class="text-ink-500">{p.unit}</span>
+                      </td>
+                      <td class="px-4 py-3 text-ink-500 text-xs">
+                        {p.reference ?? p.limit ?? '—'}
+                      </td>
+                      <td class="px-4 py-3">
+                        {series.length >= 2 ? (
+                          <Sparkline points={series} label={`Évolution de ${p.label} sur ${series.length} prélèvements`} />
+                        ) : (
+                          <span class="text-xs text-ink-500">{series.length === 1 ? '1 mesure' : '—'}</span>
+                        )}
+                      </td>
+                      <td class="px-4 py-3 text-center">
+                        {p.compliant_pc && p.compliant_bact ? (
+                          <span class="pill-success">Conforme</span>
+                        ) : (
+                          <span class="pill-danger">Non conforme</span>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      {/* PFAS si analysés */}
+      {pfas.length > 0 && (
+        <section aria-labelledby="pfas-title" class="mb-8 rounded-sm border-l-4 border-warning-500 bg-warning-50 p-5">
+          <h2 id="pfas-title" class="text-lg font-bold text-ink-900 mb-2">
+            PFAS — Substances perfluoroalkylées et polyfluoroalkylées
+          </h2>
+          <p class="text-sm text-ink-700 mb-4">
+            {pfas.length} composé{pfas.length > 1 ? 's' : ''} analysé{pfas.length > 1 ? 's' : ''} dans le dernier prélèvement.
+          </p>
+          <details class="text-sm">
+            <summary class="cursor-pointer font-medium text-ink-900">Voir le détail</summary>
+            <ul class="mt-3 space-y-1">
+              {pfas.map((p) => (
+                <li class="flex flex-wrap justify-between gap-2 border-b border-ink-300/30 pb-1">
+                  <span class="text-ink-700">{p.label} <span class="text-xs text-ink-500">({p.code})</span></span>
+                  <span class="tabular-nums text-ink-700">
+                    <strong>{formatValue(p)}</strong> {p.unit}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </details>
+        </section>
+      )}
+
+      {/* Autres paramètres */}
+      {others.length > 0 && (
+        <section aria-labelledby="others-title" class="mb-8">
+          <details class="rounded-sm border border-ink-300 bg-surface">
+            <summary id="others-title" class="cursor-pointer px-4 py-3 font-semibold text-ink-900">
+              Tous les paramètres mesurés ({others.length})
+            </summary>
+            <div class="px-4 pb-4">
+              <ul class="grid gap-1 text-sm sm:grid-cols-2">
+                {others.map((p) => (
+                  <li class="flex flex-wrap justify-between gap-2 border-b border-ink-300/30 py-1">
+                    <span class="text-ink-700">{p.label} <span class="text-xs text-ink-500">({p.code})</span></span>
+                    <span class="tabular-nums text-ink-700">{formatValue(p)} {p.unit}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </details>
+        </section>
+      )}
+
+      {/* Partage + téléchargement */}
+      <section aria-labelledby="share-title" class="mb-8 rounded-sm border border-ink-300 bg-surface p-5">
+        <h2 id="share-title" class="text-lg font-bold text-ink-900 mb-3">Partager et télécharger</h2>
+        <div class="flex flex-wrap gap-3">
+          <a href={csvDataUri} download={csvFilename} class="btn-primary text-sm inline-flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4" aria-hidden="true">
+              <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.235a.75.75 0 1 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.129V2.75Z"/>
+              <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z"/>
+            </svg>
+            Télécharger en CSV
+          </a>
+          <button type="button" class="btn-outline text-sm" data-copy-link data-url={pageUrl}>
+            Copier le lien
+          </button>
+          <a href="/cartographies/qualite-eau/" class="btn-ghost text-sm">
+            ← Toutes les communes
+          </a>
+        </div>
+        <p class="mt-3 text-xs text-ink-500">
+          Le CSV contient les {data.lastSampleAllParams?.length ?? 0} paramètres mesurés lors du dernier prélèvement (sources : Hub'Eau / SISE-Eaux, licence Etalab 2.0).
+        </p>
+      </section>
+
+      {/* Source */}
+      <section aria-labelledby="source-title" class="rounded-sm bg-surface-muted p-5 text-sm">
+        <h2 id="source-title" class="font-semibold text-ink-900 mb-2">Source des données</h2>
+        <p class="text-ink-700">
+          API publique <a href="https://hubeau.eaufrance.fr/page/api-qualite-eau-potable" target="_blank" rel="noopener noreferrer">Hub'Eau — Qualité de l'eau potable</a>,
+          alimentée par le système SISE-Eaux du Ministère chargé de la santé via les Agences régionales de santé (ARS).
+          Licence Ouverte 2.0 (Etalab).
+        </p>
+        {lastImport && (
+          <p class="mt-2 text-xs text-ink-500">
+            Données importées le <time datetime={lastImport.toISOString()}>{dateFmt.format(lastImport)}</time>.
+          </p>
+        )}
+      </section>
+    </div>
+  </article>
+
+  <JsonLd data={datasetJsonLd} />
+  <CopyLinkScript />
+</Base>

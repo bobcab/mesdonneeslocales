@@ -1,0 +1,203 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  carto: CollectionEntry<'cartographies'>;
+  variant?: 'featured' | 'catalog' | 'list';
+}
+
+const { carto, variant = 'catalog' } = Astro.props;
+const d = carto.data;
+const slug = carto.id.replace(/\.md$/, '');
+const pageUrl = `/cartographies/${slug}/`;
+const shareLink = d.shareUrl ?? pageUrl;
+
+const text = d.shortDescription ?? d.description;
+
+// Piste A : "new" en ambre (signal éditorial d'attention, pas en brand pour ne pas concurrencer
+// le bouton "J'accède"). Contraste ambre-500/ink-900 = 9.66, AA OK.
+const statusConfig = {
+  new: { label: 'Nouveau', class: 'bg-accent-500 text-ink-900' },
+  updated: { label: 'Actualisé', class: 'bg-success-500 text-white' },
+  maintenance: { label: 'En maintenance', class: 'bg-accent-700 text-white' },
+} as const;
+
+const badge = statusConfig[d.status];
+const isMaintenance = d.status === 'maintenance';
+
+const dateFmt = new Intl.DateTimeFormat('fr-FR', {
+  month: 'short',
+  year: 'numeric',
+});
+
+const FREQ_LABELS: Record<string, string> = {
+  continuous: 'Continue',
+  daily: 'Quotidienne',
+  weekly: 'Hebdo.',
+  monthly: 'Mensuelle',
+  quarterly: 'Trimestrielle',
+  yearly: 'Annuelle',
+  irregular: 'Irrégulière',
+};
+
+// Échelle dérivée du spatialCoverage — doit matcher la logique de CartographyFilter.astro
+function getScale(): string {
+  const sc = d.spatialCoverage.toLowerCase();
+  if (sc.includes('commune')) return 'Par commune';
+  if (sc.includes('département') || sc.includes('departement')) return 'Par département';
+  return "Par site / établissement";
+}
+
+const searchHaystack = [
+  d.title,
+  d.shortDescription ?? '',
+  d.description,
+  d.category,
+  ...d.subCategories,
+  ...d.keywords,
+  d.source.name,
+  d.author,
+].join(' ');
+
+const dataAttrs = {
+  'data-carto-card': true,
+  'data-search': searchHaystack,
+  'data-category': d.category,
+  'data-scale': getScale(),
+  'data-freq': d.updateFrequency,
+  'data-type': d.typeapp,
+};
+
+const isList = variant === 'list';
+---
+
+{isList ? (
+  /* ============================================================
+     Vue LISTE : layout horizontal compact
+     ============================================================ */
+  <article
+    {...dataAttrs}
+    class="group flex flex-col gap-4 overflow-hidden rounded-sm border border-ink-300 bg-surface p-4 transition-colors hover:border-brand-500 sm:flex-row sm:items-center sm:gap-6 sm:p-5"
+  >
+    {d.image && (
+      <a href={pageUrl} class="block aspect-[16/10] w-full overflow-hidden bg-brand-50 rounded-sm no-underline sm:aspect-square sm:w-32 sm:shrink-0">
+        <Image
+          src={d.image}
+          alt={d.imageAlt}
+          widths={[200, 400]}
+          sizes="200px"
+          class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          loading="lazy"
+        />
+      </a>
+    )}
+
+    <div class="flex flex-1 flex-col gap-2 min-w-0">
+      <div class="flex flex-wrap items-center gap-2 text-xs">
+        <span class="pill-brand">{d.category}</span>
+        {d.status === 'new' && <span class={`px-2.5 py-0.5 rounded-full font-medium text-xs ${badge.class}`}>Nouveau</span>}
+        <span class="text-ink-500">{d.typeapp}</span>
+      </div>
+
+      <h3 class="text-lg font-semibold text-ink-900 truncate">
+        <a href={pageUrl} class="text-ink-900 no-underline hover:text-brand-500">{d.title}</a>
+      </h3>
+
+      <p class="text-sm text-ink-700 line-clamp-2">{text}</p>
+
+      <p class="text-xs text-ink-500">
+        <span class="font-medium">{d.source.name}</span>
+        {' · '}
+        <span>MAJ {FREQ_LABELS[d.updateFrequency] ?? d.updateFrequency}</span>
+        {d.lastDataUpdate && (
+          <>
+            {' · '}
+            <time datetime={d.lastDataUpdate.toISOString().slice(0, 10)}>{dateFmt.format(d.lastDataUpdate)}</time>
+          </>
+        )}
+      </p>
+    </div>
+
+    <div class="flex shrink-0 flex-wrap gap-2 sm:flex-col">
+      {isMaintenance ? (
+        <button type="button" class="btn-primary opacity-60 cursor-not-allowed text-sm" disabled>
+          Bientôt disponible
+        </button>
+      ) : (
+        <a href={pageUrl} class="btn-primary text-sm">J'accède</a>
+      )}
+    </div>
+  </article>
+) : (
+  /* ============================================================
+     Vue GRILLE (featured + catalog) : card verticale enrichie
+     ============================================================ */
+  <article
+    {...dataAttrs}
+    class:list={[
+      'group flex h-full flex-col overflow-hidden rounded-sm bg-surface shadow-md ring-1 ring-ink-300/40 transition-shadow hover:shadow-xl',
+      variant === 'featured' && 'min-h-[420px]',
+    ]}
+  >
+    {d.image && (
+      <a href={pageUrl} class="block relative overflow-hidden bg-brand-50 aspect-[16/10] no-underline">
+        <Image
+          src={d.image}
+          alt={d.imageAlt}
+          widths={[400, 600, 800]}
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          loading="lazy"
+        />
+        <span class:list={['absolute top-3 right-3 px-3 py-1 text-xs font-semibold uppercase tracking-wide', badge.class]}>
+          {badge.label}
+        </span>
+      </a>
+    )}
+
+    <div class="flex flex-1 flex-col p-6">
+      <div class="mb-3 flex flex-wrap items-center gap-2 text-xs">
+        <span class="pill-brand">{d.category}</span>
+        <span class="text-ink-500 uppercase tracking-wide">{d.typeapp}</span>
+      </div>
+
+      <h3 class="mb-3 text-xl font-semibold text-ink-900">
+        <a href={pageUrl} class="text-ink-900 no-underline hover:text-brand-500">{d.title}</a>
+      </h3>
+
+      <p class="mb-4 flex-1 text-sm text-ink-700 leading-relaxed line-clamp-5">{text}</p>
+
+      {/* Trois pills métadonnées (Synthèse UX p.11) */}
+      <div class="mb-4 flex flex-wrap gap-1.5 text-xs">
+        <span class="pill">MAJ {FREQ_LABELS[d.updateFrequency] ?? d.updateFrequency}</span>
+        <span class="pill">{getScale()}</span>
+      </div>
+
+      <p class="mb-4 text-xs text-ink-500">
+        <span class="font-medium">Source :</span> {d.source.name}
+        {d.lastDataUpdate && (
+          <>
+            {' · '}
+            <span>MAJ <time datetime={d.lastDataUpdate.toISOString().slice(0, 10)}>{dateFmt.format(d.lastDataUpdate)}</time></span>
+          </>
+        )}
+      </p>
+
+      <div class="flex flex-wrap gap-2">
+        {isMaintenance ? (
+          <button type="button" class="btn-primary opacity-60 cursor-not-allowed" disabled>
+            Bientôt disponible
+          </button>
+        ) : (
+          <>
+            <a href={pageUrl} class="btn-primary">J'accède</a>
+            <button type="button" class="btn-outline" data-copy-link data-url={shareLink}>
+              Je copie le lien
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  </article>
+)}

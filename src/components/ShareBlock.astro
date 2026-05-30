@@ -1,0 +1,119 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  carto: CollectionEntry<'cartographies'>;
+  /** URL canonique de la page (passée pour éviter de la recalculer). */
+  pageUrl: string;
+}
+
+const { carto, pageUrl } = Astro.props;
+const d = carto.data;
+
+const embedCode = `<iframe src="${d.mapUrl}" width="100%" height="600" frameborder="0" loading="lazy" title="${d.title} — Mes données locales"></iframe>`;
+
+const attribution = `Source : Mes données locales — L'Observatoire citoyen, d'après les données de ${d.source.name}`;
+
+// Téléchargements : seulement si la carto a un GeoJSON public.
+const downloads = [
+  d.geojsonUrl && { label: 'GeoJSON', url: d.geojsonUrl, format: 'application/geo+json' },
+  ...(d.downloadFormats ?? []).map((url, i) => ({
+    label: `Téléchargement ${i + 1}`,
+    url,
+    format: 'application/octet-stream',
+  })),
+].filter((x): x is NonNullable<typeof x> => Boolean(x));
+---
+
+<section aria-labelledby="share-title" class="my-12">
+  <h2 id="share-title" class="text-xl font-bold text-ink-900 mb-4">Partager cette cartographie</h2>
+
+  <div class="grid gap-4 md:grid-cols-3">
+    {/* Lien permanent */}
+    <div class="rounded-sm border border-ink-300 bg-surface p-4">
+      <p class="kicker mb-2">Lien permanent</p>
+      <input
+        type="text"
+        readonly
+        value={pageUrl}
+        class="w-full rounded-sm border border-ink-300 bg-surface-muted px-2 py-1.5 text-xs text-ink-700 font-mono"
+        data-share-input
+        aria-label="Lien permanent vers cette cartographie"
+      />
+      <button
+        type="button"
+        class="btn-ghost mt-2 text-sm w-full"
+        data-copy-link
+        data-url={pageUrl}
+      >
+        Copier le lien
+      </button>
+    </div>
+
+    {/* Code embed */}
+    <div class="rounded-sm border border-ink-300 bg-surface p-4">
+      <p class="kicker mb-2">&lt;/&gt; Intégrer (embed)</p>
+      <textarea
+        readonly
+        rows="3"
+        class="w-full rounded-sm border border-ink-300 bg-surface-muted px-2 py-1.5 text-xs text-ink-700 font-mono resize-none"
+        aria-label="Code HTML d'intégration"
+      >{embedCode}</textarea>
+      <button
+        type="button"
+        class="btn-ghost mt-2 text-sm w-full"
+        data-copy-link
+        data-url={embedCode}
+      >
+        Copier le code
+      </button>
+    </div>
+
+    {/* Téléchargement */}
+    <div class="rounded-sm border border-ink-300 bg-surface p-4">
+      <p class="kicker mb-2">Télécharger les données</p>
+      {downloads.length > 0 ? (
+        <ul class="space-y-2">
+          {downloads.map((dl) => (
+            <li>
+              <a
+                href={dl.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-2 text-sm font-medium text-brand-500 hover:text-brand-400"
+                download
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4" aria-hidden="true">
+                  <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.235a.75.75 0 1 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.129V2.75Z"/>
+                  <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z"/>
+                </svg>
+                {dl.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="text-sm text-ink-500">
+          Téléchargement direct non disponible. Les données sont consultables via la source officielle ci-dessus.
+        </p>
+      )}
+    </div>
+  </div>
+
+  {/* Mention d'attribution préfabriquée */}
+  <div class="mt-4 rounded-sm border border-ink-300 bg-surface-muted p-3">
+    <p class="kicker mb-1">Mention d'attribution recommandée</p>
+    <div class="flex items-start gap-2">
+      <code class="flex-1 text-xs text-ink-700 font-mono break-words">{attribution}</code>
+      <button
+        type="button"
+        class="shrink-0 text-xs font-medium text-brand-500 hover:text-brand-400"
+        data-copy-link
+        data-url={attribution}
+        aria-label="Copier la mention d'attribution"
+      >
+        Copier
+      </button>
+    </div>
+  </div>
+</section>

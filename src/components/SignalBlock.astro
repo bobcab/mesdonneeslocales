@@ -1,0 +1,26 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  carto: CollectionEntry<'cartographies'>;
+}
+
+const { carto } = Astro.props;
+const subject = encodeURIComponent(`Signalement — ${carto.data.title}`);
+const body = encodeURIComponent(
+  `Bonjour,\n\nJe souhaite signaler une donnée erronée, une représentation discutable ou une suggestion d'amélioration concernant la cartographie « ${carto.data.title} ».\n\nDétail du signalement :\n\n— Merci de préciser : zone géographique concernée, indicateur concerné, source contradictoire si disponible.\n\nCordialement,`,
+);
+const mailto = `mailto:contact@mesdonneeslocales.fr?subject=${subject}&body=${body}`;
+---
+
+<section aria-labelledby="signal-title" class="my-12 rounded-sm border border-ink-300 bg-surface-muted p-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+  <div>
+    <h2 id="signal-title" class="text-base font-semibold text-ink-900">
+      Une donnée erronée, une représentation discutable ?
+    </h2>
+    <p class="text-sm text-ink-700 mt-1">
+      Les signalements sont examinés chaque mois par l'équipe bénévole.
+    </p>
+  </div>
+  <a href={mailto} class="btn-outline shrink-0">Écrire à l'équipe</a>
+</section>

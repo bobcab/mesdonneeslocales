@@ -1,0 +1,43 @@
+---
+interface Methodology {
+  provenance?: string;
+  processing?: string;
+  limits?: string;
+  partner?: string;
+}
+
+interface Props {
+  methodology?: Methodology;
+}
+
+const { methodology } = Astro.props;
+if (!methodology) return null;
+
+const items: Array<{ label: string; text: string }> = [];
+if (methodology.provenance) items.push({ label: 'Provenance', text: methodology.provenance });
+if (methodology.processing) items.push({ label: 'Traitement', text: methodology.processing });
+if (methodology.limits) items.push({ label: 'Limites assumées', text: methodology.limits });
+if (methodology.partner) items.push({ label: 'Partenaire thématique', text: methodology.partner });
+
+if (items.length === 0) return null;
+---
+
+<section aria-labelledby="methodology-title" class="my-12">
+  <h2 id="methodology-title" class="text-xl font-bold text-ink-900 mb-6">
+    Méthodologie de cette cartographie
+  </h2>
+
+  <div class="grid gap-6 md:grid-cols-2">
+    {items.map((it) => (
+      <div>
+        <h3 class="kicker mb-2">{it.label}</h3>
+        <p class="text-sm text-ink-700 leading-relaxed">{it.text}</p>
+      </div>
+    ))}
+  </div>
+
+  <p class="mt-6 text-sm text-ink-500">
+    Pour notre approche générale, consultez la
+    <a href="/methodologie/">méthodologie complète</a>.
+  </p>
+</section>

@@ -1,0 +1,31 @@
+---
+import JsonLd from './JsonLd.astro';
+
+const site = Astro.site?.toString() ?? 'https://mesdonneeslocales.fr/';
+
+const data = {
+  '@context': 'https://schema.org',
+  '@type': 'NGO',
+  '@id': `${site}#organization`,
+  name: "L'Observatoire citoyen",
+  alternateName: 'Mes données locales',
+  url: site,
+  logo: `${site}og-default.png`,
+  description:
+    "Association loi 1901 créée en 2025, qui rend accessibles aux citoyens des données publiques fiables, cartographiées et qualifiées.",
+  foundingDate: '2025',
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Paris',
+    addressCountry: 'FR',
+  },
+  email: 'contact@mesdonneeslocales.fr',
+  taxID: '924 676 570 00014',
+  identifier: [
+    { '@type': 'PropertyValue', propertyID: 'SIRET', value: '924 676 570 00014' },
+    { '@type': 'PropertyValue', propertyID: 'RNA', value: 'W751272998' },
+  ],
+};
+---
+
+<JsonLd data={data} />

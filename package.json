@@ -1,0 +1,33 @@
+{
+  "name": "mesdonneeslocales-v2",
+  "type": "module",
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "deploy": "npm run build && node scripts/deploy.mjs",
+    "deploy:dry": "npm run build && cross-env FTP_DRY_RUN=true node scripts/deploy.mjs",
+    "deploy:only": "node scripts/deploy.mjs",
+    "fetch:hubeau": "node scripts/fetch-hubeau.mjs",
+    "fetch:hubeau:all": "node scripts/fetch-hubeau.mjs --all",
+    "fetch:hubeau:sample": "node scripts/fetch-hubeau.mjs --sample=100"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
+    "@tailwindcss/vite": "^4.3.0",
+    "astro": "^6.4.2",
+    "maplibre-gl": "^5.24.0",
+    "tailwindcss": "^4.3.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.19",
+    "basic-ftp": "^6.0.1",
+    "cross-env": "^10.1.0",
+    "dotenv": "^17.4.2"
+  }
+}

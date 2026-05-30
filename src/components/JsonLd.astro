@@ -1,0 +1,14 @@
+---
+interface Props {
+  data: Record<string, unknown> | Array<Record<string, unknown>>;
+}
+const { data } = Astro.props;
+
+/**
+ * Sérialise sans XSS — set:html accepte du JSON brut, on s'assure juste
+ * qu'aucun </script> ne traîne dedans (Google le tolère mais on échappe par sécurité).
+ */
+const json = JSON.stringify(data).replace(/<\/script/gi, '<\\/script');
+---
+
+<script type="application/ld+json" is:inline set:html={json} />

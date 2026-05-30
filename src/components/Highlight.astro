@@ -1,0 +1,31 @@
+---
+import { getEntry } from 'astro:content';
+
+const highlight = await getEntry('highlights', 'current');
+if (!highlight) {
+  // Pas de highlight → composant invisible.
+  return null;
+}
+const { question, figure, context, href, linkLabel } = highlight.data;
+---
+
+<aside
+  aria-labelledby="highlight-title"
+  class="rounded-sm border border-ink-300 bg-surface p-6 shadow-sm"
+>
+  <p class="kicker mb-3">● En ce moment</p>
+  <h2 id="highlight-title" class="text-base font-semibold text-ink-900 leading-snug">
+    {question}
+  </h2>
+  <div class="mt-4 flex items-baseline gap-3">
+    <span class="text-5xl font-bold text-ink-900 leading-none">{figure}</span>
+    <span class="text-sm text-ink-500">{context}</span>
+  </div>
+  <a
+    href={href}
+    class="mt-4 inline-flex items-center gap-1 text-sm font-medium text-brand-500 hover:text-brand-400 no-underline"
+  >
+    {linkLabel}
+    <span aria-hidden="true">→</span>
+  </a>
+</aside>

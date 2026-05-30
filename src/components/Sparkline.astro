@@ -1,0 +1,68 @@
+---
+/**
+ * Mini graphique SVG inline — visualise l'évolution d'un paramètre.
+ *
+ * Pas d'interactivité (statique), 100% SVG. Conçu pour s'intégrer dans une cellule
+ * de tableau, taille 100×24px par défaut.
+ *
+ * Si moins de 2 points : on n'affiche rien (pas pertinent).
+ */
+
+interface Point {
+  date: string;
+  value: number;
+  c?: 0 | 1; // 1 = conforme
+}
+
+interface Props {
+  points: Point[];
+  width?: number;
+  height?: number;
+  /** Label accessible (ex. "Évolution du pH sur 12 mois"). */
+  label: string;
+  /** Couleur de la ligne (par défaut ink-700). */
+  color?: string;
+}
+
+const { points, width = 100, height = 24, label, color = '#4B5563' } = Astro.props;
+
+if (points.length < 2) return null;
+
+const values = points.map((p) => p.value);
+const min = Math.min(...values);
+const max = Math.max(...values);
+const range = max - min || 1;
+
+const stepX = points.length > 1 ? (width - 4) / (points.length - 1) : 0;
+
+function projY(v: number): number {
+  // Inversé : la valeur la plus haute en haut du SVG (y=2)
+  return height - 2 - ((v - min) / range) * (height - 4);
+}
+
+const path = points
+  .map((p, i) => `${i === 0 ? 'M' : 'L'} ${2 + i * stepX} ${projY(p.value)}`)
+  .join(' ');
+
+const lastPoint = points[points.length - 1];
+const lastX = 2 + (points.length - 1) * stepX;
+const lastY = projY(lastPoint.value);
+const lastNonCompliant = lastPoint.c === 0;
+---
+
+<svg
+  width={width}
+  height={height}
+  viewBox={`0 0 ${width} ${height}`}
+  role="img"
+  aria-label={label}
+  class="inline-block align-middle"
+>
+  <path d={path} fill="none" stroke={color} stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" />
+  <circle
+    cx={lastX}
+    cy={lastY}
+    r="2"
+    fill={lastNonCompliant ? '#D85A30' : color}
+  />
+</svg>

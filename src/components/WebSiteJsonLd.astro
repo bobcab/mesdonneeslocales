@@ -1,0 +1,25 @@
+---
+import JsonLd from './JsonLd.astro';
+
+const site = Astro.site?.toString() ?? 'https://mesdonneeslocales.fr/';
+
+const data = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  '@id': `${site}#website`,
+  name: 'Mes données locales',
+  url: site,
+  inLanguage: 'fr-FR',
+  publisher: { '@id': `${site}#organization` },
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: {
+      '@type': 'EntryPoint',
+      urlTemplate: `${site}cartographies/?q={search_term_string}`,
+    },
+    'query-input': 'required name=search_term_string',
+  },
+};
+---
+
+<JsonLd data={data} />

@@ -1,0 +1,206 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import CartoCard from '../components/CartoCard.astro';
+import CopyLinkScript from '../components/CopyLinkScript.astro';
+import Highlight from '../components/Highlight.astro';
+import MapFrancePlaceholder from '../components/MapFrancePlaceholder.astro';
+
+const allCartos = await getCollection('cartographies');
+const featured = allCartos
+  .filter((c) => c.data.featured)
+  .sort((a, b) => a.data.order - b.data.order)
+  .slice(0, 3);
+
+// Catégories disponibles (présentes dans les cartos publiées) + à venir (éditoriales)
+const availableCategories = [...new Set(allCartos.map((c) => c.data.category))].sort((a, b) =>
+  a.localeCompare(b, 'fr'),
+);
+const upcomingCategories = ['Environnement', 'Démocratie locale', 'Éducation', 'Logement'].filter(
+  (c) => !availableCategories.includes(c),
+);
+
+// Chiffres clés (bloc 5) — synchronisés avec le projet associatif
+const stats = [
+  { value: String(allCartos.length), label: 'cartographies publiées' },
+  { value: '50', label: "cap visé d'ici 2031" },
+  { value: '100%', label: 'données publiques sourcées' },
+  { value: '0€', label: 'gratuit, sans inscription' },
+];
+---
+
+<Base title="Mes données locales" isHome>
+  {/* Hero éditorialisé (accroche + "En ce moment") */}
+  <section class="bg-surface-muted">
+    <div class="container-page grid gap-10 py-16 lg:grid-cols-[1.2fr_1fr] lg:items-center lg:py-20">
+      <div>
+        <h1 class="text-4xl font-bold text-ink-900 leading-tight md:text-5xl">
+          Savoir, c'est pouvoir.
+        </h1>
+        <p class="mt-6 text-lg text-ink-700 leading-relaxed max-w-xl">
+          Des données publiques fiables, cartographiées et qualifiées, pour mieux comprendre votre
+          territoire et faire vos propres analyses.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a href="/cartographies/" class="btn-primary">Explorer les cartes</a>
+          <a href="/a-propos/" class="btn-outline">Notre démarche</a>
+        </div>
+      </div>
+      <Highlight />
+    </div>
+  </section>
+
+  {/* Carte de France interactive (placeholder) */}
+  <section aria-labelledby="bloc-territoire" class="py-16">
+    <div class="container-page">
+      <div class="mb-6 flex flex-wrap items-baseline justify-between gap-2">
+        <h2 id="bloc-territoire" class="text-2xl font-bold text-ink-900">Sur le territoire</h2>
+        <p class="text-sm text-ink-500">
+          Cliquez sur un département pour voir les cartographies disponibles.
+        </p>
+      </div>
+      <MapFrancePlaceholder />
+    </div>
+  </section>
+
+  {/* Recherche + thématiques */}
+  <section aria-labelledby="bloc-portes" class="bg-surface-muted py-16">
+    <div class="container-page">
+      <h2 id="bloc-portes" class="text-2xl font-bold text-ink-900 mb-8">Trouver une cartographie</h2>
+
+      <div class="grid gap-6 md:grid-cols-2">
+        {/* Porte A — recherche */}
+        <a
+          href="/cartographies/"
+          class="block rounded-sm border border-ink-300 bg-surface p-6 no-underline transition-shadow hover:shadow-md"
+        >
+          <div class="flex items-center gap-3 mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5 text-brand-500" aria-hidden="true">
+              <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd"/>
+            </svg>
+            <h3 class="text-base font-semibold text-ink-900">Chercher par mot-clé</h3>
+          </div>
+          <div class="rounded-sm border border-ink-300 bg-surface-muted px-3 py-2 text-sm text-ink-500">
+            prison, eau, nucléaire…
+          </div>
+          <p class="mt-3 text-sm text-ink-700">
+            Trouvez rapidement une cartographie en tapant un thème ou un terme.
+          </p>
+        </a>
+
+        {/* Porte B — thématiques */}
+        <a
+          href="/cartographies/"
+          class="block rounded-sm border border-ink-300 bg-surface p-6 no-underline transition-shadow hover:shadow-md"
+        >
+          <div class="flex items-center gap-3 mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5 text-brand-500" aria-hidden="true">
+              <path d="M5.5 3.5A2 2 0 0 1 7.5 1.5h5a2 2 0 0 1 2 2v.5h.5a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2v-10a2 2 0 0 1 2-2h.5v-.5Zm2-.5a.5.5 0 0 0-.5.5v.5h6v-.5a.5.5 0 0 0-.5-.5h-5Z"/>
+            </svg>
+            <h3 class="text-base font-semibold text-ink-900">Parcourir par thème</h3>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            {availableCategories.map((cat) => <span class="cat-chip">{cat}</span>)}
+            {upcomingCategories.length > 0 && (
+              <span class="cat-chip text-ink-300 italic" aria-label="Thématiques à venir">
+                + à venir
+              </span>
+            )}
+          </div>
+          <p class="mt-3 text-sm text-ink-700">
+            {availableCategories.join(', ')}{upcomingCategories.length > 0 ? `, ${upcomingCategories[0].toLowerCase()}…` : '.'}
+          </p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  {/* Cartographies disponibles */}
+  <section aria-labelledby="bloc-cartos" class="py-16">
+    <div class="container-page">
+      <div class="mb-8 flex flex-wrap items-baseline justify-between gap-2">
+        <h2 id="bloc-cartos" class="text-2xl font-bold text-ink-900">
+          {featured.length === 1 ? 'La cartographie actuelle' : `Les ${featured.length} cartographies actuelles`}
+        </h2>
+        <a href="/cartographies/" class="text-sm font-medium text-brand-500 hover:text-brand-400">
+          D'autres en préparation →
+        </a>
+      </div>
+
+      <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        {featured.map((carto) => <CartoCard carto={carto} variant="featured" />)}
+      </div>
+    </div>
+  </section>
+
+  {/* Notre démarche */}
+  <section aria-labelledby="bloc-demarche" class="bg-surface-muted py-16">
+    <div class="container-page grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:items-center">
+      <div>
+        <h2 id="bloc-demarche" class="text-2xl font-bold text-ink-900 mb-4">
+          L'information publique est un bien commun.
+        </h2>
+        <p class="text-ink-700 leading-relaxed">
+          Pourtant, éparpillée sur des dizaines de portails et diffusée dans des formats techniques,
+          elle reste hors de portée des citoyens. Mes données locales rassemble, vérifie et cartographie
+          ces données, pour que chacun puisse se faire sa propre opinion.
+        </p>
+        <a href="/methodologie/" class="mt-6 inline-flex items-center gap-1 text-sm font-medium text-brand-500 hover:text-brand-400">
+          Découvrir notre méthodologie <span aria-hidden="true">→</span>
+        </a>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        {stats.map((s) => (
+          <div class="rounded-sm border border-ink-300 bg-surface p-4">
+            <p class="text-3xl font-bold text-ink-900 leading-none">{s.value}</p>
+            <p class="mt-2 text-sm text-ink-500">{s.label}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {/* Je participe */}
+  <section aria-labelledby="bloc-participe" id="je-participe" class="py-16">
+    <div class="container-page">
+      <h2 id="bloc-participe" class="text-2xl font-bold text-ink-900 mb-8">Trois façons de soutenir</h2>
+
+      <div class="grid gap-6 md:grid-cols-3">
+        <a
+          href="https://www.helloasso.com/associations/l-observatoire-citoyen/formulaires/1"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="block rounded-sm border border-ink-300 bg-surface p-6 no-underline transition-shadow hover:shadow-md"
+        >
+          <h3 class="text-base font-semibold text-ink-900">Je donne</h3>
+          <p class="mt-2 text-sm text-ink-700">
+            Maintenir et développer le site, en toute indépendance.
+          </p>
+        </a>
+
+        <a
+          href="/je-participe/#benevolat"
+          class="block rounded-sm border border-ink-300 bg-surface p-6 no-underline transition-shadow hover:shadow-md"
+        >
+          <h3 class="text-base font-semibold text-ink-900">Je rejoins l'équipe</h3>
+          <p class="mt-2 text-sm text-ink-700">
+            Apporter mes compétences à un projet citoyen bénévole.
+          </p>
+        </a>
+
+        <a
+          href="/je-participe/#diffusion"
+          class="block rounded-sm border border-ink-300 bg-surface p-6 no-underline transition-shadow hover:shadow-md"
+        >
+          <h3 class="text-base font-semibold text-ink-900">Je diffuse les cartes</h3>
+          <p class="mt-2 text-sm text-ink-700">
+            Intégrer une cartographie sur mon site ou dans ma classe.
+          </p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <CopyLinkScript />
+</Base>

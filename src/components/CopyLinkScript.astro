@@ -1,0 +1,41 @@
+---
+// Petit script global pour gérer les boutons [data-copy-link]
+---
+
+<div id="copy-toast" class="pointer-events-none fixed top-24 right-4 z-50 hidden rounded-sm px-4 py-3 text-sm font-medium text-white shadow-lg" role="status" aria-live="polite"></div>
+
+<script>
+  const toast = document.getElementById('copy-toast');
+
+  function showToast(message: string, kind: 'success' | 'error' = 'success') {
+    if (!toast) return;
+    toast.textContent = message;
+    toast.classList.remove('hidden', 'bg-emerald-600', 'bg-red-600');
+    toast.classList.add(kind === 'success' ? 'bg-emerald-600' : 'bg-red-600');
+    window.setTimeout(() => toast.classList.add('hidden'), 2500);
+  }
+
+  document.addEventListener('click', async (event) => {
+    const target = event.target as HTMLElement | null;
+    const btn = target?.closest<HTMLButtonElement>('[data-copy-link]');
+    if (!btn) return;
+    const url = btn.dataset.url;
+    if (!url) return;
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const input = document.createElement('input');
+        input.value = url;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+      }
+      showToast('Lien copié !');
+    } catch {
+      showToast('Erreur lors de la copie', 'error');
+    }
+  });
+</script>

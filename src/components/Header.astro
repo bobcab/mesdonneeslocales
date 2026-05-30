@@ -1,0 +1,122 @@
+---
+import logo from '../assets/logo/logo.svg';
+import signe from '../assets/logo/signe.svg';
+
+const navItems = [
+  { href: '/cartographies/', label: 'Cartographies' },
+  { href: '/a-propos/', label: 'À propos' },
+  { href: '/methodologie/', label: 'Méthodologie' },
+  { href: '/je-participe/', label: 'Je participe' },
+  { href: '/contact/', label: 'Contact' },
+];
+
+const DONATE_URL = 'https://www.helloasso.com/associations/l-observatoire-citoyen/formulaires/1';
+
+const currentPath = Astro.url.pathname;
+---
+
+<header class="fixed top-0 inset-x-0 z-50 h-16 md:h-20 bg-white/95 backdrop-blur shadow-sm">
+  <div class="container-page flex h-full items-center justify-between gap-2">
+    {/* Logo — signe seul sur mobile (gain de place), logo complet sur desktop */}
+    <a href="/" class="shrink-0 no-underline focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2 rounded-md" aria-label="Mes données locales — accueil">
+      <img src={signe.src} alt="" class="h-10 w-10 md:hidden" />
+      <img src={logo.src} alt="" class="hidden md:block h-12 w-auto" />
+    </a>
+
+    {/* Nav desktop */}
+    <nav class="hidden md:block" aria-label="Navigation principale">
+      <ul class="flex items-center gap-6 lg:gap-8">
+        {navItems.map(({ href, label }) => (
+          <li>
+            <a
+              href={href}
+              class:list={[
+                'font-medium text-ink-900 no-underline transition-colors hover:text-brand-500',
+                currentPath === href && 'text-brand-500',
+              ]}
+            >
+              {label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    {/* Actions droite — CTA Don (toujours visible) + burger (mobile uniquement) */}
+    <div class="flex items-center gap-2 shrink-0">
+      <a
+        href={DONATE_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="inline-flex items-center justify-center rounded-sm bg-brand-500 px-3 py-2 md:px-4 md:py-2 text-sm font-semibold text-white no-underline transition-colors hover:bg-brand-400 active:scale-[0.98] min-h-[40px]"
+      >
+        Faire un don
+      </a>
+
+      <button
+        type="button"
+        class="md:hidden inline-flex h-11 w-11 items-center justify-center rounded-sm text-ink-900 hover:bg-brand-50 hover:text-brand-500 active:scale-[0.96]"
+        aria-label="Ouvrir le menu"
+        aria-expanded="false"
+        aria-controls="mobile-nav"
+        data-mobile-nav-toggle
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  {/* Menu mobile (drawer) */}
+  <nav
+    id="mobile-nav"
+    class="hidden md:hidden absolute top-full inset-x-0 bg-white shadow-md border-t border-ink-300/20"
+    aria-label="Navigation mobile"
+    data-mobile-nav
+  >
+    <ul class="flex flex-col py-2">
+      {navItems.map(({ href, label }) => (
+        <li>
+          <a
+            href={href}
+            class:list={[
+              'block px-6 py-3 text-base text-ink-900 no-underline hover:bg-brand-50 hover:text-brand-500',
+              currentPath === href && 'text-brand-500 font-semibold',
+            ]}
+          >
+            {label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+</header>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('[data-mobile-nav-toggle]');
+  const menu = document.querySelector<HTMLElement>('[data-mobile-nav]');
+
+  function setExpanded(open: boolean) {
+    toggle?.setAttribute('aria-expanded', String(open));
+    if (open) menu?.classList.remove('hidden');
+    else menu?.classList.add('hidden');
+  }
+
+  toggle?.addEventListener('click', () => {
+    const isOpen = !menu?.classList.contains('hidden');
+    setExpanded(!isOpen);
+  });
+
+  menu?.querySelectorAll('a').forEach((a) =>
+    a.addEventListener('click', () => setExpanded(false)),
+  );
+
+  // Fermer au Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && menu && !menu.classList.contains('hidden')) {
+      setExpanded(false);
+      toggle?.focus();
+    }
+  });
+</script>

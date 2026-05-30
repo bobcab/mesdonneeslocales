@@ -1,0 +1,92 @@
+---
+import logoBlanc from '../assets/logo/logo-blanc.svg';
+
+const year = new Date().getFullYear();
+
+const columns = [
+  {
+    title: 'À propos',
+    items: [
+      { label: 'Mission', href: '/a-propos/' },
+      { label: 'Méthodologie', href: '/methodologie/' },
+      { label: 'Questions fréquentes', href: '/faq/' },
+    ],
+  },
+  {
+    title: 'Naviguer',
+    items: [
+      { label: 'Accueil', href: '/' },
+      { label: 'Cartographies', href: '/cartographies/' },
+      { label: 'Je participe', href: '/je-participe/' },
+      { label: 'Contact', href: '/contact/' },
+    ],
+  },
+  {
+    title: 'Soutenir',
+    items: [
+      { label: 'Faire un don', href: 'https://www.helloasso.com/associations/l-observatoire-citoyen/formulaires/1', external: true },
+      { label: 'Devenir bénévole', href: '/je-participe/#benevolat' },
+      { label: 'Diffuser', href: '/je-participe/#diffusion' },
+    ],
+  },
+  {
+    title: 'Légal',
+    items: [
+      { label: 'Mentions légales', href: '/mentions-legales/' },
+      { label: 'Confidentialité', href: '/confidentialite/' },
+      { label: 'Accessibilité', href: '/accessibilite/' },
+      { label: 'Plan du site', href: '/plan-du-site/' },
+    ],
+  },
+];
+---
+
+<footer id="footer" class="bg-ink-900 text-white">
+  <div class="container-page py-12">
+    <a href="/" class="inline-block mb-8 no-underline" aria-label="Mes données locales — accueil">
+      <img src={logoBlanc.src} alt="" class="h-12 w-auto" />
+    </a>
+
+    <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
+      {columns.map((col) => (
+        <nav aria-label={col.title}>
+          <h2 class="text-sm font-semibold uppercase tracking-wide text-white mb-4">{col.title}</h2>
+          <ul class="space-y-2">
+            {col.items.map((item) => (
+              <li>
+                <a
+                  href={item.href}
+                  target={item.external ? '_blank' : undefined}
+                  rel={item.external ? 'noopener noreferrer' : undefined}
+                  class="text-sm text-white/80 no-underline hover:text-white hover:underline break-words"
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      ))}
+    </div>
+  </div>
+
+  <div class="border-t border-white/15">
+    <div class="container-page py-6 flex flex-col gap-2 text-sm text-white/70 md:flex-row md:items-center md:justify-between">
+      <p>
+        &copy; {year} <strong class="text-white">L'Observatoire citoyen</strong> &mdash; Association loi 1901 (SIRET 924 676 570 00014)
+      </p>
+      <p>
+        Contenu éditorial sous licence
+        <a
+          href="https://creativecommons.org/licenses/by-sa/4.0/deed.fr"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-white/90 hover:text-white"
+        >
+          CC BY-SA 4.0
+        </a> &middot;
+        Données sous leur licence d'origine
+      </p>
+    </div>
+  </div>
+</footer>

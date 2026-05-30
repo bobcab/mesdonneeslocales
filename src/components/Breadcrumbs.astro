@@ -1,0 +1,49 @@
+---
+import JsonLd from './JsonLd.astro';
+
+interface BreadcrumbItem {
+  href?: string;
+  label: string;
+}
+
+interface Props {
+  items: BreadcrumbItem[];
+}
+
+const { items } = Astro.props;
+const site = Astro.site?.toString() ?? 'https://mesdonneeslocales.fr/';
+
+const data = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: items.map((it, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: it.label,
+    ...(it.href
+      ? { item: new URL(it.href, site).toString() }
+      : {}),
+  })),
+};
+---
+
+<nav aria-label="Fil d'Ariane" class="mb-8 text-sm text-ink-500">
+  <ol class="flex flex-wrap items-center gap-2">
+    {items.map((it, i) => (
+      <li class="flex items-center gap-2">
+        {i > 0 && <span aria-hidden="true" class="text-ink-300">/</span>}
+        {it.href && i < items.length - 1 ? (
+          <a href={it.href} class="text-ink-700 no-underline hover:text-brand-500">
+            {it.label}
+          </a>
+        ) : (
+          <span class="text-ink-700" aria-current={i === items.length - 1 ? 'page' : undefined}>
+            {it.label}
+          </span>
+        )}
+      </li>
+    ))}
+  </ol>
+</nav>
+
+<JsonLd data={data} />

@@ -1,0 +1,271 @@
+---
+/**
+ * Carte de France interactive — MapLibre GL JS sans tuiles raster.
+ *
+ * Architecture : la map est rendue côté client (window.maplibregl) à partir du
+ * GeoJSON statique `/data/departements.geojson`. Au clic d'un département,
+ * on émet un événement `dept-selected` que la page écoute pour basculer le
+ * panneau contextuel.
+ *
+ * Pas d'îlot framework : Astro Islands `client:load` via la directive `<script>` global.
+ */
+---
+
+<div
+  data-map-france
+  role="application"
+  aria-label="Carte de France interactive. Sélectionnez un département pour voir ses cartographies."
+  class="relative h-[480px] w-full overflow-hidden rounded-sm border border-ink-300 bg-surface-muted lg:h-[600px]"
+>
+  {/* Conteneur de la map */}
+  <div data-map class="absolute inset-0"></div>
+
+  {/* Légende */}
+  <div class="absolute bottom-3 left-3 rounded-sm bg-surface/95 px-3 py-2 text-xs text-ink-700 shadow-sm backdrop-blur">
+    <p class="kicker mb-1">Légende</p>
+    <p>● Département cliquable</p>
+  </div>
+
+  {/* Contrôles */}
+  <div class="absolute right-3 top-3 flex flex-col gap-1">
+    <button
+      type="button"
+      data-zoom-in
+      aria-label="Zoomer"
+      class="h-11 w-11 md:h-9 md:w-9 rounded-sm bg-surface text-ink-900 shadow-sm hover:bg-brand-50 hover:text-brand-500 active:scale-[0.96]"
+    >+</button>
+    <button
+      type="button"
+      data-zoom-out
+      aria-label="Dézoomer"
+      class="h-11 w-11 md:h-9 md:w-9 rounded-sm bg-surface text-ink-900 shadow-sm hover:bg-brand-50 hover:text-brand-500 active:scale-[0.96]"
+    >−</button>
+    <button
+      type="button"
+      data-zoom-reset
+      aria-label="Réinitialiser la vue"
+      class="h-11 w-11 md:h-9 md:w-9 rounded-sm bg-surface text-ink-900 shadow-sm hover:bg-brand-50 hover:text-brand-500 active:scale-[0.96]"
+    >⌂</button>
+  </div>
+
+  {/* État de chargement — masqué au load JS */}
+  <div data-map-loading class="absolute inset-0 flex items-center justify-center bg-surface-muted">
+    <p class="text-sm text-ink-500" aria-live="polite">Chargement de la carte…</p>
+  </div>
+</div>
+
+<style is:global>
+  [data-map-france] [data-map] {
+    position: absolute;
+    inset: 0;
+  }
+  /* On laisse MapLibre gérer ses dimensions internes */
+  [data-map-france] .maplibregl-canvas:focus {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: -2px;
+  }
+  [data-map-france] .maplibregl-ctrl-attrib {
+    display: none;
+  }
+</style>
+
+<script>
+  import * as maplibregl from 'maplibre-gl';
+  import type { Map as MapInstance, StyleSpecification } from 'maplibre-gl';
+  import 'maplibre-gl/dist/maplibre-gl.css';
+
+  // Couleurs cohérentes avec la palette UX. Contraste suffisant pour distinguer
+  // les départements du fond `surface-muted` (#F5F4F0).
+  // Couleurs alignées sur la palette Piste A (indigo civic-tech).
+  const COLORS = {
+    fill: '#c7d2fe',          // brand-200 indigo pâle — visible sur warm beige
+    fillHover: '#818cf8',     // brand-400 indigo médian
+    fillSelected: '#4f46e5',  // brand-500 indigo (action primaire)
+    stroke: '#374151',        // ink-700 — contours nets
+    strokeSelected: '#111827',// ink-900
+  };
+
+  const FRANCE_BOUNDS: [number, number, number, number] = [-5.2, 41.3, 9.6, 51.1];
+
+  function initMap(root: HTMLElement) {
+    const container = root.querySelector<HTMLElement>('[data-map]');
+    const loading = root.querySelector<HTMLElement>('[data-map-loading]');
+    if (!container) {
+      console.warn('[MapFrance] no container found');
+      return;
+    }
+
+    if (container.offsetWidth === 0 || container.offsetHeight === 0) {
+      console.warn('[MapFrance] container has zero size — map will not render correctly');
+    }
+
+    if (typeof maplibregl?.Map !== 'function') {
+      console.error('[MapFrance] maplibregl.Map is not a constructor — bad import?', maplibregl);
+      loading?.querySelector('p')?.replaceChildren(
+        document.createTextNode('Erreur de chargement de la bibliothèque cartographique.'),
+      );
+      return;
+    }
+
+    const style: StyleSpecification = {
+      version: 8,
+      name: 'mdl-base',
+      sources: {},
+      layers: [
+        {
+          id: 'background',
+          type: 'background',
+          paint: { 'background-color': '#F5F4F0' },
+        },
+      ],
+    };
+
+    const map: MapInstance = new maplibregl.Map({
+      container,
+      style,
+      center: [2.5, 46.5],
+      zoom: 4.8,
+      maxZoom: 8,
+      minZoom: 3,
+      maxBounds: [
+        [-15, 38],
+        [20, 53],
+      ],
+      attributionControl: false,
+    });
+
+    map.on('error', (e) => {
+      console.error('[MapFrance] map error', e);
+    });
+
+    /**
+     * Exécute `cb` dès que le style est chargé. Si la map est si simple qu'elle se charge
+     * avant que notre handler ne soit attaché, `map.loaded()` est déjà vrai → on appelle
+     * directement le callback au lieu d'attendre un event qui ne viendra jamais.
+     */
+    function whenReady(cb: () => void) {
+      if (map.loaded()) cb();
+      else map.once('load', cb);
+    }
+
+    whenReady(async () => {
+      let geo: GeoJSON.FeatureCollection;
+      try {
+        const res = await fetch('/data/departements.geojson');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        geo = await res.json();
+      } catch (err) {
+        console.error('[MapFrance] départements geojson fetch failed:', err);
+        loading?.querySelector('p')?.replaceChildren(
+          document.createTextNode('Impossible de charger la carte. Réessayez plus tard.'),
+        );
+        return;
+      }
+
+      map.addSource('depts', { type: 'geojson', data: geo, promoteId: 'code' });
+
+      map.addLayer({
+        id: 'depts-fill',
+        type: 'fill',
+        source: 'depts',
+        paint: {
+          'fill-color': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false],
+            COLORS.fillSelected,
+            ['boolean', ['feature-state', 'hover'], false],
+            COLORS.fillHover,
+            COLORS.fill,
+          ],
+          'fill-opacity': 1,
+        },
+      });
+
+      map.addLayer({
+        id: 'depts-stroke',
+        type: 'line',
+        source: 'depts',
+        paint: {
+          'line-color': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false],
+            COLORS.strokeSelected,
+            COLORS.stroke,
+          ],
+          'line-width': [
+            'case',
+            ['boolean', ['feature-state', 'selected'], false],
+            2.5,
+            1,
+          ],
+        },
+      });
+      // Hover
+      let hoveredId: string | null = null;
+      map.on('mousemove', 'depts-fill', (e) => {
+        if (!e.features || e.features.length === 0) return;
+        const id = String(e.features[0].id);
+        if (hoveredId && hoveredId !== id) {
+          map.setFeatureState({ source: 'depts', id: hoveredId }, { hover: false });
+        }
+        hoveredId = id;
+        map.setFeatureState({ source: 'depts', id }, { hover: true });
+        map.getCanvas().style.cursor = 'pointer';
+      });
+      map.on('mouseleave', 'depts-fill', () => {
+        if (hoveredId) {
+          map.setFeatureState({ source: 'depts', id: hoveredId }, { hover: false });
+        }
+        hoveredId = null;
+        map.getCanvas().style.cursor = '';
+      });
+
+      // Selection
+      let selectedId: string | null = null;
+      function selectDept(code: string | null) {
+        if (selectedId) {
+          map.setFeatureState({ source: 'depts', id: selectedId }, { selected: false });
+        }
+        selectedId = code;
+        if (code) {
+          map.setFeatureState({ source: 'depts', id: code }, { selected: true });
+        }
+        root.dispatchEvent(
+          new CustomEvent('dept-selected', { detail: { code }, bubbles: true }),
+        );
+      }
+
+      map.on('click', 'depts-fill', (e) => {
+        if (!e.features || e.features.length === 0) return;
+        const code = String(e.features[0].id);
+        selectDept(code);
+      });
+
+      // Permettre de désélectionner via API publique (utilisé par le bouton "Retour à la vue nationale")
+      (root as HTMLElement & { __clearMapSelection?: () => void }).__clearMapSelection = () =>
+        selectDept(null);
+
+      // Cacher l'état de chargement
+      loading?.remove();
+    });
+
+    // Contrôles personnalisés
+    root.querySelector('[data-zoom-in]')?.addEventListener('click', () => map.zoomIn());
+    root.querySelector('[data-zoom-out]')?.addEventListener('click', () => map.zoomOut());
+    root.querySelector('[data-zoom-reset]')?.addEventListener('click', () => {
+      map.fitBounds(FRANCE_BOUNDS, { padding: 20, duration: 600 });
+    });
+
+    return map;
+  }
+
+  function init() {
+    document.querySelectorAll<HTMLElement>('[data-map-france]').forEach(initMap);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+</script>

@@ -1,0 +1,202 @@
+---
+import { getEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+import Base from '../../../layouts/Base.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import MetadataBar from '../../../components/MetadataBar.astro';
+import KeyFigures from '../../../components/KeyFigures.astro';
+import UnderstandBlock from '../../../components/UnderstandBlock.astro';
+import MethodologyBlock from '../../../components/MethodologyBlock.astro';
+import RelatedBlock from '../../../components/RelatedBlock.astro';
+import SignalBlock from '../../../components/SignalBlock.astro';
+import DatasetJsonLd from '../../../components/DatasetJsonLd.astro';
+import CopyLinkScript from '../../../components/CopyLinkScript.astro';
+import CommuneSearchBAN from '../../../components/CommuneSearchBAN.astro';
+import MapEau from '../../../components/MapEau.astro';
+import EauMapPanel from '../../../components/EauMapPanel.astro';
+import { listCommunesSummary, getLastImportDate } from '../../../lib/hubeau';
+
+const carto = await getEntry('cartographies', 'qualite-eau');
+if (!carto) {
+  throw new Error('Cartographie qualite-eau manquante dans la collection');
+}
+const d = carto.data;
+const communes = listCommunesSummary();
+const lastImport = getLastImportDate();
+
+const dateFmt = new Intl.DateTimeFormat('fr-FR', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+
+const site = Astro.site?.toString() ?? 'https://mesdonneeslocales.fr/';
+const pageUrl = `${site}cartographies/qualite-eau/`;
+---
+
+<Base
+  title={d.title}
+  description={d.shortDescription ?? d.description.slice(0, 200)}
+>
+  <article class="py-8 md:py-12">
+    <div class="container-page max-w-5xl">
+      <Breadcrumbs
+        items={[
+          { href: '/', label: 'Accueil' },
+          { href: '/cartographies/', label: 'Cartographies' },
+          { label: d.title },
+        ]}
+      />
+
+      {/* Header */}
+      <header class="mb-8">
+        <div class="mb-3 flex flex-wrap items-center gap-2">
+          <span class="pill-brand">{d.category}</span>
+          {d.subCategories.map((sub) => <span class="pill">{sub}</span>)}
+          <span class="pill-success">Nouveau — gabarit natif</span>
+        </div>
+        <h1 class="text-3xl font-bold text-ink-900 md:text-4xl leading-tight">{d.title}</h1>
+        {d.shortDescription && (
+          <p class="mt-4 text-lg text-ink-700 leading-relaxed max-w-3xl">{d.shortDescription}</p>
+        )}
+      </header>
+
+      <MetadataBar carto={carto} />
+      <KeyFigures figures={d.keyFigures} />
+
+      {/* Action principale : recherche commune (Synthèse UX p.14) */}
+      <section aria-labelledby="search-commune-title" class="my-10 rounded-sm border border-brand-500 bg-brand-50 p-6">
+        <h2 id="search-commune-title" class="text-2xl font-bold text-ink-900 mb-2">
+          Quelle est la qualité de l'eau chez vous ?
+        </h2>
+        <p class="text-sm text-ink-700 mb-4">
+          Tapez le nom de votre commune ou son code postal — l'autocomplétion couvre les 34 969
+          communes françaises via la Base Adresse Nationale. {communes.length} commune{communes.length > 1 ? 's' : ''} {communes.length > 1 ? 'sont' : 'est'} actuellement disponible{communes.length > 1 ? 's' : ''} sur le site (échantillon, couverture complète en préparation).
+        </p>
+
+        <CommuneSearchBAN />
+      </section>
+
+      {/* Carte interactive (choroplèthe départements + points communes) */}
+      <section aria-labelledby="map-title" class="my-10" data-eau-map-page>
+        <div class="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+          <h2 id="map-title" class="text-xl font-bold text-ink-900">Carte interactive</h2>
+          <p class="text-sm text-ink-500">
+            Cliquez sur un département ou un point commune.
+          </p>
+        </div>
+
+        <div class="grid gap-6 lg:grid-cols-[1fr_320px]">
+          <MapEau />
+          <div class="lg:block">
+            <EauMapPanel />
+          </div>
+        </div>
+      </section>
+
+      {/* Liste des communes disponibles — limitée pour ne pas peser à grande échelle */}
+      <section aria-labelledby="communes-title" class="my-10">
+        <h2 id="communes-title" class="text-xl font-bold text-ink-900 mb-4">
+          Aperçu des communes disponibles
+        </h2>
+        <p class="text-sm text-ink-500 mb-6">
+          {communes.length.toLocaleString('fr-FR')} commune{communes.length > 1 ? 's' : ''} accessible{communes.length > 1 ? 's' : ''}.
+          {communes.length > 30 && ' Pour explorer, utilisez la recherche ci-dessus ou la carte interactive.'}
+        </p>
+
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {communes.slice(0, 30).map((c) => (
+            <a
+              href={`/cartographies/qualite-eau/${c.code}/`}
+              class={`group flex items-center justify-between gap-3 rounded-sm border p-4 no-underline transition-colors ${c.compliant ? 'border-ink-300 bg-surface hover:border-success-500' : 'border-danger-500 bg-danger-50'}`}
+            >
+              <div>
+                <p class="font-semibold text-ink-900 group-hover:text-brand-500">{c.name}</p>
+                <p class="text-xs text-ink-500">{c.departmentName} ({c.department})</p>
+              </div>
+              <span class={c.compliant ? 'pill-success' : 'pill-danger'}>
+                {c.compliant ? 'Conforme' : 'À surveiller'}
+              </span>
+            </a>
+          ))}
+        </div>
+
+        {lastImport && (
+          <p class="mt-6 text-xs text-ink-500">
+            Données importées le <time datetime={lastImport.toISOString()}>{dateFmt.format(lastImport)}</time>.
+          </p>
+        )}
+      </section>
+
+      {/* Comprendre la donnée */}
+      <UnderstandBlock says={d.says} saysNot={d.saysNot} />
+
+      {/* Méthodologie */}
+      <MethodologyBlock methodology={d.methodology} />
+
+      {/* Sources + cartographies liées */}
+      <RelatedBlock carto={carto} />
+
+      {/* Signaler */}
+      <SignalBlock carto={carto} />
+    </div>
+  </article>
+
+  <DatasetJsonLd carto={carto} />
+  <CopyLinkScript />
+</Base>
+
+<script>
+  /**
+   * Pilote la carte eau :
+   *  - dept-selected → toggle l'état du panneau (initial ↔ département)
+   *  - commune-selected → redirige vers la fiche commune
+   *  - bouton "Retour à la vue nationale" → désélectionne la carte
+   */
+
+  function showPanelState(panel: HTMLElement, code: string | null) {
+    panel.querySelectorAll<HTMLElement>('[data-panel-state]').forEach((el) => el.classList.add('hidden'));
+    if (code === null) {
+      panel.querySelector<HTMLElement>('[data-panel-state="initial"]')?.classList.remove('hidden');
+    } else {
+      const target = panel.querySelector<HTMLElement>(
+        `[data-panel-state="department"][data-dept-code="${code}"]`,
+      );
+      if (target) target.classList.remove('hidden');
+      else panel.querySelector<HTMLElement>('[data-panel-state="initial"]')?.classList.remove('hidden');
+    }
+  }
+
+  function initEauMapPage() {
+    const root = document.querySelector<HTMLElement>('[data-eau-map-page]');
+    if (!root) return;
+    const mapEl = root.querySelector<HTMLElement>('[data-map-eau]');
+    const panels = root.querySelectorAll<HTMLElement>('[data-eau-panel]');
+
+    if (!mapEl) return;
+
+    root.addEventListener('dept-selected', ((e: CustomEvent<{ code: string | null }>) => {
+      panels.forEach((p) => showPanelState(p, e.detail.code));
+    }) as EventListener);
+
+    root.addEventListener('commune-selected', ((e: CustomEvent<{ code: string }>) => {
+      const code = e.detail.code;
+      if (code) window.location.href = `/cartographies/qualite-eau/${code}/`;
+    }) as EventListener);
+
+    panels.forEach((p) => {
+      p.querySelectorAll<HTMLButtonElement>('[data-clear-selection]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const api = mapEl as HTMLElement & { __clearMapSelection?: () => void };
+          api.__clearMapSelection?.();
+        });
+      });
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initEauMapPage);
+  } else {
+    initEauMapPage();
+  }
+</script>

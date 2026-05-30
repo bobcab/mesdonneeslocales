@@ -1,0 +1,114 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+
+const cartos = (await getCollection('cartographies')).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+const pages = await getCollection('pages');
+
+// Tri par catégorie pour la navigation éditoriale
+const aboutSlugs = ['a-propos', 'methodologie', 'faq'];
+const participateSlugs = ['je-participe', 'contact'];
+const legalSlugs = ['mentions-legales', 'confidentialite', 'accessibilite'];
+
+const aboutPages = pages
+  .filter((p) => aboutSlugs.includes(p.data.slug))
+  .sort((a, b) => aboutSlugs.indexOf(a.data.slug) - aboutSlugs.indexOf(b.data.slug));
+const participatePages = pages
+  .filter((p) => participateSlugs.includes(p.data.slug))
+  .sort((a, b) => participateSlugs.indexOf(a.data.slug) - participateSlugs.indexOf(b.data.slug));
+const legalPages = pages
+  .filter((p) => legalSlugs.includes(p.data.slug))
+  .sort((a, b) => legalSlugs.indexOf(a.data.slug) - legalSlugs.indexOf(b.data.slug));
+
+interface Section {
+  title: string;
+  items: Array<{ href: string; label: string; hint?: string }>;
+}
+
+const sections: Section[] = [
+  {
+    title: 'Pages principales',
+    items: [
+      { href: '/', label: 'Accueil' },
+      { href: '/cartographies/', label: 'Toutes les cartographies', hint: `${cartos.length} cartes disponibles` },
+      { href: '/carte-france/', label: 'Carte de France interactive', hint: 'Explorer par territoire' },
+    ],
+  },
+  {
+    title: 'À propos du projet',
+    items: aboutPages.map((p) => ({ href: `/${p.data.slug}/`, label: p.data.title })),
+  },
+  {
+    title: 'Participer',
+    items: participatePages.map((p) => ({ href: `/${p.data.slug}/`, label: p.data.title })),
+  },
+  {
+    title: 'Cartographies disponibles',
+    items: cartos.map((c) => ({
+      href: `/cartographies/${c.id.replace(/\.md$/, '')}/`,
+      label: c.data.title,
+      hint: c.data.category,
+    })),
+  },
+  {
+    title: 'Mentions légales',
+    items: legalPages.map((p) => ({ href: `/${p.data.slug}/`, label: p.data.title })),
+  },
+];
+---
+
+<Base
+  title="Plan du site"
+  description="Plan détaillé du site mesdonneeslocales.fr : pages éditoriales, cartographies disponibles, mentions légales."
+>
+  <article class="py-12 md:py-16">
+    <div class="container-page max-w-3xl">
+      <Breadcrumbs
+        items={[
+          { href: '/', label: 'Accueil' },
+          { label: 'Plan du site' },
+        ]}
+      />
+
+      <header class="mb-10">
+        <h1 class="text-4xl font-bold text-ink-900 md:text-5xl">Plan du site</h1>
+        <p class="mt-4 text-lg text-ink-700 leading-relaxed">
+          Toutes les pages du site, organisées par section. Cette page est générée
+          automatiquement à partir du contenu publié.
+        </p>
+      </header>
+
+      <div class="space-y-10">
+        {sections.map((section) => (
+          <section aria-labelledby={`s-${section.title}`}>
+            <h2
+              id={`s-${section.title}`}
+              class="mb-4 text-2xl font-bold text-ink-900 pb-2 border-b border-ink-300/40"
+            >
+              {section.title}
+            </h2>
+            {section.items.length === 0 ? (
+              <p class="text-ink-500">Aucune page dans cette section.</p>
+            ) : (
+              <ul class="space-y-2">
+                {section.items.map((item) => (
+                  <li class="flex flex-wrap items-baseline gap-2">
+                    <a href={item.href} class="text-brand-500 underline decoration-brand-500/40 underline-offset-2 hover:decoration-brand-500">
+                      {item.label}
+                    </a>
+                    {item.hint && (
+                      <span class="text-sm text-ink-500">— {item.hint}</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        ))}
+      </div>
+    </div>
+  </article>
+</Base>

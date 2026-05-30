@@ -1,0 +1,27 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import EditorialPage from '../components/EditorialPage.astro';
+
+export async function getStaticPaths() {
+  const pages = await getCollection('pages');
+  return pages.map((page) => ({
+    params: { slug: page.data.slug },
+    props: { page },
+  }));
+}
+
+const { page } = Astro.props;
+const { Content } = await render(page);
+const body = page.body ?? '';
+const { title, description, ogTitle, ogDescription } = page.data;
+---
+
+<Base
+  title={ogTitle ?? title}
+  description={ogDescription ?? description}
+>
+  <EditorialPage page={page} body={body}>
+    <Content />
+  </EditorialPage>
+</Base>

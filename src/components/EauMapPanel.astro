@@ -1,0 +1,137 @@
+---
+/**
+ * Panneau contextuel de la carte eau potable.
+ *
+ * État initial : résumé national (nb communes connues, taux conformité agrégé).
+ * État département : agrégat du dept + liste des communes disponibles dans ce dept.
+ *
+ * Stratégie zero-hydratation : tous les états sont rendus côté serveur, le JS toggle les
+ * classes `.hidden`.
+ */
+import {
+  aggregateByDepartment,
+  listAvailableCommunes,
+  listCommunesSummary,
+  getCommuneData,
+} from '../lib/hubeau';
+import { getAllDepartments } from '../lib/departments';
+
+const aggregates = aggregateByDepartment();
+const allCommunes = listCommunesSummary();
+const allDepts = getAllDepartments();
+const aggMap = new Map(aggregates.map((a) => [a.code, a]));
+const communesByDept = new Map<string, typeof allCommunes>();
+for (const c of allCommunes) {
+  if (!communesByDept.has(c.department)) communesByDept.set(c.department, []);
+  communesByDept.get(c.department)!.push(c);
+}
+
+const totalCommunes = allCommunes.length;
+const totalCompliant = allCommunes.filter((c) => c.compliant).length;
+const totalDepts = aggregates.length;
+const nationalRate = totalCommunes > 0 ? (totalCompliant / totalCommunes) * 100 : 0;
+---
+
+<aside
+  data-eau-panel
+  aria-label="Panneau contextuel de la carte de l'eau"
+  class="rounded-sm border border-ink-300 bg-surface lg:max-h-[600px] lg:overflow-y-auto"
+>
+  {/* État initial — résumé national */}
+  <div data-panel-state="initial" class="p-5">
+    <p class="kicker mb-2">Vue d'ensemble</p>
+    <h3 class="text-lg font-bold text-ink-900 mb-3">France — données disponibles</h3>
+
+    <dl class="grid grid-cols-2 gap-3 mb-4">
+      <div class="rounded-sm bg-surface-muted p-3">
+        <dt class="kicker">Communes</dt>
+        <dd class="text-2xl font-bold text-ink-900">{totalCommunes}</dd>
+      </div>
+      <div class="rounded-sm bg-surface-muted p-3">
+        <dt class="kicker">Conformes</dt>
+        <dd class={`text-2xl font-bold ${nationalRate >= 100 ? 'text-success-500' : 'text-warning-500'}`}>
+          {nationalRate.toFixed(0)}%
+        </dd>
+      </div>
+      <div class="rounded-sm bg-surface-muted p-3 col-span-2">
+        <dt class="kicker">Départements couverts</dt>
+        <dd class="text-2xl font-bold text-ink-900">{totalDepts}</dd>
+        <p class="text-xs text-ink-500 mt-1">sur 96 départements métropolitains</p>
+      </div>
+    </dl>
+
+    <p class="text-sm text-ink-700">
+      Sélectionnez un département (ou cliquez directement sur un point commune) pour voir le
+      détail.
+    </p>
+  </div>
+
+  {/* États par département */}
+  {allDepts.map((dept) => {
+    const agg = aggMap.get(dept.code);
+    const communes = communesByDept.get(dept.code) ?? [];
+    const hasData = agg !== undefined;
+    return (
+      <div
+        data-panel-state="department"
+        data-dept-code={dept.code}
+        class="hidden p-5"
+      >
+        <p class="kicker mb-2">Département sélectionné</p>
+        <h3 class="text-lg font-bold text-ink-900 mb-1">{dept.name}</h3>
+        <p class="text-sm text-ink-500 mb-4">{dept.code} · {dept.region}</p>
+
+        {hasData ? (
+          <>
+            <dl class="grid grid-cols-2 gap-3 mb-4">
+              <div class="rounded-sm bg-surface-muted p-3">
+                <dt class="kicker">Communes connues</dt>
+                <dd class="text-2xl font-bold text-ink-900">{agg!.totalCommunes}</dd>
+              </div>
+              <div class="rounded-sm bg-surface-muted p-3">
+                <dt class="kicker">Conformes</dt>
+                <dd class={`text-2xl font-bold ${agg!.complianceRate >= 1 ? 'text-success-500' : 'text-warning-500'}`}>
+                  {(agg!.complianceRate * 100).toFixed(0)}%
+                </dd>
+              </div>
+            </dl>
+
+            <h4 class="kicker mb-2">Communes disponibles ({communes.length})</h4>
+            <ul class="space-y-2">
+              {communes.slice(0, 12).map((c) => (
+                <li>
+                  <a
+                    href={`/cartographies/qualite-eau/${c.code}/`}
+                    class="flex items-center justify-between gap-2 rounded-sm bg-surface-muted p-2 text-sm no-underline hover:bg-brand-50"
+                  >
+                    <span class="font-medium text-ink-900">{c.name}</span>
+                    <span class={c.compliant ? 'pill-success' : 'pill-danger'}>
+                      {c.compliant ? 'Conforme' : 'À surveiller'}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            {communes.length > 12 && (
+              <p class="mt-2 text-xs text-ink-500">
+                + {communes.length - 12} autre{communes.length - 12 > 1 ? 's' : ''} commune{communes.length - 12 > 1 ? 's' : ''} dans ce département. Cliquez sur un point pour y accéder.
+              </p>
+            )}
+          </>
+        ) : (
+          <div class="rounded-sm bg-surface-muted p-4 text-sm text-ink-700">
+            <p class="font-semibold text-ink-900 mb-1">Aucune donnée disponible pour ce département</p>
+            <p>
+              L'échantillon actuel ne couvre pas {dept.name}. La couverture complète des 34 969
+              communes françaises est en préparation.
+            </p>
+          </div>
+        )}
+
+        <button type="button" data-clear-selection class="btn-ghost mt-4 text-sm w-full">
+          ← Retour à la vue nationale
+        </button>
+      </div>
+    );
+  })}
+</aside>

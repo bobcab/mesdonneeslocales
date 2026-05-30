@@ -1,0 +1,219 @@
+---
+/**
+ * Recherche commune avec autocomplete live via api-adresse.data.gouv.fr (BAN).
+ *
+ * Comportement :
+ *  - L'utilisateur tape ≥ 2 caractères → fetch debouncé 200ms vers la BAN
+ *  - Liste déroulante de ≤ 8 suggestions
+ *  - Navigation : flèches ↑↓, Entrée pour valider, Échap pour fermer
+ *  - À la sélection : redirige vers /cartographies/qualite-eau/{citycode}/
+ *  - aria-live pour annoncer le nombre de résultats
+ *  - Aucun framework, vanilla TS, ~120 lignes
+ */
+interface Props {
+  /** Texte du bouton de soumission. */
+  submitLabel?: string;
+}
+const { submitLabel = 'Voir ma commune' } = Astro.props;
+---
+
+<form
+  data-commune-search-ban
+  role="search"
+  aria-label="Recherche d'une commune"
+  class="relative"
+  action="#"
+>
+  <label for="ban-q" class="sr-only">Nom ou code postal de votre commune</label>
+  <div class="relative flex flex-col gap-3 sm:flex-row">
+    <div class="relative flex-1">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-ink-500"
+        aria-hidden="true"
+      >
+        <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd"/>
+      </svg>
+      <input
+        type="search"
+        id="ban-q"
+        name="q"
+        autocomplete="off"
+        placeholder="Argenteuil, 75001, Lyon..."
+        aria-autocomplete="list"
+        aria-controls="ban-suggestions"
+        aria-expanded="false"
+        class="w-full rounded-sm border border-ink-300 bg-surface py-3 pl-10 pr-4 text-ink-900 placeholder:text-ink-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+      />
+
+      <ul
+        id="ban-suggestions"
+        role="listbox"
+        aria-label="Suggestions"
+        class="absolute left-0 right-0 top-full z-30 mt-1 hidden max-h-72 overflow-y-auto rounded-sm border border-ink-300 bg-surface shadow-lg"
+      ></ul>
+    </div>
+    <button type="submit" class="btn-primary">{submitLabel}</button>
+  </div>
+
+  <p data-ban-status class="sr-only" aria-live="polite"></p>
+</form>
+
+<script>
+  const ENDPOINT = 'https://api-adresse.data.gouv.fr/search/';
+
+  interface BanFeature {
+    properties: {
+      name: string;
+      citycode: string;
+      postcode: string;
+      context: string;
+      population?: number;
+    };
+  }
+
+  function initSearch(form: HTMLFormElement) {
+    const input = form.querySelector<HTMLInputElement>('#ban-q');
+    const list = form.querySelector<HTMLUListElement>('#ban-suggestions');
+    const status = form.querySelector<HTMLElement>('[data-ban-status]');
+    if (!input || !list || !status) return;
+
+    let currentResults: BanFeature[] = [];
+    let activeIndex = -1;
+    let lastQuery = '';
+
+    function close() {
+      list!.classList.add('hidden');
+      list!.innerHTML = '';
+      input!.setAttribute('aria-expanded', 'false');
+      activeIndex = -1;
+      currentResults = [];
+    }
+
+    function render(features: BanFeature[]) {
+      currentResults = features.slice(0, 8);
+      activeIndex = -1;
+      list!.innerHTML = '';
+      if (currentResults.length === 0) {
+        list!.classList.add('hidden');
+        input!.setAttribute('aria-expanded', 'false');
+        status!.textContent = 'Aucune commune trouvée.';
+        return;
+      }
+      currentResults.forEach((f, i) => {
+        const li = document.createElement('li');
+        li.setAttribute('role', 'option');
+        li.setAttribute('id', `ban-opt-${i}`);
+        li.dataset.index = String(i);
+        li.dataset.citycode = f.properties.citycode;
+        li.className = 'cursor-pointer px-3 py-2 text-sm hover:bg-brand-50';
+        li.innerHTML = `
+          <span class="font-medium text-ink-900">${escapeHtml(f.properties.name)}</span>
+          <span class="text-ink-500"> · ${escapeHtml(f.properties.postcode)} · ${escapeHtml(f.properties.context)}</span>
+        `;
+        li.addEventListener('mousedown', (e) => {
+          e.preventDefault(); // garder le focus sur l'input
+          choose(i);
+        });
+        list!.appendChild(li);
+      });
+      list!.classList.remove('hidden');
+      input!.setAttribute('aria-expanded', 'true');
+      status!.textContent = `${currentResults.length} commune${currentResults.length > 1 ? 's' : ''} trouvée${currentResults.length > 1 ? 's' : ''}.`;
+    }
+
+    function setActive(i: number) {
+      const items = list!.querySelectorAll<HTMLLIElement>('li');
+      items.forEach((li, idx) => {
+        if (idx === i) {
+          li.classList.add('bg-brand-50');
+          input!.setAttribute('aria-activedescendant', li.id);
+          li.scrollIntoView({ block: 'nearest' });
+        } else {
+          li.classList.remove('bg-brand-50');
+        }
+      });
+      activeIndex = i;
+    }
+
+    function choose(i: number) {
+      const f = currentResults[i];
+      if (!f) return;
+      const code = f.properties.citycode;
+      window.location.href = `/cartographies/qualite-eau/${code}/`;
+    }
+
+    function escapeHtml(s: string): string {
+      return s.replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]!));
+    }
+
+    let debounceTimer: number | undefined;
+    let abortCtrl: AbortController | null = null;
+
+    async function search(q: string) {
+      lastQuery = q;
+      if (q.length < 2) {
+        close();
+        return;
+      }
+      abortCtrl?.abort();
+      abortCtrl = new AbortController();
+      const url = `${ENDPOINT}?q=${encodeURIComponent(q)}&type=municipality&limit=8`;
+      try {
+        const res = await fetch(url, { signal: abortCtrl.signal });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        if (q !== lastQuery) return; // résultat obsolète
+        render((json.features ?? []) as BanFeature[]);
+      } catch (err) {
+        if ((err as Error).name === 'AbortError') return;
+        status!.textContent = 'Erreur réseau. Réessayez.';
+        list!.classList.add('hidden');
+      }
+    }
+
+    input.addEventListener('input', () => {
+      window.clearTimeout(debounceTimer);
+      debounceTimer = window.setTimeout(() => search(input.value.trim()), 200);
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (list!.classList.contains('hidden')) return;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setActive(Math.min(activeIndex + 1, currentResults.length - 1));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setActive(Math.max(activeIndex - 1, 0));
+      } else if (e.key === 'Enter' && activeIndex >= 0) {
+        e.preventDefault();
+        choose(activeIndex);
+      } else if (e.key === 'Escape') {
+        close();
+      }
+    });
+
+    input.addEventListener('blur', () => {
+      // Délai pour permettre le clic sur une suggestion
+      window.setTimeout(close, 150);
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      // Si une suggestion est active, on l'utilise. Sinon on tente la 1re.
+      if (activeIndex >= 0) choose(activeIndex);
+      else if (currentResults.length > 0) choose(0);
+      else {
+        // Cas code INSEE direct
+        const m = input!.value.trim().match(/^(\d{5}|2[AB]\d{3})$/i);
+        if (m) window.location.href = `/cartographies/qualite-eau/${m[1].toUpperCase()}/`;
+      }
+    });
+  }
+
+  document
+    .querySelectorAll<HTMLFormElement>('[data-commune-search-ban]')
+    .forEach(initSearch);
+</script>

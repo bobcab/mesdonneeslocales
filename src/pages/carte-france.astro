@@ -1,0 +1,177 @@
+---
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import MapFrance from '../components/MapFrance.astro';
+import DepartmentPanel from '../components/DepartmentPanel.astro';
+---
+
+<Base
+  title="Carte de France interactive"
+  description="Explorez par territoire : cliquez sur un département pour voir les cartographies disponibles."
+>
+  <article class="py-6 md:py-10">
+    <div class="container-page max-w-7xl">
+      <Breadcrumbs
+        items={[
+          { href: '/', label: 'Accueil' },
+          { label: 'Explorer par territoire' },
+        ]}
+      />
+
+      <header class="mb-6 flex flex-wrap items-baseline justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-bold text-ink-900 md:text-4xl">Explorer par territoire</h1>
+          <p class="mt-2 text-ink-700 max-w-2xl">
+            Cliquez sur un département pour voir toutes les cartographies disponibles à cette échelle.
+          </p>
+        </div>
+      </header>
+
+      {/* Desktop : 2 colonnes (carte + panneau).
+          Mobile : carte en haut, panneau en bottom sheet glissable. */}
+      <div class="grid gap-6 lg:grid-cols-[1fr_360px]" data-map-page>
+        <MapFrance />
+
+        {/* Panneau desktop — visible direct */}
+        <div class="hidden lg:block">
+          <DepartmentPanel />
+        </div>
+      </div>
+
+      {/* Bottom sheet mobile (visible uniquement <lg) */}
+      <div
+        data-bottom-sheet
+        data-bottom-state="mini"
+        class="fixed inset-x-0 bottom-0 z-40 transform rounded-t-2xl border-t border-ink-300 bg-surface shadow-2xl transition-transform duration-300 lg:hidden"
+      >
+        <div
+          data-bottom-handle
+          role="button"
+          tabindex="0"
+          aria-label="Faire glisser pour redimensionner le panneau"
+          class="flex h-8 cursor-grab items-center justify-center active:cursor-grabbing"
+        >
+          <span aria-hidden="true" class="block h-1.5 w-12 rounded-full bg-ink-300"></span>
+        </div>
+        <div class="max-h-[80vh] overflow-y-auto px-4 pb-6">
+          <DepartmentPanel />
+        </div>
+      </div>
+    </div>
+  </article>
+</Base>
+
+<script>
+  /**
+   * Pilotage de la page carte de France :
+   *  - écoute l'événement `dept-selected` émis par MapFrance
+   *  - bascule l'état du panneau contextuel (initial ↔ département donné)
+   *  - gère le bottom sheet mobile (snap points mini / medium / full + drag)
+   */
+
+  type SheetState = 'mini' | 'medium' | 'full';
+  const STATES: SheetState[] = ['mini', 'medium', 'full'];
+
+  function showPanelState(panel: HTMLElement, code: string | null) {
+    panel.querySelectorAll<HTMLElement>('[data-panel-state]').forEach((el) => {
+      el.classList.add('hidden');
+    });
+    if (code === null) {
+      panel.querySelector<HTMLElement>('[data-panel-state="initial"]')?.classList.remove('hidden');
+    } else {
+      const target = panel.querySelector<HTMLElement>(
+        `[data-panel-state="department"][data-dept-code="${code}"]`,
+      );
+      if (target) {
+        target.classList.remove('hidden');
+      } else {
+        // Fallback : code non répertorié (ex. DROM dans MVP).
+        panel.querySelector<HTMLElement>('[data-panel-state="initial"]')?.classList.remove('hidden');
+      }
+    }
+  }
+
+  function setSheetState(sheet: HTMLElement, state: SheetState) {
+    sheet.dataset.bottomState = state;
+    const translate = state === 'mini' ? 'translateY(calc(100% - 110px))'
+      : state === 'medium' ? 'translateY(40vh)'
+      : 'translateY(0)';
+    sheet.style.transform = translate;
+  }
+
+  function initMapPage() {
+    const root = document.querySelector<HTMLElement>('[data-map-page]');
+    const mapEl = root?.querySelector<HTMLElement>('[data-map-france]');
+    if (!root || !mapEl) return;
+
+    const panels = root.querySelectorAll<HTMLElement>('[data-department-panel]');
+    const sheet = document.querySelector<HTMLElement>('[data-bottom-sheet]');
+
+    // Sélection département → mise à jour panneaux + ouverture bottom sheet
+    root.addEventListener('dept-selected', ((e: CustomEvent<{ code: string | null }>) => {
+      const code = e.detail.code;
+      panels.forEach((p) => showPanelState(p, code));
+      if (sheet && code !== null && sheet.dataset.bottomState === 'mini') {
+        setSheetState(sheet, 'medium');
+      }
+    }) as EventListener);
+
+    // Bouton "Retour à la vue nationale" → désélectionne dans la map
+    panels.forEach((p) => {
+      p.querySelectorAll<HTMLButtonElement>('[data-clear-selection]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const api = mapEl as HTMLElement & { __clearMapSelection?: () => void };
+          api.__clearMapSelection?.();
+        });
+      });
+    });
+
+    // Bottom sheet — drag handle + click cycle
+    if (sheet) {
+      setSheetState(sheet, 'mini');
+      const handle = sheet.querySelector<HTMLElement>('[data-bottom-handle]');
+      if (handle) {
+        // Clic / tap → cycle entre les 3 états
+        handle.addEventListener('click', () => {
+          const i = STATES.indexOf(sheet.dataset.bottomState as SheetState);
+          setSheetState(sheet, STATES[(i + 1) % STATES.length]);
+        });
+
+        // Drag : on snap au plus proche
+        let startY: number | null = null;
+        let startState: SheetState = 'mini';
+        const onStart = (clientY: number) => {
+          startY = clientY;
+          startState = (sheet.dataset.bottomState as SheetState) ?? 'mini';
+        };
+        const onEnd = (clientY: number) => {
+          if (startY === null) return;
+          const dy = clientY - startY;
+          startY = null;
+          // dy négatif = drag vers le haut → état plus grand
+          const i = STATES.indexOf(startState);
+          let next: SheetState = startState;
+          if (dy < -40 && i < STATES.length - 1) next = STATES[i + 1];
+          else if (dy > 40 && i > 0) next = STATES[i - 1];
+          setSheetState(sheet, next);
+        };
+        handle.addEventListener('touchstart', (e) => onStart(e.touches[0].clientY), { passive: true });
+        handle.addEventListener('touchend', (e) => onEnd(e.changedTouches[0].clientY), { passive: true });
+        handle.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            const i = STATES.indexOf(sheet.dataset.bottomState as SheetState);
+            const next = e.key === 'ArrowUp' ? Math.min(i + 1, STATES.length - 1) : Math.max(i - 1, 0);
+            setSheetState(sheet, STATES[next]);
+          }
+        });
+      }
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMapPage);
+  } else {
+    initMapPage();
+  }
+</script>

@@ -1,0 +1,69 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Breadcrumbs from './Breadcrumbs.astro';
+import JsonLd from './JsonLd.astro';
+import FAQPageJsonLd from './FAQPageJsonLd.astro';
+
+interface Props {
+  page: CollectionEntry<'pages'>;
+  /** Markdown body brut — passé séparément car nécessaire pour FAQPage. */
+  body: string;
+}
+
+const { page, body } = Astro.props;
+const { title, description, lastUpdated, schemaType } = page.data;
+
+const site = Astro.site?.toString() ?? 'https://mesdonneeslocales.fr/';
+const url = new URL(Astro.url.pathname, site).toString();
+
+const dateFmt = new Intl.DateTimeFormat('fr-FR', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+
+// JSON-LD générique pour la page (en plus de Organization déjà dans le layout).
+// FAQPage est géré séparément (parsing du markdown).
+const pageJsonLd =
+  schemaType !== 'FAQPage'
+    ? {
+        '@context': 'https://schema.org',
+        '@type': schemaType,
+        url,
+        name: title,
+        description,
+        inLanguage: 'fr-FR',
+        dateModified: lastUpdated.toISOString().slice(0, 10),
+        isPartOf: { '@id': `${site}#website` },
+        publisher: { '@id': `${site}#organization` },
+      }
+    : null;
+---
+
+<article class="py-12 md:py-16">
+  <div class="container-page max-w-3xl">
+    <Breadcrumbs
+      items={[
+        { href: '/', label: 'Accueil' },
+        { label: title },
+      ]}
+    />
+
+    <header class="mb-10">
+      <h1 class="text-4xl font-bold text-ink-900 md:text-5xl">{title}</h1>
+      <p class="mt-4 text-lg text-ink-500">
+        Dernière mise à jour le
+        <time datetime={lastUpdated.toISOString().slice(0, 10)}>
+          {dateFmt.format(lastUpdated)}
+        </time>
+      </p>
+    </header>
+
+    <div class="prose-editorial">
+      <slot />
+    </div>
+  </div>
+</article>
+
+{pageJsonLd && <JsonLd data={pageJsonLd} />}
+{schemaType === 'FAQPage' && <FAQPageJsonLd body={body} />}

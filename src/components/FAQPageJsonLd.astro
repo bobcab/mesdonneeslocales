@@ -1,0 +1,79 @@
+---
+import JsonLd from './JsonLd.astro';
+
+interface Props {
+  /** Body Markdown brut de la page FAQ. */
+  body: string;
+}
+
+const { body } = Astro.props;
+
+/**
+ * Parser minimaliste :
+ * - on découpe le markdown en blocs séparés par les H3 (`### `).
+ * - chaque H3 est une question, le texte qui suit est la réponse.
+ * - on ignore les H2 (catégories) et le préambule éventuel avant le premier H3.
+ *
+ * Note : pas de Markdown→HTML ici ; on garde le texte brut. Google accepte
+ * du texte ou du HTML dans `acceptedAnswer.text`. On enlève juste les liens
+ * markdown pour la lisibilité.
+ */
+function extractFaq(md: string): Array<{ q: string; a: string }> {
+  const lines = md.split('\n');
+  const items: Array<{ q: string; a: string }> = [];
+  let currentQ: string | null = null;
+  let currentA: string[] = [];
+
+  for (const line of lines) {
+    const h3 = line.match(/^###\s+(.+?)\s*$/);
+    if (h3) {
+      if (currentQ) {
+        items.push({ q: currentQ, a: currentA.join('\n').trim() });
+      }
+      currentQ = h3[1];
+      currentA = [];
+      continue;
+    }
+    // un H2 ou un séparateur ferme la question en cours
+    if (/^##?\s/.test(line) || /^---\s*$/.test(line)) {
+      if (currentQ) {
+        items.push({ q: currentQ, a: currentA.join('\n').trim() });
+        currentQ = null;
+        currentA = [];
+      }
+      continue;
+    }
+    if (currentQ !== null) {
+      currentA.push(line);
+    }
+  }
+  if (currentQ) {
+    items.push({ q: currentQ, a: currentA.join('\n').trim() });
+  }
+
+  return items
+    .filter((it) => it.a.length > 0)
+    .map((it) => ({
+      q: it.q,
+      // Démarkdownisation rapide : [texte](url) → texte
+      a: it.a.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1').replace(/\s+/g, ' ').trim(),
+    }));
+}
+
+const faq = extractFaq(body);
+
+const data = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faq.map((item) => ({
+    '@type': 'Question',
+    name: item.q,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: item.a,
+    },
+  })),
+};
+---
+
+{faq.length > 0 && <JsonLd data={data} />}

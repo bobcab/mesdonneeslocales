@@ -1,0 +1,43 @@
+---
+/**
+ * Card "En préparation" — placeholder visible dans le catalogue.
+ * Transforme l'absence (catalogue jeune) en engagement (CTA contribution).
+ * Synthèse UX p.10.
+ */
+const themes = ['Environnement', 'Démocratie locale', 'Éducation', 'Logement'];
+
+const proposeSubject = encodeURIComponent('Proposition de cartographie');
+const proposeBody = encodeURIComponent(
+  "Bonjour,\n\nJe souhaite proposer une nouvelle thématique pour Mes données locales :\n\n— Thématique :\n— Source de données identifiée :\n— Partenaire thématique suggéré :\n\nCordialement,",
+);
+const proposeMailto = `mailto:contact@mesdonneeslocales.fr?subject=${proposeSubject}&body=${proposeBody}`;
+
+const notifySubject = encodeURIComponent('Être prévenu des nouvelles cartographies');
+const notifyBody = encodeURIComponent(
+  "Bonjour,\n\nJe souhaite être tenu informé(e) de la publication des prochaines cartographies sur Mes données locales.\n\nCordialement,",
+);
+const notifyMailto = `mailto:contact@mesdonneeslocales.fr?subject=${notifySubject}&body=${notifyBody}`;
+---
+
+<article
+  data-upcoming-card
+  class="flex h-full flex-col overflow-hidden rounded-sm border-2 border-dashed border-ink-300 bg-surface-muted p-6"
+  aria-label="Cartographies en préparation"
+>
+  <p class="kicker mb-2">En préparation</p>
+  <h3 class="mb-3 text-xl font-semibold text-ink-900">D'autres cartographies arrivent</h3>
+  <p class="mb-4 text-sm text-ink-700 leading-relaxed">
+    L'association vise 50 cartographies d'ici 2031. Les thématiques en cours d'étude :
+  </p>
+
+  <ul class="mb-6 flex flex-wrap gap-1.5">
+    {themes.map((theme) => (
+      <li><span class="pill">{theme}</span></li>
+    ))}
+  </ul>
+
+  <div class="mt-auto flex flex-wrap gap-2">
+    <a href={notifyMailto} class="btn-outline text-sm">Être prévenu</a>
+    <a href={proposeMailto} class="btn-ghost text-sm">Proposer un thème</a>
+  </div>
+</article>

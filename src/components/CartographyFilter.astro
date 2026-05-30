@@ -1,0 +1,284 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  cartos: CollectionEntry<'cartographies'>[];
+}
+
+const { cartos } = Astro.props;
+
+/**
+ * Pour chaque dimension, on dérive les options disponibles à partir des cartos.
+ * Pour la thématique, on ajoute en plus des "à venir" hardcodés (grisés).
+ */
+
+// Thématique (category)
+const categories = [...new Set(cartos.map((c) => c.data.category))].sort((a, b) =>
+  a.localeCompare(b, 'fr'),
+);
+const upcomingCategories = ['Environnement', 'Démocratie locale', 'Éducation', 'Logement']
+  .filter((c) => !categories.includes(c))
+  .sort((a, b) => a.localeCompare(b, 'fr'));
+
+// Échelle géographique — basé sur des heuristiques sur le frontmatter
+// On classifie sur la base de spatialCoverage + un mapping de type
+function getScale(c: CollectionEntry<'cartographies'>): string {
+  const sc = c.data.spatialCoverage.toLowerCase();
+  if (sc.includes('commune')) return 'Par commune';
+  if (sc.includes('département') || sc.includes('departement')) return 'Par département';
+  return "Par site / établissement";
+}
+const scales = [...new Set(cartos.map(getScale))].sort();
+
+// Fréquence — labels lisibles
+const FREQ_LABELS: Record<string, string> = {
+  continuous: 'Continue',
+  daily: 'Quotidienne',
+  weekly: 'Hebdomadaire',
+  monthly: 'Mensuelle',
+  quarterly: 'Trimestrielle',
+  yearly: 'Annuelle',
+  irregular: 'Irrégulière',
+};
+const frequencies = [...new Set(cartos.map((c) => c.data.updateFrequency))].sort();
+
+// Type de visualisation
+const types = [...new Set(cartos.map((c) => c.data.typeapp))].sort();
+
+interface FilterGroup {
+  legend: string;
+  dim: 'cat' | 'scale' | 'freq' | 'type';
+  options: Array<{ value: string; label: string; count: number; upcoming?: boolean }>;
+}
+
+function countBy(dim: 'cat' | 'scale' | 'freq' | 'type', value: string): number {
+  switch (dim) {
+    case 'cat': return cartos.filter((c) => c.data.category === value).length;
+    case 'scale': return cartos.filter((c) => getScale(c) === value).length;
+    case 'freq': return cartos.filter((c) => c.data.updateFrequency === value).length;
+    case 'type': return cartos.filter((c) => c.data.typeapp === value).length;
+  }
+}
+
+const groups: FilterGroup[] = [
+  {
+    legend: 'Thématique',
+    dim: 'cat',
+    options: [
+      ...categories.map((c) => ({ value: c, label: c, count: countBy('cat', c) })),
+      ...upcomingCategories.map((c) => ({ value: c, label: c, count: 0, upcoming: true })),
+    ],
+  },
+  {
+    legend: 'Échelle géographique',
+    dim: 'scale',
+    options: scales.map((s) => ({ value: s, label: s, count: countBy('scale', s) })),
+  },
+  {
+    legend: 'Fréquence de mise à jour',
+    dim: 'freq',
+    options: frequencies.map((f) => ({
+      value: f,
+      label: FREQ_LABELS[f] ?? f,
+      count: countBy('freq', f),
+    })),
+  },
+  {
+    legend: 'Type de visualisation',
+    dim: 'type',
+    options: types.map((t) => ({ value: t, label: t, count: countBy('type', t) })),
+  },
+];
+---
+
+<aside data-carto-filter aria-label="Filtres de cartographies" class="lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
+  <details class="lg:hidden mb-4 rounded-sm border border-ink-300 bg-surface">
+    <summary class="cursor-pointer px-4 py-3 font-medium text-ink-900">Filtres</summary>
+    <div data-filter-body class="px-4 pb-4"></div>
+  </details>
+
+  <div class="hidden lg:block">
+    {/* Sur desktop, on rend les fieldsets directement. Sur mobile, on les déplace dans le <details>. */}
+  </div>
+
+  <div data-filter-content class="space-y-6 lg:block">
+    {groups.map((group) => (
+      <fieldset class="border-0 p-0">
+        <legend class="kicker mb-3">{group.legend}</legend>
+        <ul class="space-y-2">
+          {group.options.map((opt) => (
+            <li>
+              <label class:list={[
+                'flex items-center justify-between gap-2 text-sm cursor-pointer',
+                opt.upcoming && 'cursor-not-allowed opacity-50',
+              ]}>
+                <span class="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    data-filter-dim={group.dim}
+                    data-filter-value={opt.value}
+                    disabled={opt.upcoming}
+                    class="h-4 w-4 rounded border-ink-300 text-brand-500 focus:ring-brand-500/30"
+                  />
+                  <span class="text-ink-700">{opt.label}</span>
+                  {opt.upcoming && <span class="text-xs text-ink-500 italic">à venir</span>}
+                </span>
+                <span class="text-xs text-ink-500 tabular-nums">{opt.count}</span>
+              </label>
+            </li>
+          ))}
+        </ul>
+      </fieldset>
+    ))}
+
+    <button
+      type="button"
+      data-filter-reset
+      class="btn-ghost w-full text-sm"
+    >
+      Réinitialiser les filtres
+    </button>
+  </div>
+</aside>
+
+<script>
+  /**
+   * Logique de filtrage :
+   *  - intra-groupe : OR (si plusieurs cases cochées dans une dimension, on prend l'union)
+   *  - inter-groupe : AND
+   *  - recherche texte combinée (chaque dimension restreint encore)
+   *  - état synchronisé avec l'URL : ?q=&cat=A,B&scale=...&freq=...&type=...&view=
+   */
+
+  type Dim = 'cat' | 'scale' | 'freq' | 'type';
+  const DIMS: Dim[] = ['cat', 'scale', 'freq', 'type'];
+
+  function normalize(s: string): string {
+    return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  }
+
+  function readFilters(): Record<Dim, Set<string>> {
+    const out: Record<Dim, Set<string>> = {
+      cat: new Set(), scale: new Set(), freq: new Set(), type: new Set(),
+    };
+    document.querySelectorAll<HTMLInputElement>('[data-filter-dim]:checked').forEach((cb) => {
+      const dim = cb.dataset.filterDim as Dim;
+      const v = cb.dataset.filterValue ?? '';
+      if (v) out[dim].add(v);
+    });
+    return out;
+  }
+
+  function syncUrl(q: string, filters: Record<Dim, Set<string>>, view: string | null) {
+    const url = new URL(window.location.href);
+    if (q) url.searchParams.set('q', q); else url.searchParams.delete('q');
+    for (const dim of DIMS) {
+      const vals = [...filters[dim]];
+      if (vals.length) url.searchParams.set(dim, vals.join(','));
+      else url.searchParams.delete(dim);
+    }
+    if (view) url.searchParams.set('view', view); else url.searchParams.delete('view');
+    window.history.replaceState(null, '', url.toString());
+  }
+
+  function applyFilters() {
+    const input = document.querySelector<HTMLInputElement>('#carto-q');
+    const count = document.querySelector<HTMLElement>('[data-carto-count]');
+    const empty = document.querySelector<HTMLElement>('[data-carto-empty]');
+    const cards = document.querySelectorAll<HTMLElement>('[data-carto-card]');
+    if (!input || !count || !empty) return;
+
+    const q = normalize(input.value.trim());
+    const tokens = q.split(/\s+/).filter(Boolean);
+    const filters = readFilters();
+    const view = document.documentElement.dataset.cartoView ?? null;
+
+    let visible = 0;
+    cards.forEach((el) => {
+      const haystack = normalize(el.dataset.search ?? '');
+      const matchQ = tokens.every((t) => haystack.includes(t));
+      const cat = el.dataset.category ?? '';
+      const scale = el.dataset.scale ?? '';
+      const freq = el.dataset.freq ?? '';
+      const type = el.dataset.type ?? '';
+      const matchCat = filters.cat.size === 0 || filters.cat.has(cat);
+      const matchScale = filters.scale.size === 0 || filters.scale.has(scale);
+      const matchFreq = filters.freq.size === 0 || filters.freq.has(freq);
+      const matchType = filters.type.size === 0 || filters.type.has(type);
+      const show = matchQ && matchCat && matchScale && matchFreq && matchType;
+
+      if (show) {
+        // Apparition : on retire d'abord `hidden` (display flex/block), puis is-filtered-out après reflow
+        el.classList.remove('hidden');
+        requestAnimationFrame(() => el.classList.remove('is-filtered-out'));
+        visible++;
+      } else {
+        // Disparition : fade-out via is-filtered-out, puis hidden après la transition
+        el.classList.add('is-filtered-out');
+        const hideAfter = () => {
+          if (el.classList.contains('is-filtered-out')) el.classList.add('hidden');
+        };
+        // Si reduced-motion, hide immédiatement ; sinon attendre la fin de la transition
+        if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+          hideAfter();
+        } else {
+          el.addEventListener('transitionend', hideAfter, { once: true });
+        }
+      }
+    });
+
+    count.textContent = String(visible);
+    empty.classList.toggle('hidden', visible !== 0);
+    syncUrl(input.value.trim(), filters, view);
+
+    // Indication "N filtres actifs"
+    const activeChips = document.querySelector<HTMLElement>('[data-active-filters]');
+    if (activeChips) {
+      const total = DIMS.reduce((sum, dim) => sum + filters[dim].size, 0);
+      activeChips.textContent = total > 0 ? `${total} filtre${total > 1 ? 's' : ''} actif${total > 1 ? 's' : ''}` : 'aucun filtre actif';
+    }
+  }
+
+  function init() {
+    // Hydrater depuis l'URL
+    const params = new URLSearchParams(window.location.search);
+    const initialQ = params.get('q') ?? '';
+    const input = document.querySelector<HTMLInputElement>('#carto-q');
+    if (input) input.value = initialQ;
+
+    for (const dim of DIMS) {
+      const raw = params.get(dim);
+      if (!raw) continue;
+      const values = new Set(raw.split(',').filter(Boolean));
+      document.querySelectorAll<HTMLInputElement>(`[data-filter-dim="${dim}"]`).forEach((cb) => {
+        cb.checked = values.has(cb.dataset.filterValue ?? '');
+      });
+    }
+
+    // Listeners checkboxes
+    document.querySelectorAll<HTMLInputElement>('[data-filter-dim]').forEach((cb) => {
+      cb.addEventListener('change', applyFilters);
+    });
+
+    // Reset
+    document.querySelector<HTMLButtonElement>('[data-filter-reset]')?.addEventListener('click', () => {
+      document.querySelectorAll<HTMLInputElement>('[data-filter-dim]').forEach((cb) => (cb.checked = false));
+      applyFilters();
+    });
+
+    // Recherche
+    let timer: number | undefined;
+    input?.addEventListener('input', () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(applyFilters, 150);
+    });
+
+    applyFilters();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+</script>

@@ -1,0 +1,65 @@
+---
+/**
+ * Bloc "Une autre façon d'explorer" — affiché en bas du catalogue.
+ * Renvoie vers la carte de France interactive et l'index par thème.
+ */
+---
+
+<section aria-labelledby="exploration-title" class="mt-16">
+  <div class="mb-6">
+    <p class="kicker mb-2">Une autre façon d'explorer</p>
+    <h2 id="exploration-title" class="text-2xl font-bold text-ink-900">
+      Naviguer par thématique ou explorer le territoire
+    </h2>
+  </div>
+
+  <div class="grid gap-4 md:grid-cols-2">
+    <a
+      href="/cartographies/?cat="
+      class="group flex items-start gap-3 rounded-sm border border-ink-300 bg-surface p-5 no-underline transition-shadow hover:shadow-md"
+      data-jump-themes
+    >
+      <span aria-hidden="true" class="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-500">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
+          <path d="M5.5 3.5A2 2 0 0 1 7.5 1.5h5a2 2 0 0 1 2 2v.5h.5a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2v-10a2 2 0 0 1 2-2h.5v-.5Zm2-.5a.5.5 0 0 0-.5.5v.5h6v-.5a.5.5 0 0 0-.5-.5h-5Z"/>
+        </svg>
+      </span>
+      <div>
+        <h3 class="font-semibold text-ink-900 group-hover:text-brand-500">Parcourir par thème</h3>
+        <p class="mt-1 text-sm text-ink-700">
+          Justice, santé, énergie, et thématiques en préparation.
+        </p>
+      </div>
+    </a>
+
+    <a
+      href="/carte-france/"
+      class="group flex items-start gap-3 rounded-sm border border-ink-300 bg-surface p-5 no-underline transition-shadow hover:shadow-md"
+    >
+      <span aria-hidden="true" class="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-success-50 text-success-700">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
+          <path fill-rule="evenodd" d="M9.69 18.933.94 14.057a1.5 1.5 0 0 1-.69-1.29V6.732a1.5 1.5 0 0 1 .69-1.29l8.75-4.875a1.5 1.5 0 0 1 1.45 0l8.75 4.875a1.5 1.5 0 0 1 .69 1.29v6.034a1.5 1.5 0 0 1-.69 1.29l-8.75 4.876a1.5 1.5 0 0 1-1.45 0Z" clip-rule="evenodd"/>
+        </svg>
+      </span>
+      <div>
+        <h3 class="font-semibold text-ink-900 group-hover:text-brand-500">Carte de France interactive</h3>
+        <p class="mt-1 text-sm text-ink-700">
+          Cliquez sur un département pour voir les cartographies disponibles.
+        </p>
+      </div>
+    </a>
+  </div>
+</section>
+
+<script>
+  /**
+   * Le lien "Parcourir par thème" → on amène l'utilisateur sur la zone Thématique de la sidebar.
+   */
+  document.querySelector<HTMLAnchorElement>('[data-jump-themes]')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    const sidebar = document.querySelector<HTMLElement>('[data-carto-filter]');
+    sidebar?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const firstTheme = sidebar?.querySelector<HTMLInputElement>('[data-filter-dim="cat"]');
+    firstTheme?.focus();
+  });
+</script>

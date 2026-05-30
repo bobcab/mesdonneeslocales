@@ -1,0 +1,44 @@
+---
+/**
+ * Aperçu cliquable de la carte de France pour la home.
+ * Renvoie vers la page interactive `/carte-france/`.
+ *
+ * Volontairement non interactif sur la home (perf : on ne charge pas MapLibre sur la home).
+ * L'interaction complète se fait sur la page dédiée.
+ */
+---
+
+<a
+  href="/carte-france/"
+  class="group relative block overflow-hidden rounded-sm border border-ink-300 bg-surface-muted no-underline"
+  aria-label="Explorer les cartographies par territoire sur la carte interactive"
+>
+  <div class="aspect-[16/7] flex items-center justify-center">
+    <svg
+      viewBox="0 0 400 380"
+      xmlns="http://www.w3.org/2000/svg"
+      class="h-3/4 w-auto text-ink-300 transition-colors group-hover:text-brand-300"
+      aria-hidden="true"
+    >
+      <path
+        fill="currentColor"
+        d="M195 30c20 0 35 8 50 18s28 18 45 22c12 3 22 12 22 25 0 15-8 24-18 30s-22 12-22 25c0 14 8 24 18 32s22 18 22 32c0 16-12 25-24 32s-22 18-22 32c0 14 8 25 4 35s-18 18-30 22-28 4-42 4-30-4-42-12-22-22-32-32-22-18-32-28-18-22-18-35c0-16 8-28 18-38s22-18 32-25 18-15 22-28 8-25 18-32 20-12 31-13z"
+        opacity="0.5"
+      />
+      <circle cx="180" cy="120" r="6" class="fill-brand-500" />
+      <circle cx="240" cy="200" r="6" class="fill-success-500" />
+      <circle cx="160" cy="240" r="6" class="fill-energy-500" />
+      <circle cx="260" cy="280" r="6" class="fill-brand-500" />
+    </svg>
+  </div>
+
+  <div class="absolute bottom-3 right-4 text-xs text-ink-500">
+    Points = cartographies disponibles
+  </div>
+
+  <div class="absolute top-3 left-4 right-4 flex flex-wrap items-baseline justify-between gap-2">
+    <p class="text-sm font-medium text-ink-700 group-hover:text-brand-500">
+      Cliquez pour explorer la carte interactive →
+    </p>
+  </div>
+</a>
