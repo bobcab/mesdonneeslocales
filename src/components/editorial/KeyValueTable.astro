@@ -13,17 +13,17 @@ interface Props {
 const { rows } = Astro.props;
 ---
 
-<dl class="not-prose my-10 divide-y divide-ink-300/40 rounded-xl border border-ink-300/40 bg-surface-muted">
+<dl class="kv-table not-prose">
   {rows.map((row) => (
-    <div class="grid gap-2 px-6 py-4 md:grid-cols-[240px_1fr] md:gap-8">
-      <dt class="kicker self-center text-ink-500">{row.label}</dt>
-      <dd class="text-base text-ink-900">
+    <div class="kv-table__row">
+      <dt class="kv-table__label">{row.label}</dt>
+      <dd class="kv-table__value">
         {row.link ? (
           <a
             href={row.link}
             target={row.external ? '_blank' : undefined}
             rel={row.external ? 'noopener noreferrer' : undefined}
-            class="text-brand-600 hover:text-brand-700"
+            class="kv-table__link"
           >
             {row.value}
           </a>
@@ -32,3 +32,57 @@ const { rows } = Astro.props;
     </div>
   ))}
 </dl>
+
+<style is:global>
+  /* KeyValueTable — pattern B carte filet (charte §7.2). Fond
+     paper-200, bordure 0.5px ink-200, séparateurs filets fins. */
+  .kv-table {
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-xl);
+    border: 0.5px solid var(--color-ink-200);
+    border-radius: var(--radius-lg);
+    background: var(--color-paper-50);
+    overflow: hidden;
+  }
+  .kv-table__row {
+    display: grid;
+    gap: 0.25rem;
+    padding: var(--space-md) var(--space-lg);
+    border-top: 0.5px solid var(--color-ink-100);
+  }
+  .kv-table__row:first-child {
+    border-top: none;
+  }
+  @media (min-width: 768px) {
+    .kv-table__row {
+      grid-template-columns: 240px 1fr;
+      gap: var(--space-lg);
+      align-items: center;
+    }
+  }
+  .kv-table__label {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ink-400);
+  }
+  .kv-table__value {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    color: var(--color-ink-900);
+    margin: 0;
+  }
+  .kv-table__link {
+    color: var(--color-ink-700);
+    text-decoration: underline;
+    text-decoration-color: var(--color-ochre-600);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+  }
+  .kv-table__link:hover {
+    color: var(--color-ink-900);
+    text-decoration-color: var(--color-ochre-700);
+  }
+</style>

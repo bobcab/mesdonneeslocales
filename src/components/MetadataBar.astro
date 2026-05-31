@@ -49,15 +49,15 @@ const items = [
 ].filter((i): i is NonNullable<typeof i> => i !== null);
 ---
 
-<dl class="grid grid-cols-2 gap-4 rounded-xl bg-surface-muted p-5 text-sm md:grid-cols-4">
+<dl class="metadata-bar">
   {items.map((item) => (
-    <div>
-      <dt class="kicker">{item.label}</dt>
-      <dd class="mt-1 text-ink-900 font-medium">
+    <div class="metadata-bar__item">
+      <dt class="metadata-bar__label">{item.label}</dt>
+      <dd class="metadata-bar__value">
         {'datetime' in item && item.datetime ? (
           <time datetime={item.datetime}>{item.value}</time>
         ) : 'href' in item && item.href ? (
-          <a href={item.href} target="_blank" rel="noopener noreferrer" class="no-underline hover:underline">
+          <a href={item.href} target="_blank" rel="noopener noreferrer" class="metadata-bar__link">
             {item.value}
           </a>
         ) : (
@@ -67,3 +67,52 @@ const items = [
     </div>
   ))}
 </dl>
+
+<style is:global>
+  /* MetadataBar — charte Piste B §4.2 : chips transparents avec
+     border ocre 0.5px (au lieu du fond plein surface-muted Piste A). */
+  .metadata-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+    padding: var(--space-md) var(--space-lg);
+    border-top: 0.5px solid var(--color-ink-200);
+    border-bottom: 0.5px solid var(--color-ink-200);
+    margin-top: var(--space-md);
+    margin-bottom: var(--space-md);
+  }
+  @media (min-width: 768px) {
+    .metadata-bar { grid-template-columns: repeat(4, 1fr); }
+  }
+  .metadata-bar__item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .metadata-bar__label {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ochre-600);
+  }
+  .metadata-bar__value {
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    color: var(--color-ink-900);
+    font-weight: 500;
+    margin: 0;
+  }
+  .metadata-bar__link {
+    color: var(--color-ink-900);
+    text-decoration: underline;
+    text-decoration-color: var(--color-ochre-600);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+    transition: text-decoration-color 150ms ease;
+  }
+  .metadata-bar__link:hover {
+    text-decoration-color: var(--color-ochre-700);
+  }
+</style>

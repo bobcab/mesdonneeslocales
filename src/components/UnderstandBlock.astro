@@ -9,36 +9,105 @@ const { says, saysNot } = Astro.props;
 if (says.length === 0 && saysNot.length === 0) return null;
 ---
 
-<section aria-labelledby="understand-title" class="my-12">
-  <h2 id="understand-title" class="text-xl font-bold text-ink-900 mb-6">Comprendre la donnée</h2>
+<section aria-labelledby="understand-title" class="understand-block">
+  <h2 id="understand-title" class="understand-block__title">Comprendre la donnée</h2>
 
-  <div class="grid gap-6 md:grid-cols-2">
+  <div class="understand-block__grid">
     {says.length > 0 && (
-      <div class="rounded-xl border-l-4 border-success-500 bg-success-50 p-5">
-        <h3 class="text-base font-semibold text-ink-900 mb-3">Ce que dit cette cartographie</h3>
-        <ul class="space-y-2 text-sm text-ink-700">
+      <div class="understand-block__col understand-block__col--says">
+        <h3 class="understand-block__subtitle">Ce que dit cette cartographie</h3>
+        <ul class="understand-block__list">
           {says.map((point) => (
-            <li class="flex gap-2">
-              <span aria-hidden="true" class="mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-success-500"></span>
-              <span>{point}</span>
-            </li>
+            <li class="understand-block__item">{point}</li>
           ))}
         </ul>
       </div>
     )}
 
     {saysNot.length > 0 && (
-      <div class="rounded-xl border-l-4 border-warning-500 bg-warning-50 p-5">
-        <h3 class="text-base font-semibold text-ink-900 mb-3">Ce qu'elle ne dit pas</h3>
-        <ul class="space-y-2 text-sm text-ink-700">
+      <div class="understand-block__col understand-block__col--says-not">
+        <h3 class="understand-block__subtitle">Ce qu'elle ne dit pas</h3>
+        <ul class="understand-block__list">
           {saysNot.map((point) => (
-            <li class="flex gap-2">
-              <span aria-hidden="true" class="mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-warning-500"></span>
-              <span>{point}</span>
-            </li>
+            <li class="understand-block__item">{point}</li>
           ))}
         </ul>
       </div>
     )}
   </div>
 </section>
+
+<style is:global>
+  /* UnderstandBlock — charte Piste B §4.2 : pattern callout simplifié,
+     filet vertical à gauche (vert data-good pour says, brun data-warn
+     pour says-not), pas de fond plein, padding généreux. */
+  .understand-block {
+    margin-top: var(--space-2xl);
+    margin-bottom: var(--space-2xl);
+  }
+  .understand-block__title {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: clamp(1.5rem, 2vw, 1.75rem);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: var(--color-ink-900);
+    margin: 0 0 var(--space-lg) 0;
+  }
+  .understand-block__grid {
+    display: grid;
+    gap: var(--space-lg);
+  }
+  @media (min-width: 768px) {
+    .understand-block__grid { grid-template-columns: 1fr 1fr; }
+  }
+  .understand-block__col {
+    padding: var(--space-md) var(--space-lg);
+    border-left: 2px solid var(--color-ink-300);
+  }
+  .understand-block__col--says {
+    border-left-color: var(--color-data-good);
+  }
+  .understand-block__col--says-not {
+    border-left-color: var(--color-data-warn);
+  }
+  .understand-block__subtitle {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ink-900);
+    margin: 0 0 var(--space-sm) 0;
+  }
+  .understand-block__col--says .understand-block__subtitle {
+    color: var(--color-data-good);
+  }
+  .understand-block__col--says-not .understand-block__subtitle {
+    color: var(--color-data-warn);
+  }
+  .understand-block__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+  .understand-block__item {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--color-ink-800);
+    padding-left: var(--space-md);
+    position: relative;
+  }
+  .understand-block__item::before {
+    content: '·';
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-weight: 700;
+    color: var(--color-ochre-600);
+  }
+</style>

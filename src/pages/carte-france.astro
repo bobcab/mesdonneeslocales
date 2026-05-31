@@ -9,8 +9,8 @@ import DepartmentPanel from '../components/DepartmentPanel.astro';
   title="Carte de France interactive"
   description="Explorez par territoire : cliquez sur un département pour voir les cartographies disponibles."
 >
-  <article class="py-6 md:py-10">
-    <div class="container-page max-w-7xl">
+  <article class="carto-page">
+    <div class="container-wide">
       <Breadcrumbs
         items={[
           { href: '/', label: 'Accueil' },
@@ -18,13 +18,12 @@ import DepartmentPanel from '../components/DepartmentPanel.astro';
         ]}
       />
 
-      <header class="mb-6 flex flex-wrap items-baseline justify-between gap-4">
-        <div>
-          <h1 class="text-3xl font-bold text-ink-900 md:text-4xl">Explorer par territoire</h1>
-          <p class="mt-2 text-ink-700 max-w-2xl">
-            Cliquez sur un département pour voir toutes les cartographies disponibles à cette échelle.
-          </p>
-        </div>
+      <header class="carto-page__header">
+        <p class="caption caption-ochre carto-page__kicker">Carte de France</p>
+        <h1 class="display-italic carto-page__title">Explorer par territoire.</h1>
+        <p class="carto-page__lead">
+          Cliquez sur un département pour voir toutes les cartographies disponibles à cette échelle.
+        </p>
       </header>
 
       {/* Desktop : 2 colonnes (carte + panneau).

@@ -7,15 +7,55 @@ interface Props {
 const { author, source } = Astro.props;
 ---
 
-<figure class="my-12 border-l-4 border-brand-500 pl-8 not-prose">
-  <blockquote class="display text-2xl md:text-3xl font-medium text-ink-900 tracking-tight leading-snug">
+<figure class="pull-quote not-prose">
+  <blockquote class="pull-quote__text">
     « <slot /> »
   </blockquote>
   {(author || source) && (
-    <figcaption class="mt-4 text-sm text-ink-500">
-      {author && <span class="font-medium text-ink-700">{author}</span>}
-      {author && source && <span> · </span>}
-      {source && <cite class="not-italic">{source}</cite>}
+    <figcaption class="pull-quote__caption">
+      {author && <span class="pull-quote__author">{author}</span>}
+      {author && source && <span class="pull-quote__sep"> · </span>}
+      {source && <cite class="pull-quote__source">{source}</cite>}
     </figcaption>
   )}
 </figure>
+
+<style is:global>
+  /* Pull quote — charte Piste B §7.4 : filet ocre 2px, citation
+     Playfair italic 900 32-40px, pas de fond. */
+  .pull-quote {
+    margin-top: var(--space-2xl);
+    margin-bottom: var(--space-2xl);
+    padding-left: var(--space-lg);
+    border-left: 2px solid var(--color-ochre-600);
+  }
+
+  .pull-quote__text {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 900;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--color-ink-900);
+    margin: 0;
+  }
+
+  .pull-quote__caption {
+    margin-top: var(--space-md);
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    letter-spacing: 0.04em;
+    color: var(--color-ink-400);
+  }
+  .pull-quote__author {
+    color: var(--color-ink-700);
+    font-weight: 500;
+  }
+  .pull-quote__sep {
+    opacity: 0.5;
+  }
+  .pull-quote__source {
+    font-style: normal;
+  }
+</style>

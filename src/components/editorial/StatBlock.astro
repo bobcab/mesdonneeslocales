@@ -8,12 +8,36 @@ interface Props {
 const { value, label, accent = false } = Astro.props;
 ---
 
-<div class="not-prose my-8 inline-flex items-baseline gap-3">
-  <span class:list={[
-    'display text-5xl font-medium tracking-tight leading-none',
-    accent ? 'text-accent-500' : 'text-brand-500',
-  ]}>
-    {value}
-  </span>
-  <span class="text-sm text-ink-700">{label}</span>
+<div class:list={['stat-block', accent && 'stat-block--accent']}>
+  <span class="stat-block__value">{value}</span>
+  <span class="stat-block__label">{label}</span>
 </div>
+
+<style is:global>
+  /* StatBlock — chiffre fort inline dans la prose. Charte §3 :
+     Playfair italic 900, ink-900 par défaut, ocre-600 en accent. */
+  .stat-block {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-md);
+    margin-top: var(--space-md);
+    margin-bottom: var(--space-md);
+  }
+  .stat-block__value {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 900;
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--color-ink-900);
+  }
+  .stat-block--accent .stat-block__value {
+    color: var(--color-ochre-600);
+  }
+  .stat-block__label {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    color: var(--color-ink-700);
+  }
+</style>

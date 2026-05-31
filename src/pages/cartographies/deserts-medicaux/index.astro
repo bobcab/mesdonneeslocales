@@ -28,8 +28,8 @@ const meta = getMeta();
 ---
 
 <Base title={d.title} description={d.shortDescription ?? d.description.slice(0, 200)}>
-  <article class="py-8 md:py-12">
-    <div class="container-page max-w-5xl">
+  <article class="carto-page">
+    <div class="container-default">
       <Breadcrumbs
         items={[
           { href: '/', label: 'Accueil' },
@@ -38,16 +38,16 @@ const meta = getMeta();
         ]}
       />
 
-      {/* Header */}
-      <header class="mb-8">
-        <div class="mb-3 flex flex-wrap items-center gap-2">
-          <span class="pill-brand">{d.category}</span>
-          {d.subCategories.map((sub) => <span class="pill">{sub}</span>)}
-          <span class="pill-accent">Nouveau</span>
-        </div>
-        <h1 class="text-3xl font-bold text-ink-900 md:text-4xl leading-tight">{d.title}</h1>
+      {/* Header — charte Piste B */}
+      <header class="carto-page__header">
+        <p class="caption caption-ochre carto-page__kicker">
+          {d.category}
+          {d.subCategories.map((sub) => <span class="carto-page__sub">· {sub}</span>)}
+          <span class="pill-accent carto-page__badge">Nouveau</span>
+        </p>
+        <h1 class="display-italic carto-page__title">{d.title}</h1>
         {d.shortDescription && (
-          <p class="mt-4 text-lg text-ink-700 leading-relaxed max-w-3xl">{d.shortDescription}</p>
+          <p class="carto-page__lead">{d.shortDescription}</p>
         )}
       </header>
 

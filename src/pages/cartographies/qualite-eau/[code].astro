@@ -109,8 +109,8 @@ const statusBadge = data.compliantOverall
 ---
 
 <Base title={title} description={description}>
-  <article class="py-8 md:py-12">
-    <div class="container-page max-w-4xl">
+  <article class="commune-page">
+    <div class="container-narrow">
       <Breadcrumbs
         items={[
           { href: '/', label: 'Accueil' },
@@ -120,83 +120,90 @@ const statusBadge = data.compliantOverall
         ]}
       />
 
-      {/* Header */}
-      <header class="mb-8">
-        <div class="mb-3 flex flex-wrap items-center gap-2">
-          <span class="pill-brand">Santé</span>
-          <span class="pill">Eau potable</span>
-          <span class="text-sm text-ink-500">Code INSEE {data.code}</span>
-        </div>
-        <h1 class="text-3xl font-bold text-ink-900 md:text-4xl">
-          Qualité de l'eau potable — {data.name}
+      {/* Header — charte Piste B §4.3 : titre Playfair italic 56px */}
+      <header class="commune-page__header">
+        <p class="caption caption-ochre commune-page__kicker">
+          Santé · Eau potable · Code INSEE {data.code}
+        </p>
+        <h1 class="display-italic commune-page__title">
+          L'eau potable à {data.name}
         </h1>
-        <p class="mt-2 text-ink-500">
+        <p class="commune-page__lead">
           {data.departmentName} ({data.department})
           {data.distributor && (
             <>
-              {' · '}Distributeur : <span class="font-medium text-ink-700">{data.distributor}</span>
+              {' · '}Distributeur : <span class="commune-page__lead-strong">{data.distributor}</span>
             </>
           )}
         </p>
       </header>
 
-      {/* Statut global de conformité */}
-      <section aria-labelledby="status-title" class={`mb-8 rounded-xl p-6 ${data.compliantOverall ? 'bg-success-50 border-l-4 border-success-500' : 'bg-danger-50 border-l-4 border-danger-500'}`}>
-        <div class="flex items-start gap-4">
-          <div class={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-2xl font-bold ${statusBadge.class}`} aria-hidden="true">
-            {statusBadge.icon}
-          </div>
-          <div>
-            <h2 id="status-title" class="text-xl font-bold text-ink-900">{statusBadge.label}</h2>
-            <p class="mt-1 text-sm text-ink-700">{data.conclusion}</p>
-            {sampleDate && (
-              <p class="mt-2 text-xs text-ink-500">
-                Dernier prélèvement : <time datetime={sampleDate.toISOString()}>{dateFmt.format(sampleDate)}</time>
-              </p>
-            )}
-          </div>
+      {/* Statut global de conformité — filet vertical sémantique, pas de fond plein */}
+      <section
+        aria-labelledby="status-title"
+        class:list={['commune-status', data.compliantOverall ? 'commune-status--ok' : 'commune-status--bad']}
+      >
+        <p class="commune-status__icon" aria-hidden="true">{statusBadge.icon}</p>
+        <div>
+          <h2 id="status-title" class="commune-status__title">{statusBadge.label}</h2>
+          <p class="commune-status__text">{data.conclusion}</p>
+          {sampleDate && (
+            <p class="commune-status__meta">
+              Dernier prélèvement :
+              <time datetime={sampleDate.toISOString()}>{dateFmt.format(sampleDate)}</time>
+            </p>
+          )}
         </div>
       </section>
 
-      {/* Chiffres clés */}
-      <section aria-labelledby="figures-title" class="mb-8">
+      {/* Chiffres clés — Playfair italic 900, pas d'ombre, pas de card */}
+      <section aria-labelledby="figures-title" class="commune-figures">
         <h2 id="figures-title" class="sr-only">Chiffres clés</h2>
-        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div class="rounded-xl bg-surface p-4 shadow-card">
-            <p class="text-3xl font-bold text-ink-900 leading-none">{data.samplesCount ?? 0}</p>
-            <p class="mt-2 text-xs text-ink-500">prélèvements récents</p>
+        <div class="commune-figures__grid">
+          <div class="commune-figure">
+            <p class="commune-figure__value">{data.samplesCount ?? 0}</p>
+            <p class="commune-figure__label">prélèvements récents</p>
           </div>
-          <div class="rounded-xl bg-surface p-4 shadow-card">
-            <p class="text-3xl font-bold text-ink-900 leading-none">{data.paramsCount ?? 0}</p>
-            <p class="mt-2 text-xs text-ink-500">paramètres mesurés</p>
+          <div class="commune-figure">
+            <p class="commune-figure__value">{data.paramsCount ?? 0}</p>
+            <p class="commune-figure__label">paramètres mesurés</p>
           </div>
-          <div class="rounded-xl bg-surface p-4 shadow-card">
-            <p class="text-3xl font-bold leading-none {principal.length > 0 ? 'text-success-500' : 'text-ink-500'}">{principal.length}</p>
-            <p class="mt-2 text-xs text-ink-500">paramètres principaux</p>
+          <div class="commune-figure">
+            <p class:list={['commune-figure__value', principal.length === 0 && 'commune-figure__value--muted']}>
+              {principal.length}
+            </p>
+            <p class="commune-figure__label">paramètres principaux</p>
           </div>
-          <div class="rounded-xl bg-surface p-4 shadow-card">
-            <p class={`text-3xl font-bold leading-none ${pfas.length > 0 ? 'text-warning-500' : 'text-ink-500'}`}>{pfas.length}</p>
-            <p class="mt-2 text-xs text-ink-500">paramètres PFAS{pfas.length > 0 ? ' analysés' : ''}</p>
+          <div class="commune-figure">
+            <p class:list={[
+              'commune-figure__value',
+              pfas.length > 0 ? 'commune-figure__value--accent' : 'commune-figure__value--muted',
+            ]}>
+              {pfas.length}
+            </p>
+            <p class="commune-figure__label">
+              paramètres PFAS{pfas.length > 0 ? ' analysés' : ''}
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Paramètres principaux */}
+      {/* Paramètres principaux — tableau filets fins, pas d'ombre */}
       {principal.length > 0 && (
-        <section aria-labelledby="principal-title" class="mb-8">
-          <h2 id="principal-title" class="text-xl font-bold text-ink-900 mb-4">Paramètres principaux</h2>
-          <div class="overflow-x-auto rounded-xl shadow-card">
-            <table class="min-w-full divide-y divide-ink-300 text-sm">
-              <thead class="bg-surface-muted">
+        <section aria-labelledby="principal-title" class="commune-table-section">
+          <h2 id="principal-title" class="commune-section-title">Paramètres principaux</h2>
+          <div class="overflow-x-auto commune-table-wrap">
+            <table class="commune-table">
+              <thead>
                 <tr>
-                  <th scope="col" class="px-4 py-3 text-left font-semibold text-ink-900">Paramètre</th>
-                  <th scope="col" class="px-4 py-3 text-right font-semibold text-ink-900">Valeur</th>
-                  <th scope="col" class="px-4 py-3 text-left font-semibold text-ink-900">Référence</th>
-                  <th scope="col" class="px-4 py-3 text-left font-semibold text-ink-900">Évolution</th>
-                  <th scope="col" class="px-4 py-3 text-center font-semibold text-ink-900">Conformité</th>
+                  <th scope="col" class="text-left">Paramètre</th>
+                  <th scope="col" class="text-right">Valeur</th>
+                  <th scope="col" class="text-left">Référence</th>
+                  <th scope="col" class="text-left">Évolution</th>
+                  <th scope="col" class="text-center">Conformité</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-ink-300/60 bg-surface">
+              <tbody>
                 {principal.map((p) => {
                   const series = data.history?.[p.code] ?? [];
                   return (
@@ -234,22 +241,22 @@ const statusBadge = data.compliantOverall
         </section>
       )}
 
-      {/* PFAS si analysés */}
+      {/* PFAS si analysés — pattern callout important (filet ocre) */}
       {pfas.length > 0 && (
-        <section aria-labelledby="pfas-title" class="mb-8 rounded-xl border-l-4 border-warning-500 bg-warning-50 p-5">
-          <h2 id="pfas-title" class="text-lg font-bold text-ink-900 mb-2">
+        <section aria-labelledby="pfas-title" class="commune-pfas">
+          <h2 id="pfas-title" class="commune-pfas__title">
             PFAS — Substances perfluoroalkylées et polyfluoroalkylées
           </h2>
-          <p class="text-sm text-ink-700 mb-4">
+          <p class="commune-pfas__intro">
             {pfas.length} composé{pfas.length > 1 ? 's' : ''} analysé{pfas.length > 1 ? 's' : ''} dans le dernier prélèvement.
           </p>
-          <details class="text-sm">
-            <summary class="cursor-pointer font-medium text-ink-900">Voir le détail</summary>
-            <ul class="mt-3 space-y-1">
+          <details class="commune-pfas__details">
+            <summary class="commune-pfas__summary">Voir le détail</summary>
+            <ul class="commune-pfas__list">
               {pfas.map((p) => (
-                <li class="flex flex-wrap justify-between gap-2 border-b border-ink-300/30 pb-1">
-                  <span class="text-ink-700">{p.label} <span class="text-xs text-ink-500">({p.code})</span></span>
-                  <span class="tabular-nums text-ink-700">
+                <li class="commune-pfas__item">
+                  <span>{p.label} <span class="commune-pfas__code">({p.code})</span></span>
+                  <span class="tabular-nums">
                     <strong>{formatValue(p)}</strong> {p.unit}
                   </span>
                 </li>
@@ -259,60 +266,58 @@ const statusBadge = data.compliantOverall
         </section>
       )}
 
-      {/* Autres paramètres */}
+      {/* Autres paramètres — accordéon plat */}
       {others.length > 0 && (
-        <section aria-labelledby="others-title" class="mb-8">
-          <details class="rounded-xl bg-surface shadow-card">
-            <summary id="others-title" class="cursor-pointer px-4 py-3 font-semibold text-ink-900">
+        <section aria-labelledby="others-title" class="commune-others">
+          <details class="commune-others__details">
+            <summary id="others-title" class="commune-others__summary">
               Tous les paramètres mesurés ({others.length})
             </summary>
-            <div class="px-4 pb-4">
-              <ul class="grid gap-1 text-sm sm:grid-cols-2">
-                {others.map((p) => (
-                  <li class="flex flex-wrap justify-between gap-2 border-b border-ink-300/30 py-1">
-                    <span class="text-ink-700">{p.label} <span class="text-xs text-ink-500">({p.code})</span></span>
-                    <span class="tabular-nums text-ink-700">{formatValue(p)} {p.unit}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <ul class="commune-others__list">
+              {others.map((p) => (
+                <li class="commune-others__item">
+                  <span>{p.label} <span class="commune-pfas__code">({p.code})</span></span>
+                  <span class="tabular-nums">{formatValue(p)} {p.unit}</span>
+                </li>
+              ))}
+            </ul>
           </details>
         </section>
       )}
 
-      {/* Partage + téléchargement */}
-      <section aria-labelledby="share-title" class="mb-8 rounded-xl bg-surface p-5 shadow-card">
-        <h2 id="share-title" class="text-lg font-bold text-ink-900 mb-3">Partager et télécharger</h2>
-        <div class="flex flex-wrap gap-3">
-          <a href={csvDataUri} download={csvFilename} class="btn-primary text-sm inline-flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4" aria-hidden="true">
+      {/* Partage + téléchargement — pattern A, pas d'ombre */}
+      <section aria-labelledby="share-title" class="commune-share">
+        <h2 id="share-title" class="commune-section-title">Partager et télécharger</h2>
+        <div class="commune-share__actions">
+          <a href={csvDataUri} download={csvFilename} class="btn-primary commune-share__csv">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="commune-share__icon" aria-hidden="true">
               <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.235a.75.75 0 1 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.129V2.75Z"/>
               <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z"/>
             </svg>
             Télécharger en CSV
           </a>
-          <button type="button" class="btn-outline text-sm" data-copy-link data-url={pageUrl}>
+          <button type="button" class="btn-secondary" data-copy-link data-url={pageUrl}>
             Copier le lien
           </button>
-          <a href="/cartographies/qualite-eau/" class="btn-ghost text-sm">
+          <a href="/cartographies/qualite-eau/" class="btn-tertiary">
             ← Toutes les communes
           </a>
         </div>
-        <p class="mt-3 text-xs text-ink-500">
+        <p class="commune-share__note">
           Le CSV contient les {data.lastSampleAllParams?.length ?? 0} paramètres mesurés lors du dernier prélèvement (sources : Hub'Eau / SISE-Eaux, licence Etalab 2.0).
         </p>
       </section>
 
       {/* Source */}
-      <section aria-labelledby="source-title" class="rounded-xl bg-surface-muted p-5 text-sm">
-        <h2 id="source-title" class="font-semibold text-ink-900 mb-2">Source des données</h2>
-        <p class="text-ink-700">
+      <section aria-labelledby="source-title" class="commune-source">
+        <h2 id="source-title" class="commune-source__title">Source des données</h2>
+        <p class="commune-source__text">
           API publique <a href="https://hubeau.eaufrance.fr/page/api-qualite-eau-potable" target="_blank" rel="noopener noreferrer">Hub'Eau — Qualité de l'eau potable</a>,
           alimentée par le système SISE-Eaux du Ministère chargé de la santé via les Agences régionales de santé (ARS).
           Licence Ouverte 2.0 (Etalab).
         </p>
         {lastImport && (
-          <p class="mt-2 text-xs text-ink-500">
+          <p class="commune-source__meta">
             Données importées le <time datetime={lastImport.toISOString()}>{dateFmt.format(lastImport)}</time>.
           </p>
         )}
@@ -323,3 +328,335 @@ const statusBadge = data.compliantOverall
   <JsonLd data={datasetJsonLd} />
   <CopyLinkScript />
 </Base>
+
+<style is:global>
+  /* ============================================================
+     Page commune (eau potable) — gabarit Piste B §4.3
+     Titre Playfair italic 56px, chiffres big-number,
+     tableau filets fins, pas d'ombre.
+     ============================================================ */
+  .commune-page {
+    padding-top: var(--space-xl);
+    padding-bottom: var(--space-3xl);
+  }
+
+  .commune-page__header {
+    margin-top: var(--space-lg);
+    margin-bottom: var(--space-2xl);
+  }
+  .commune-page__kicker {
+    margin-bottom: var(--space-md);
+  }
+  .commune-page__title {
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    color: var(--color-ink-900);
+    margin: 0;
+  }
+  .commune-page__lead {
+    margin-top: var(--space-md);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--color-ink-500);
+  }
+  .commune-page__lead-strong {
+    color: var(--color-ink-900);
+    font-weight: 500;
+  }
+
+  /* Statut conformité — filet vertical sémantique, fond très léger */
+  .commune-status {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    padding: var(--space-md) var(--space-lg);
+    border-left: 2px solid var(--color-ink-300);
+    background: var(--color-paper-200);
+    margin-bottom: var(--space-xl);
+  }
+  .commune-status--ok {
+    border-left-color: var(--color-data-good);
+    background: rgba(59, 109, 17, 0.05);
+  }
+  .commune-status--bad {
+    border-left-color: var(--color-data-bad);
+    background: rgba(121, 31, 31, 0.05);
+  }
+  .commune-status__icon {
+    flex-shrink: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius-sm);
+    background: var(--color-ink-100);
+    color: var(--color-ink-900);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-serif);
+    font-weight: 900;
+    font-size: 1.25rem;
+    margin: 0;
+  }
+  .commune-status--ok .commune-status__icon {
+    background: var(--color-data-good);
+    color: white;
+  }
+  .commune-status--bad .commune-status__icon {
+    background: var(--color-data-bad);
+    color: white;
+  }
+  .commune-status__title {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 1.25rem;
+    line-height: 1.2;
+    color: var(--color-ink-900);
+    margin: 0;
+  }
+  .commune-status__text {
+    margin: 0.25rem 0 0 0;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--color-ink-700);
+  }
+  .commune-status__meta {
+    margin: 0.5rem 0 0 0;
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    color: var(--color-ink-500);
+  }
+
+  /* Chiffres clés — big number Playfair italic */
+  .commune-figures {
+    margin-bottom: var(--space-xl);
+  }
+  .commune-figures__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-lg);
+  }
+  @media (min-width: 640px) {
+    .commune-figures__grid { grid-template-columns: repeat(4, 1fr); }
+  }
+  .commune-figure {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .commune-figure__value {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 900;
+    font-size: clamp(2rem, 4vw, 2.5rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--color-ink-900);
+    margin: 0;
+  }
+  .commune-figure__value--accent {
+    color: var(--color-ochre-600);
+  }
+  .commune-figure__value--muted {
+    color: var(--color-ink-300);
+  }
+  .commune-figure__label {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ochre-600);
+    margin: 0;
+  }
+
+  /* Sections génériques */
+  .commune-section-title {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 1.25rem;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: var(--color-ink-900);
+    margin: 0 0 var(--space-md) 0;
+  }
+
+  /* Tableau paramètres — filets fins, pas d'ombre */
+  .commune-table-section {
+    margin-bottom: var(--space-xl);
+  }
+  .commune-table-wrap {
+    border: 0.5px solid var(--color-ink-200);
+    border-radius: var(--radius-lg);
+  }
+  .commune-table {
+    width: 100%;
+    min-width: 100%;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    border-collapse: collapse;
+  }
+  .commune-table th {
+    background: var(--color-paper-200);
+    padding: 0.75rem 1rem;
+    font-weight: 500;
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-ink-700);
+    border-bottom: 0.5px solid var(--color-ink-200);
+  }
+  .commune-table td {
+    padding: 0.75rem 1rem;
+    color: var(--color-ink-800);
+    border-top: 0.5px solid var(--color-ink-100);
+  }
+  .commune-table tbody tr:first-child td {
+    border-top: none;
+  }
+
+  /* PFAS — pattern callout important */
+  .commune-pfas {
+    margin-bottom: var(--space-xl);
+    padding: var(--space-md) var(--space-lg);
+    border-left: 2px solid var(--color-ochre-600);
+    background: var(--color-ochre-50);
+  }
+  .commune-pfas__title {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 1.0625rem;
+    line-height: 1.3;
+    color: var(--color-ink-900);
+    margin: 0 0 var(--space-xs) 0;
+  }
+  .commune-pfas__intro {
+    margin: 0 0 var(--space-sm) 0;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--color-ink-700);
+  }
+  .commune-pfas__details {
+    font-size: 0.875rem;
+  }
+  .commune-pfas__summary {
+    cursor: pointer;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    color: var(--color-ink-900);
+  }
+  .commune-pfas__list {
+    margin-top: var(--space-sm);
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .commune-pfas__item {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    padding-bottom: 0.25rem;
+    border-bottom: 0.5px solid var(--color-ink-100);
+    font-size: 0.875rem;
+    color: var(--color-ink-700);
+  }
+  .commune-pfas__code {
+    font-size: 0.75rem;
+    color: var(--color-ink-400);
+  }
+
+  /* Autres paramètres — accordéon plat */
+  .commune-others {
+    margin-bottom: var(--space-xl);
+  }
+  .commune-others__details {
+    border: 0.5px solid var(--color-ink-200);
+    border-radius: var(--radius-lg);
+    background: var(--color-paper-50);
+  }
+  .commune-others__summary {
+    cursor: pointer;
+    padding: 0.875rem 1rem;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    color: var(--color-ink-900);
+    list-style: none;
+  }
+  .commune-others__summary::-webkit-details-marker { display: none; }
+  .commune-others__list {
+    display: grid;
+    gap: 0.25rem;
+    padding: 0 1rem 1rem;
+    margin: 0;
+    list-style: none;
+    font-size: 0.875rem;
+  }
+  @media (min-width: 640px) {
+    .commune-others__list { grid-template-columns: 1fr 1fr; }
+  }
+  .commune-others__item {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    padding: 0.25rem 0;
+    border-bottom: 0.5px solid var(--color-ink-100);
+    color: var(--color-ink-700);
+  }
+
+  /* Partage + téléchargement — pattern A */
+  .commune-share {
+    margin-bottom: var(--space-xl);
+  }
+  .commune-share__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    align-items: center;
+  }
+  .commune-share__csv {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .commune-share__icon {
+    width: 1rem;
+    height: 1rem;
+  }
+  .commune-share__note {
+    margin-top: var(--space-md);
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    color: var(--color-ink-500);
+  }
+
+  /* Source */
+  .commune-source {
+    padding: var(--space-md) var(--space-lg);
+    background: var(--color-paper-200);
+    border-radius: var(--radius-lg);
+    font-size: 0.875rem;
+  }
+  .commune-source__title {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ochre-600);
+    margin: 0 0 var(--space-xs) 0;
+  }
+  .commune-source__text {
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    color: var(--color-ink-700);
+    margin: 0;
+  }
+  .commune-source__meta {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--color-ink-500);
+  }
+</style>

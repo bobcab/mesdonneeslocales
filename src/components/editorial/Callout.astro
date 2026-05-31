@@ -7,22 +7,67 @@ interface Props {
 }
 
 const { type = 'info', title } = Astro.props;
-
-const styles = {
-  info:      { bg: 'bg-brand-50',      border: 'border-brand-500',   text: 'text-brand-700' },
-  note:      { bg: 'bg-surface-muted', border: 'border-ink-700',     text: 'text-ink-900' },
-  important: { bg: 'bg-accent-50',     border: 'border-accent-500',  text: 'text-accent-700' },
-  alert:     { bg: 'bg-warning-50',    border: 'border-warning-500', text: 'text-warning-700' },
-};
-
-const s = styles[type];
 ---
 
-<aside class:list={['my-8 border-l-4 p-6 rounded-r-xl not-prose', s.bg, s.border]}>
-  {title && (
-    <p class:list={['kicker mb-3', s.text]}>{title}</p>
-  )}
-  <div class="text-base text-ink-900 leading-relaxed">
+<aside class:list={['callout', `callout--${type}`]}>
+  {title && <p class="callout__title">{title}</p>}
+  <div class="callout__body">
     <slot />
   </div>
 </aside>
+
+<style is:global>
+  /* Callouts — charte Piste B §7.4 : filet 2px gauche, fond paper-200
+     ou ochre-50, pas d'ombre, padding généreux. */
+  .callout {
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-xl);
+    padding: var(--space-md) var(--space-lg);
+    border-left: 2px solid var(--color-ink-700);
+    border-radius: 0;
+    background: var(--color-paper-200);
+  }
+
+  .callout--info {
+    border-left-color: var(--color-ink-700);
+    background: var(--color-paper-200);
+  }
+  .callout--note {
+    border-left-color: var(--color-ink-400);
+    background: var(--color-paper-200);
+  }
+  .callout--important {
+    border-left-color: var(--color-ochre-600);
+    background: var(--color-ochre-50);
+  }
+  .callout--alert {
+    border-left-color: var(--color-data-bad);
+    background: rgba(121, 31, 31, 0.05);
+  }
+
+  .callout__title {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin: 0 0 var(--space-sm) 0;
+    color: var(--color-ink-900);
+  }
+  .callout--important .callout__title {
+    color: var(--color-ochre-700);
+  }
+  .callout--alert .callout__title {
+    color: var(--color-data-bad);
+  }
+
+  .callout__body {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--color-ink-800);
+  }
+  .callout__body :where(p:last-child) {
+    margin-bottom: 0;
+  }
+</style>

@@ -1,7 +1,24 @@
 ---
-// Chapô éditorial — premier paragraphe fort d'une section.
+// Chapô éditorial — premier paragraphe fort d'une section. Charte Piste B :
+// Inter 500 18-20px line-height 1.75, couleur ink-900 (un cran plus sombre
+// que le body), espacement généreux dessous.
 ---
 
-<p class="text-xl md:text-2xl text-ink-900 leading-relaxed font-medium not-prose mb-10">
+<p class="editorial-lead not-prose">
   <slot />
 </p>
+
+<style is:global>
+  .editorial-lead {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 1.125rem;
+    line-height: 1.75;
+    color: var(--color-ink-900);
+    margin-top: var(--space-md);
+    margin-bottom: var(--space-xl);
+  }
+  @media (min-width: 768px) {
+    .editorial-lead { font-size: 1.25rem; }
+  }
+</style>

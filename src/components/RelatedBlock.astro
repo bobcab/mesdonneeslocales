@@ -16,18 +16,14 @@ const related = allCartos
   .slice(0, 4);
 ---
 
-<section aria-labelledby="related-title" class="my-12 grid gap-8 md:grid-cols-2">
-  {/* Colonne 1 — Sources et références (depuis frontmatter furtherReading) */}
+<section aria-labelledby="related-title" class="related-block">
   {d.furtherReading.length > 0 && (
-    <div>
-      <h2 id="related-title" class="text-xl font-bold text-ink-900 mb-4">
-        Sources et références
-      </h2>
-      <ul class="space-y-2 text-sm">
+    <div class="related-block__col">
+      <h2 id="related-title" class="related-block__title">Sources et références</h2>
+      <ul class="related-block__list">
         {d.furtherReading.map((link) => (
-          <li class="flex items-start gap-2">
-            <span aria-hidden="true" class="mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500"></span>
-            <a href={link.url} target="_blank" rel="noopener noreferrer" class="text-ink-700 underline decoration-brand-500/40 underline-offset-2 hover:decoration-brand-500">
+          <li>
+            <a href={link.url} target="_blank" rel="noopener noreferrer" class="related-block__link">
               {link.label}
             </a>
           </li>
@@ -36,30 +32,80 @@ const related = allCartos
     </div>
   )}
 
-  {/* Colonne 2 — Cartographies de la même catégorie */}
   {related.length > 0 && (
-    <div>
-      <h2 class="text-xl font-bold text-ink-900 mb-4">
+    <div class="related-block__col">
+      <h2 class="related-block__title">
         Autres cartographies « {d.category} »
       </h2>
-      <ul class="space-y-2 text-sm">
+      <ul class="related-block__list">
         {related.map((c) => {
           const slug = c.id.replace(/\.md$/, '');
           return (
-            <li class="flex items-start gap-2">
-              <span aria-hidden="true" class="mt-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500"></span>
-              <a href={`/cartographies/${slug}/`} class="text-ink-700 underline decoration-brand-500/40 underline-offset-2 hover:decoration-brand-500">
+            <li>
+              <a href={`/cartographies/${slug}/`} class="related-block__link">
                 {c.data.title}
               </a>
             </li>
           );
         })}
-        <li class="pt-2">
-          <a href="/cartographies/" class="text-sm font-medium text-brand-500 hover:text-brand-400">
-            Voir toutes les cartographies →
+        <li class="related-block__catalog">
+          <a href="/cartographies/" class="btn-tertiary">
+            Voir toutes les cartographies <span aria-hidden="true">→</span>
           </a>
         </li>
       </ul>
     </div>
   )}
 </section>
+
+<style is:global>
+  /* RelatedBlock — Piste B : 2 colonnes simples, liens soulignement ocre. */
+  .related-block {
+    margin-top: var(--space-2xl);
+    margin-bottom: var(--space-2xl);
+    display: grid;
+    gap: var(--space-xl);
+  }
+  @media (min-width: 768px) {
+    .related-block { grid-template-columns: 1fr 1fr; }
+  }
+  .related-block__col {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+  .related-block__title {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 1.25rem;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: var(--color-ink-900);
+    margin: 0;
+  }
+  .related-block__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+  .related-block__link {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    color: var(--color-ink-700);
+    text-decoration: underline;
+    text-decoration-color: var(--color-ochre-600);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+    transition: color 150ms ease, text-decoration-color 150ms ease;
+  }
+  .related-block__link:hover {
+    color: var(--color-ink-900);
+    text-decoration-color: var(--color-ochre-700);
+  }
+  .related-block__catalog {
+    margin-top: var(--space-md);
+  }
+</style>

@@ -11,11 +11,50 @@ interface Props {
 const { items } = Astro.props;
 ---
 
-<dl class="not-prose space-y-8 my-10">
+<dl class="def-list not-prose">
   {items.map((item) => (
-    <div class="grid gap-2 md:grid-cols-[200px_1fr] md:gap-8">
-      <dt class="font-semibold text-ink-900 text-base md:pt-1">{item.term}</dt>
-      <dd class="text-base text-ink-700 leading-relaxed">{item.description}</dd>
+    <div class="def-list__row">
+      <dt class="def-list__term">{item.term}</dt>
+      <dd class="def-list__desc">{item.description}</dd>
     </div>
   ))}
 </dl>
+
+<style is:global>
+  /* DefList — liste de définitions à 2 colonnes. Charte §4 : pas
+     de fond, pas de bordures, aération via gap généreux. */
+  .def-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-xl);
+  }
+  .def-list__row {
+    display: grid;
+    gap: var(--space-xs);
+  }
+  @media (min-width: 768px) {
+    .def-list__row {
+      grid-template-columns: 200px 1fr;
+      gap: var(--space-lg);
+    }
+  }
+  .def-list__term {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--color-ink-900);
+    letter-spacing: -0.01em;
+  }
+  @media (min-width: 768px) {
+    .def-list__term { padding-top: 0.125rem; }
+  }
+  .def-list__desc {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--color-ink-700);
+    margin: 0;
+  }
+</style>

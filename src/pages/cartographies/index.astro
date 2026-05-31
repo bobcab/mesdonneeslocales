@@ -17,8 +17,8 @@ const cartos = (await getCollection('cartographies')).sort(
   title="Toutes les cartographies"
   description="Découvrez toutes les cartographies thématiques de données publiques mises à disposition par L'Observatoire citoyen."
 >
-  <article class="py-8 md:py-12">
-    <div class="container-page max-w-7xl">
+  <article class="catalog-page">
+    <div class="container-wide">
       <Breadcrumbs
         items={[
           { href: '/', label: 'Accueil' },
@@ -26,18 +26,21 @@ const cartos = (await getCollection('cartographies')).sort(
         ]}
       />
 
-      <header class="mb-8 flex flex-wrap items-baseline justify-between gap-3">
-        <div>
-          <h1 class="text-3xl font-bold text-ink-900 md:text-4xl">Toutes les cartographies</h1>
-          <p class="mt-2 max-w-3xl text-ink-700">
-            Les données publiques cartographiées et qualifiées par L'Observatoire citoyen. Toutes
-            accessibles sans inscription, sous licence ouverte.
+      <header class="catalog-page__header">
+        <div class="catalog-page__title-wrap">
+          <p class="caption caption-ochre">Catalogue</p>
+          <h1 class="display-italic catalog-page__title">Toutes les cartographies</h1>
+          <p class="catalog-page__lead">
+            Les données publiques cartographiées et qualifiées par L'Observatoire citoyen.
+            Toutes accessibles sans inscription, sous licence ouverte.
           </p>
         </div>
-        <div class="text-right text-sm text-ink-500">
-          <p class="kicker">Total</p>
-          <p class="text-2xl font-bold text-ink-900">{cartos.length}</p>
-          <p>cartographie{cartos.length > 1 ? 's' : ''} disponible{cartos.length > 1 ? 's' : ''}</p>
+        <div class="catalog-page__count">
+          <p class="caption">Total</p>
+          <p class="catalog-page__count-value">{cartos.length}</p>
+          <p class="catalog-page__count-label">
+            cartographie{cartos.length > 1 ? 's' : ''} disponible{cartos.length > 1 ? 's' : ''}
+          </p>
         </div>
       </header>
 

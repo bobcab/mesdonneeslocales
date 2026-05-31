@@ -616,4 +616,115 @@
     text-align: left;
     color: var(--color-ink-900);
   }
+
+  /* ============================================================
+     Carto page (fiche cartographie) — gabarit Piste B §4.2
+     Header : kicker ocre + display-italic + lead Inter
+     Section : titre Playfair Roman
+     ============================================================ */
+  .carto-page {
+    padding-top: var(--space-xl);
+    padding-bottom: var(--space-3xl);
+  }
+  .carto-page__header {
+    margin-top: var(--space-lg);
+    margin-bottom: var(--space-2xl);
+  }
+  .carto-page__kicker {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-md);
+  }
+  .carto-page__sub {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-ink-500);
+    font-weight: 500;
+  }
+  .carto-page__badge {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .carto-page__title {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    color: var(--color-ink-900);
+    margin: 0;
+    max-width: 920px;
+  }
+  .carto-page__lead {
+    margin-top: var(--space-lg);
+    max-width: 760px;
+    font-family: var(--font-sans);
+    font-size: 1.125rem;
+    line-height: 1.75;
+    color: var(--color-ink-700);
+  }
+  @media (min-width: 768px) {
+    .carto-page__lead { font-size: 1.25rem; }
+  }
+  .carto-page__section-title {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: clamp(1.5rem, 2vw, 1.75rem);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: var(--color-ink-900);
+    margin: 0 0 var(--space-md) 0;
+  }
+  .carto-page__about {
+    margin-top: var(--space-2xl);
+    margin-bottom: var(--space-2xl);
+  }
+
+  /* ============================================================
+     Catalog page (toutes les cartographies)
+     ============================================================ */
+  .catalog-page {
+    padding-top: var(--space-xl);
+    padding-bottom: var(--space-3xl);
+  }
+  .catalog-page__header {
+    margin-top: var(--space-lg);
+    margin-bottom: var(--space-xl);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-lg);
+  }
+  .catalog-page__title-wrap {
+    max-width: 720px;
+  }
+  .catalog-page__title {
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    color: var(--color-ink-900);
+    margin: var(--space-sm) 0 0 0;
+  }
+  .catalog-page__lead {
+    margin-top: var(--space-md);
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.75;
+    color: var(--color-ink-700);
+  }
+  .catalog-page__count {
+    text-align: right;
+  }
+  .catalog-page__count-value {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 900;
+    font-size: 2.5rem;
+    line-height: 1;
+    color: var(--color-ink-900);
+    margin: 0;
+  }
+  .catalog-page__count-label {
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    color: var(--color-ink-500);
+    margin: 0;
+  }
 }

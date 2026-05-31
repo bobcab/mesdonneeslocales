@@ -22,22 +22,81 @@ if (methodology.partner) items.push({ label: 'Partenaire thématique', text: met
 if (items.length === 0) return null;
 ---
 
-<section aria-labelledby="methodology-title" class="my-12">
-  <h2 id="methodology-title" class="text-xl font-bold text-ink-900 mb-6">
+<section aria-labelledby="methodology-title" class="methodology-block">
+  <h2 id="methodology-title" class="methodology-block__title">
     Méthodologie de cette cartographie
   </h2>
 
-  <div class="grid gap-6 md:grid-cols-2">
+  <div class="methodology-block__grid">
     {items.map((it) => (
-      <div>
-        <h3 class="kicker mb-2">{it.label}</h3>
-        <p class="text-sm text-ink-700 leading-relaxed">{it.text}</p>
+      <div class="methodology-block__item">
+        <h3 class="methodology-block__label">{it.label}</h3>
+        <p class="methodology-block__text">{it.text}</p>
       </div>
     ))}
   </div>
 
-  <p class="mt-6 text-sm text-ink-500">
+  <p class="methodology-block__footer">
     Pour notre approche générale, consultez la
     <a href="/methodologie/">méthodologie complète</a>.
   </p>
 </section>
+
+<style is:global>
+  /* MethodologyBlock — charte Piste B §4.2 : prose directe, pas
+     de card, kickers ocre, body Inter 1.75. */
+  .methodology-block {
+    margin-top: var(--space-2xl);
+    margin-bottom: var(--space-2xl);
+  }
+  .methodology-block__title {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: clamp(1.5rem, 2vw, 1.75rem);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: var(--color-ink-900);
+    margin: 0 0 var(--space-lg) 0;
+  }
+  .methodology-block__grid {
+    display: grid;
+    gap: var(--space-lg);
+  }
+  @media (min-width: 768px) {
+    .methodology-block__grid { grid-template-columns: 1fr 1fr; gap: var(--space-xl); }
+  }
+  .methodology-block__item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+  .methodology-block__label {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ochre-600);
+    margin: 0;
+  }
+  .methodology-block__text {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    line-height: 1.75;
+    color: var(--color-ink-700);
+    margin: 0;
+  }
+  .methodology-block__footer {
+    margin-top: var(--space-lg);
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    color: var(--color-ink-400);
+  }
+  .methodology-block__footer a {
+    color: var(--color-ink-700);
+    text-decoration: underline;
+    text-decoration-color: var(--color-ochre-600);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+  }
+</style>

@@ -15,19 +15,63 @@ const dateFmt = new Intl.DateTimeFormat('fr-FR', {
 });
 ---
 
-<header class="border-b border-ink-300/20 pb-12 mb-12 lg:pb-16 lg:mb-16">
-  {kicker && (
-    <p class="kicker mb-6 text-brand-700">{kicker}</p>
-  )}
-  <h1 class="display text-5xl md:text-7xl font-medium text-ink-900 tracking-tight leading-[0.95]">
-    {title}
-  </h1>
-  <p class="mt-8 max-w-3xl text-xl md:text-2xl text-ink-700 leading-relaxed">
-    {lead}
-  </p>
+<header class="editorial-hero">
+  {kicker && <p class="caption caption-ochre editorial-hero__kicker">{kicker}</p>}
+  <h1 class="display-italic editorial-hero__title">{title}</h1>
+  <p class="editorial-hero__lead">{lead}</p>
   {lastUpdated && (
-    <p class="mt-8 text-sm text-ink-500">
-      Mis à jour le <time datetime={lastUpdated.toISOString().slice(0, 10)}>{dateFmt.format(lastUpdated)}</time>
+    <p class="editorial-hero__meta">
+      Mis à jour le
+      <time datetime={lastUpdated.toISOString().slice(0, 10)}>
+        {dateFmt.format(lastUpdated)}
+      </time>
     </p>
   )}
 </header>
+
+<style is:global>
+  /* Editorial hero — charte Piste B §4.1 : kicker ocre + display-italic
+     Playfair + lead Inter 18px line-height 1.75. Filet ocre fin en bas
+     comme signature. */
+  .editorial-hero {
+    border-bottom: 0.5px solid var(--color-ink-100);
+    padding-bottom: var(--space-xl);
+    margin-bottom: var(--space-2xl);
+  }
+  @media (min-width: 1024px) {
+    .editorial-hero {
+      padding-bottom: var(--space-2xl);
+      margin-bottom: var(--space-3xl);
+    }
+  }
+
+  .editorial-hero__kicker {
+    margin-bottom: var(--space-md);
+  }
+
+  .editorial-hero__title {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    color: var(--color-ink-900);
+    margin: 0;
+  }
+
+  .editorial-hero__lead {
+    margin-top: var(--space-lg);
+    max-width: 760px;
+    font-family: var(--font-sans);
+    font-size: 1.125rem;
+    line-height: 1.75;
+    color: var(--color-ink-700);
+  }
+  @media (min-width: 768px) {
+    .editorial-hero__lead { font-size: 1.25rem; }
+  }
+
+  .editorial-hero__meta {
+    margin-top: var(--space-lg);
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    letter-spacing: 0.04em;
+    color: var(--color-ink-400);
+  }
+</style>

@@ -13,14 +13,59 @@ const body = encodeURIComponent(
 const mailto = `mailto:contact@mesdonneeslocales.fr?subject=${subject}&body=${body}`;
 ---
 
-<section aria-labelledby="signal-title" class="my-12 rounded-2xl bg-surface-muted p-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-  <div>
-    <h2 id="signal-title" class="text-base font-semibold text-ink-900">
-      Une donnée erronée, une représentation discutable ?
+<section aria-labelledby="signal-title" class="signal-block">
+  <div class="signal-block__content">
+    <h2 id="signal-title" class="signal-block__title">
+      Une donnée erronée, une représentation discutable&nbsp;?
     </h2>
-    <p class="text-sm text-ink-700 mt-1">
+    <p class="signal-block__text">
       Les signalements sont examinés chaque mois par l'équipe bénévole.
     </p>
   </div>
-  <a href={mailto} class="btn-outline shrink-0">Écrire à l'équipe</a>
+  <a href={mailto} class="btn-secondary signal-block__cta">Écrire à l'équipe</a>
 </section>
+
+<style is:global>
+  /* SignalBlock — Piste B pattern A : carte plate avec filet vertical
+     ocre 2px, pas de fond, padding généreux. */
+  .signal-block {
+    margin-top: var(--space-2xl);
+    margin-bottom: var(--space-xl);
+    padding: var(--space-md) var(--space-lg);
+    border-left: 2px solid var(--color-ochre-600);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+  @media (min-width: 768px) {
+    .signal-block {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+  .signal-block__content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .signal-block__title {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 1.125rem;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: var(--color-ink-900);
+    margin: 0;
+  }
+  .signal-block__text {
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--color-ink-700);
+    margin: 0;
+  }
+  .signal-block__cta {
+    flex-shrink: 0;
+  }
+</style>

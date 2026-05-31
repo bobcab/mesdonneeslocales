@@ -13,18 +13,15 @@ interface Props {
 const { items, title = 'Sur cette page' } = Astro.props;
 ---
 
-<aside class="hidden lg:block" aria-label="Sommaire de la page">
-  <nav class="sticky top-28">
-    <p class="kicker mb-4 text-ink-500">{title}</p>
-    <ul class="space-y-2 border-l border-ink-300/40">
+<aside class="editorial-toc" aria-label="Sommaire de la page">
+  <nav class="editorial-toc__nav">
+    <p class="editorial-toc__title">{title}</p>
+    <ul class="editorial-toc__list">
       {items.map((item) => (
         <li>
           <a
             href={`#${item.id}`}
-            class:list={[
-              'block py-1 pl-4 -ml-px border-l-2 border-transparent text-sm text-ink-700 no-underline transition-colors hover:text-brand-600 hover:border-brand-500',
-              item.level === 3 && 'pl-8 text-xs',
-            ]}
+            class:list={['editorial-toc__link', item.level === 3 && 'editorial-toc__link--sub']}
             data-toc-link={item.id}
           >
             {item.label}
@@ -35,21 +32,21 @@ const { items, title = 'Sur cette page' } = Astro.props;
   </nav>
 </aside>
 
-<details class="lg:hidden mb-8 rounded-xl border border-ink-300/40 bg-surface-muted">
-  <summary class="cursor-pointer px-6 py-4 text-sm font-medium text-ink-900 list-none flex items-center justify-between">
+<details class="editorial-toc-mobile">
+  <summary class="editorial-toc-mobile__summary">
     <span>{title}</span>
-    <svg class="h-5 w-5 text-ink-500 transition-transform" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+    <svg class="editorial-toc-mobile__icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
       <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.06l3.71-3.83a.75.75 0 1 1 1.08 1.04l-4.25 4.38a.75.75 0 0 1-1.08 0L5.21 8.27a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd"/>
     </svg>
   </summary>
-  <ul class="px-6 pb-4 space-y-1">
+  <ul class="editorial-toc-mobile__list">
     {items.map((item) => (
       <li>
         <a
           href={`#${item.id}`}
           class:list={[
-            'block py-1 text-sm text-ink-700 no-underline hover:text-brand-600',
-            item.level === 3 && 'pl-4 text-xs',
+            'editorial-toc-mobile__link',
+            item.level === 3 && 'editorial-toc-mobile__link--sub',
           ]}
         >
           {item.label}
@@ -59,7 +56,131 @@ const { items, title = 'Sur cette page' } = Astro.props;
   </ul>
 </details>
 
+<style is:global>
+  /* ============================================================
+     Editorial TOC — sommaire sticky desktop + accordéon mobile
+     Charte Piste B §4.1 : filet vertical ocre 2px, liens caption
+     style uppercase letter-spaced, hover/active en ocre-700.
+     ============================================================ */
+  .editorial-toc {
+    display: none;
+  }
+  @media (min-width: 1024px) {
+    .editorial-toc { display: block; }
+  }
+
+  .editorial-toc__nav {
+    position: sticky;
+    top: var(--space-2xl);
+  }
+
+  .editorial-toc__title {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ochre-600);
+    margin: 0 0 var(--space-md) 0;
+  }
+
+  .editorial-toc__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-left: 2px solid var(--color-ochre-600);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .editorial-toc__link {
+    display: block;
+    padding: 0.375rem 0 0.375rem var(--space-md);
+    margin-left: -2px;
+    border-left: 2px solid transparent;
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-ink-700);
+    text-decoration: none;
+    transition: color 150ms ease, border-color 150ms ease;
+  }
+  .editorial-toc__link:hover {
+    color: var(--color-ochre-700);
+    text-decoration: none;
+  }
+  .editorial-toc__link.is-active {
+    color: var(--color-ochre-700);
+    border-left-color: var(--color-ochre-700);
+    font-weight: 500;
+  }
+  .editorial-toc__link--sub {
+    padding-left: calc(var(--space-md) + 1rem);
+    font-size: 0.75rem;
+    color: var(--color-ink-500);
+  }
+
+  /* ===== Version mobile (accordéon natif <details>) ===== */
+  .editorial-toc-mobile {
+    margin-bottom: var(--space-lg);
+    border: 0.5px solid var(--color-ink-200);
+    border-radius: var(--radius-lg);
+    background: var(--color-paper-100);
+  }
+  @media (min-width: 1024px) {
+    .editorial-toc-mobile { display: none; }
+  }
+  .editorial-toc-mobile__summary {
+    cursor: pointer;
+    padding: var(--space-md) var(--space-lg);
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.9375rem;
+    color: var(--color-ink-900);
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .editorial-toc-mobile__summary::-webkit-details-marker { display: none; }
+  .editorial-toc-mobile__icon {
+    height: 1.25rem;
+    width: 1.25rem;
+    color: var(--color-ink-500);
+    transition: transform 200ms ease;
+  }
+  .editorial-toc-mobile[open] .editorial-toc-mobile__icon {
+    transform: rotate(180deg);
+  }
+  .editorial-toc-mobile__list {
+    list-style: none;
+    margin: 0;
+    padding: 0 var(--space-lg) var(--space-md);
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  .editorial-toc-mobile__link {
+    display: block;
+    padding: 0.375rem 0;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    color: var(--color-ink-700);
+    text-decoration: none;
+  }
+  .editorial-toc-mobile__link:hover {
+    color: var(--color-ochre-700);
+    text-decoration: none;
+  }
+  .editorial-toc-mobile__link--sub {
+    padding-left: var(--space-md);
+    font-size: 0.8125rem;
+  }
+</style>
+
 <script>
+  // Highlight de la section courante au scroll (IntersectionObserver).
   const links = document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]');
   const sections = Array.from(links)
     .map((link) => {
@@ -75,9 +196,7 @@ const { items, title = 'Sur cette page' } = Astro.props;
           if (entry.isIntersecting) {
             links.forEach((link) => {
               const isActive = link.dataset.tocLink === entry.target.id;
-              link.classList.toggle('border-brand-500', isActive);
-              link.classList.toggle('text-brand-700', isActive);
-              link.classList.toggle('font-medium', isActive);
+              link.classList.toggle('is-active', isActive);
             });
           }
         });

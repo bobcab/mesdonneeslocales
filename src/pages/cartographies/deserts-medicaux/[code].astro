@@ -123,8 +123,8 @@ if (nationalMeanMG != null) {
 ---
 
 <Base title={title} description={description}>
-  <article class="py-8 md:py-12">
-    <div class="container-page max-w-4xl">
+  <article class="commune-page">
+    <div class="container-narrow">
       <Breadcrumbs
         items={[
           { href: '/', label: 'Accueil' },
@@ -134,17 +134,15 @@ if (nationalMeanMG != null) {
         ]}
       />
 
-      {/* Header */}
-      <header class="mb-8">
-        <div class="mb-3 flex flex-wrap items-center gap-2">
-          <span class="pill-brand">Santé</span>
-          <span class="pill">Accessibilité aux soins</span>
-          <span class="text-sm text-ink-500">Code INSEE {data.code}</span>
-        </div>
-        <h1 class="text-3xl font-bold text-ink-900 md:text-4xl">
-          Accessibilité aux soins — {data.name}
+      {/* Header — charte Piste B §4.3 : titre Playfair italic */}
+      <header class="commune-page__header">
+        <p class="caption caption-ochre commune-page__kicker">
+          Santé · Accessibilité aux soins · Code INSEE {data.code}
+        </p>
+        <h1 class="display-italic commune-page__title">
+          L'accès aux soins à {data.name}
         </h1>
-        <p class="mt-2 text-ink-500">
+        <p class="commune-page__lead">
           {data.departmentName} ({data.department})
           {lastYear && (
             <>

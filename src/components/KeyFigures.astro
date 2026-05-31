@@ -12,23 +12,75 @@ const { figures } = Astro.props;
 ---
 
 {figures.length > 0 && (
-  <section aria-labelledby="figures-title" class="my-8">
+  <section aria-labelledby="figures-title" class="key-figures">
     <h2 id="figures-title" class="sr-only">Chiffres clés</h2>
     <div
       class:list={[
-        'grid gap-4',
-        figures.length === 1 && 'grid-cols-1',
-        figures.length === 2 && 'grid-cols-1 sm:grid-cols-2',
-        figures.length === 3 && 'grid-cols-1 sm:grid-cols-3',
-        figures.length >= 4 && 'grid-cols-2 lg:grid-cols-4',
+        'key-figures__grid',
+        figures.length === 1 && 'key-figures__grid--1',
+        figures.length === 2 && 'key-figures__grid--2',
+        figures.length === 3 && 'key-figures__grid--3',
+        figures.length >= 4 && 'key-figures__grid--4',
       ]}
     >
       {figures.map((f) => (
-        <div class="rounded-xl bg-surface p-5 shadow-card">
-          <p class="text-4xl font-bold text-ink-900 leading-none">{f.value}</p>
-          <p class="mt-3 text-sm text-ink-500 leading-snug">{f.label}</p>
+        <div class="key-figure">
+          <p class="key-figure__value">{f.value}</p>
+          <p class="key-figure__label">{f.label}</p>
         </div>
       ))}
     </div>
   </section>
 )}
+
+<style is:global>
+  /* KeyFigures — charte Piste B : pattern A carte plate, chiffres en
+     Playfair italic 900, label Inter méta uppercase ocre. Pas d'ombre,
+     pas de fond, aération via gap. */
+  .key-figures {
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-xl);
+  }
+  .key-figures__grid {
+    display: grid;
+    gap: var(--space-xl) var(--space-lg);
+  }
+  .key-figures__grid--1 { grid-template-columns: 1fr; }
+  .key-figures__grid--2 { grid-template-columns: 1fr; }
+  @media (min-width: 640px) {
+    .key-figures__grid--2 { grid-template-columns: repeat(2, 1fr); }
+    .key-figures__grid--3 { grid-template-columns: repeat(3, 1fr); }
+  }
+  .key-figures__grid--3 { grid-template-columns: 1fr; }
+  .key-figures__grid--4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @media (min-width: 1024px) {
+    .key-figures__grid--4 { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  .key-figure {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+  .key-figure__value {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 900;
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--color-ink-900);
+    margin: 0;
+  }
+  .key-figure__label {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ochre-600);
+    margin: 0;
+  }
+</style>

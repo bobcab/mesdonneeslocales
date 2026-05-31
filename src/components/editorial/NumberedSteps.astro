@@ -11,14 +11,63 @@ interface Props {
 const { items } = Astro.props;
 ---
 
-<div class="not-prose my-12 grid gap-12 md:grid-cols-3">
+<div class="numbered-steps not-prose">
   {items.map((item, i) => (
-    <div>
-      <div class="display text-5xl font-medium text-brand-500 mb-4">
-        {String(i + 1).padStart(2, '0')}
-      </div>
-      <h3 class="text-xl font-semibold text-ink-900 mb-3 tracking-tight">{item.title}</h3>
-      <p class="text-base text-ink-700 leading-relaxed">{item.description}</p>
+    <div class="numbered-step">
+      <span class="numbered-step__number">{String(i + 1).padStart(2, '0')}</span>
+      <h3 class="numbered-step__title">{item.title}</h3>
+      <p class="numbered-step__description">{item.description}</p>
     </div>
   ))}
 </div>
+
+<style is:global>
+  /* NumberedSteps — pattern Piste B : numéros 01/02/03 en
+     Playfair italic ocre, titre Playfair Roman, body Inter 1.75. */
+  .numbered-steps {
+    display: grid;
+    gap: var(--space-2xl);
+    margin-top: var(--space-2xl);
+    margin-bottom: var(--space-2xl);
+  }
+  @media (min-width: 768px) {
+    .numbered-steps {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .numbered-step {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .numbered-step__number {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 900;
+    font-size: 3rem;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--color-ochre-600);
+    margin-bottom: var(--space-xs);
+  }
+
+  .numbered-step__title {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 1.375rem;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: var(--color-ink-900);
+    margin: 0;
+  }
+
+  .numbered-step__description {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--color-ink-700);
+    margin: 0;
+  }
+</style>
