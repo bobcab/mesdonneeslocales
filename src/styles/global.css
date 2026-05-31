@@ -261,20 +261,51 @@
 }
 
 @layer components {
-  .container-page {
-    @apply mx-auto w-full px-4 sm:px-6 lg:px-8;
+  /* Containers — largeur centrée avec padding latéral responsive.
+     Note Tailwind v4 : @apply mx-auto + max-width var() ne s'applique pas
+     toujours correctement dans @layer components → on définit en CSS pur. */
+  .container-page,
+  .container-narrow,
+  .container-default,
+  .container-wide,
+  .container-prose {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  @media (min-width: 640px) {
+    .container-page,
+    .container-narrow,
+    .container-default,
+    .container-wide,
+    .container-prose {
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+  }
+  @media (min-width: 1024px) {
+    .container-page,
+    .container-narrow,
+    .container-default,
+    .container-wide,
+    .container-prose {
+      padding-left: 2rem;
+      padding-right: 2rem;
+    }
+  }
+  .container-page,
+  .container-default {
     max-width: var(--container-default);
   }
   .container-narrow {
-    @apply mx-auto w-full px-4 sm:px-6 lg:px-8;
     max-width: var(--container-narrow);
   }
   .container-wide {
-    @apply mx-auto w-full px-4 sm:px-6 lg:px-8;
     max-width: var(--container-wide);
   }
   .container-prose {
-    @apply mx-auto w-full px-4 sm:px-6 lg:px-8;
     max-width: var(--container-prose);
   }
 
