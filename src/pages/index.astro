@@ -1,6 +1,5 @@
 ---
 import { getCollection, getEntry } from 'astro:content';
-import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import CartoCard from '../components/CartoCard.astro';
 import CopyLinkScript from '../components/CopyLinkScript.astro';
@@ -10,245 +9,214 @@ import MapEau from '../components/MapEau.astro';
 const allCartos = await getCollection('cartographies');
 const featured = allCartos
   .filter((c) => c.data.featured)
-  .sort((a, b) => a.data.order - b.data.order)
-  .slice(0, 3);
+  .sort((a, b) => a.data.order - b.data.order);
 
-// Image isométrique 3D de la carto vedette du mois, affichée en fond du hero magazine.
+// Highlight (En ce moment) — affiché en bandeau breaking news sous le hero.
 const highlight = await getEntry('highlights', 'current');
-const heroImage = highlight?.data.heroImage;
-const heroImageAlt = highlight?.data.heroImageAlt ?? '';
 
 // URLs externes
 const DONATE_URL = 'https://www.helloasso.com/associations/l-observatoire-citoyen/formulaires/1';
+
+// Statistiques pour le manifeste sombre (charte Piste B §3.3).
+// allCartos.length = nombre de cartos publiées (4 actuellement)
+const targetCartos = 50;
 ---
 
 <Base title="Mes données locales" isHome>
   {/* ============================================================
-       BLOC 1 — Hero magazine pleine largeur (vignette 3D + breaking news)
+       BLOC 1 — Hero « drapeau éditorial » (charte Piste B §3.1)
+       Aération maximale, manifeste Playfair italic, pas d'image
+       de fond (le hero respire seul). Bandeau breaking news en bas.
        ============================================================ */}
-  <section class="relative isolate overflow-hidden bg-surface-muted" aria-labelledby="hero-title">
-    {/* Image de fond — la vignette 3D de la carto vedette du moment */}
-    {heroImage && (
-      <div class="absolute inset-0 -z-10">
-        <Image
-          src={heroImage}
-          alt={heroImageAlt}
-          class="h-full w-full object-cover opacity-90"
-          loading="eager"
-          widths={[1200, 1800, 2400]}
-          sizes="100vw"
-        />
-        {/* Overlay dégradé : assure la lisibilité du texte à gauche, image qui transparaît à droite */}
-        <div class="absolute inset-0 bg-gradient-to-r from-surface-muted via-surface-muted/85 to-surface-muted/30"></div>
-        <div class="absolute inset-0 bg-gradient-to-t from-surface-muted via-transparent to-transparent"></div>
-      </div>
-    )}
-
-    <div class="container-page relative flex min-h-[85vh] flex-col justify-end pb-32 pt-32 lg:pt-40">
-      <p class="kicker mb-6 text-brand-700">L'Observatoire citoyen · Cartographies publiques</p>
-
-      <h1
-        id="hero-title"
-        class="display text-6xl md:text-8xl font-medium text-ink-900 leading-[0.95] max-w-5xl tracking-tight"
-      >
-        Savoir,<br />c'est pouvoir.
-      </h1>
-
-      <p class="mt-8 max-w-2xl text-xl md:text-2xl text-ink-700 leading-relaxed">
-        Des données publiques fiables, cartographiées et qualifiées, pour mieux comprendre votre
-        territoire et faire vos propres analyses.
+  <section class="hero-flag" aria-labelledby="hero-title">
+    <div class="container-wide hero-flag__inner">
+      <p class="caption caption-ochre hero-flag__kicker">
+        Plateforme citoyenne · Données publiques
       </p>
 
-      <div class="mt-10 flex flex-wrap items-center gap-6">
-        <a href="/cartographies/" class="btn-primary">Explorer les cartes</a>
-        <a
-          href="/a-propos/"
-          class="text-base font-medium text-ink-900 hover:text-brand-600 transition-colors no-underline"
-        >
-          Notre démarche <span aria-hidden="true">→</span>
+      <h1 id="hero-title" class="display-italic hero-flag__title">
+        L'information<br />est un bien commun.
+      </h1>
+
+      <p class="hero-flag__lead">
+        Quatre cartographies, des dizaines de milliers de pages communales : qualité de l'eau
+        potable, accès aux soins, densité carcérale, incidents nucléaires. Mis à jour
+        régulièrement. Sans publicité, sans tracking, sans inscription.
+      </p>
+
+      <div class="hero-flag__actions">
+        <a href="/cartographies/" class="btn-primary">
+          Explorer les cartographies <span aria-hidden="true">→</span>
         </a>
+        <a href="/methodologie/" class="btn-tertiary">Méthodologie</a>
       </div>
     </div>
 
-    <HeroBreakingNews />
+    {/* Breaking news — bandeau « En ce moment » en bas du hero */}
+    {highlight && <HeroBreakingNews />}
   </section>
 
   {/* ============================================================
-       BLOC 2 — Showcase éditorial asymétrique des cartographies
+       BLOC 2 — Showcase éditorial des cartographies (charte §3.2)
+       Pattern A « carte plate » : pas de fond coloré, pas de bordure,
+       pas d'ombre. Layout asymétrique 1 vedette + 3 secondaires.
        ============================================================ */}
-  <section aria-labelledby="bloc-cartos" class="py-24 bg-surface">
-    <div class="container-page">
-      <div class="mb-12 flex flex-wrap items-baseline justify-between gap-4">
-        <div>
-          <p class="kicker mb-3">Cartographies disponibles</p>
-          <h2 id="bloc-cartos" class="text-3xl md:text-5xl font-semibold text-ink-900 tracking-tight">
-            {allCartos.length === 1
-              ? 'La cartographie actuelle'
-              : `${allCartos.length} cartographies, autant de questions citoyennes`}
-          </h2>
-        </div>
-        <a
-          href="/cartographies/"
-          class="text-base font-medium text-brand-600 hover:text-brand-700 transition-colors no-underline shrink-0"
-        >
-          Voir le catalogue complet <span aria-hidden="true">→</span>
-        </a>
-      </div>
+  <section aria-labelledby="bloc-cartos" class="section-cartos">
+    <div class="container-default">
+      <header class="section-cartos__header">
+        <p class="caption caption-ochre">Cartographies disponibles</p>
+        <h2 id="bloc-cartos" class="heading-roman section-cartos__title">
+          Quatre territoires d'enquête.
+        </h2>
+      </header>
 
-      {/* Layout asymétrique : 1 vedette + 2 secondaires */}
-      {featured.length >= 3 ? (
-        <div class="grid gap-6 lg:grid-cols-2">
-          {/* Vedette à gauche */}
+      {featured.length >= 4 ? (
+        <div class="section-cartos__grid">
+          {/* Vedette à gauche, sur 2 colonnes */}
           <CartoCard carto={featured[0]} variant="hero" />
-          {/* 2 secondaires empilées à droite */}
-          <div class="grid gap-6 grid-rows-2">
+          {/* 3 secondaires en colonne droite */}
+          <div class="section-cartos__sidecol">
             <CartoCard carto={featured[1]} variant="secondary" />
             <CartoCard carto={featured[2]} variant="secondary" />
+            <CartoCard carto={featured[3]} variant="secondary" />
           </div>
         </div>
       ) : (
-        /* Fallback : grille standard si <3 featured */
-        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        /* Fallback : grille standard si <4 featured */
+        <div class="section-cartos__fallback">
           {featured.map((carto) => <CartoCard carto={carto} variant="featured" />)}
         </div>
       )}
+
+      <div class="section-cartos__footer">
+        <a href="/cartographies/" class="btn-tertiary">
+          Voir le catalogue complet <span aria-hidden="true">→</span>
+        </a>
+      </div>
     </div>
   </section>
 
   {/* ============================================================
-       BLOC 3 — Manifeste sombre : « L'information publique est un bien commun »
+       BLOC 3 — Manifeste sombre (charte §3.3, pattern C)
+       Fond ink-900, manifeste Playfair italic, gros chiffres clés
+       alignés en bas.
        ============================================================ */}
-  <section aria-labelledby="bloc-demarche" class="bg-ink-900 py-24 lg:py-32">
-    <div class="container-page grid gap-16 lg:grid-cols-[1.4fr_1fr] lg:items-center">
-      <div>
-        <p class="kicker mb-6 text-accent-500">Notre démarche</p>
-        <h2
-          id="bloc-demarche"
-          class="display text-4xl md:text-6xl font-medium text-white tracking-tight leading-tight mb-8"
-        >
-          L'information publique est un bien commun.
-        </h2>
-        <p class="text-lg md:text-xl text-white/80 leading-relaxed max-w-xl">
-          Pourtant, éparpillée sur des dizaines de portails et diffusée dans des formats techniques,
-          elle reste hors de portée des citoyens. Mes données locales rassemble, vérifie et
-          cartographie ces données, pour que chacun puisse se faire sa propre opinion.
-        </p>
-        <a
-          href="/methodologie/"
-          class="mt-8 inline-flex items-center gap-2 text-base font-medium text-accent-500 hover:text-accent-300 transition-colors no-underline"
-        >
-          Découvrir notre méthodologie <span aria-hidden="true">→</span>
-        </a>
+  <section aria-labelledby="bloc-demarche" class="section-manifesto">
+    <div class="container-wide">
+      <p class="caption section-manifesto__kicker">Notre engagement</p>
+
+      <h2 id="bloc-demarche" class="display-italic section-manifesto__title">
+        Pas de publicité.<br />
+        Pas de tracking.<br />
+        Pas d'inscription.
+      </h2>
+
+      <p class="section-manifesto__lead">
+        Le site est financé par les dons et le travail bénévole. Les données présentées sont
+        publiques, leur source est tracée, leur méthodologie est documentée. Chacun reste libre
+        de tirer ses propres conclusions.
+      </p>
+
+      <div class="section-manifesto__numbers">
+        <div class="big-number">
+          <span class="big-number__value">{allCartos.length}</span>
+          <span class="big-number__label">cartographies publiées</span>
+        </div>
+        <div class="big-number">
+          <span class="big-number__value big-number__value--accent">{targetCartos}</span>
+          <span class="big-number__label">cap visé d'ici 2031</span>
+        </div>
+        <div class="big-number">
+          <span class="big-number__value">100<span class="big-number__unit">%</span></span>
+          <span class="big-number__label">données publiques sourcées</span>
+        </div>
+        <div class="big-number">
+          <span class="big-number__value">0<span class="big-number__unit">€</span></span>
+          <span class="big-number__label">gratuit, sans inscription</span>
+        </div>
       </div>
 
-      {/* Chiffres clés sans bordures, hiérarchie narrative */}
-      <div class="grid grid-cols-2 gap-x-8 gap-y-12">
-        <div>
-          <p class="display text-7xl font-medium text-white leading-none">{allCartos.length}</p>
-          <p class="mt-3 text-sm text-white/70">cartographies publiées</p>
-        </div>
-        <div>
-          <p class="display text-7xl font-medium text-accent-500 leading-none">50</p>
-          <p class="mt-3 text-sm text-white/70">cap visé d'ici 2031</p>
-        </div>
-        <div>
-          <p class="text-3xl font-semibold text-white leading-none">100<span class="text-2xl">%</span></p>
-          <p class="mt-2 text-sm text-white/70">données publiques sourcées</p>
-        </div>
-        <div>
-          <p class="text-3xl font-semibold text-white leading-none">0<span class="text-2xl">€</span></p>
-          <p class="mt-2 text-sm text-white/70">gratuit, sans inscription</p>
-        </div>
-      </div>
+      <p class="section-manifesto__cta">
+        <a href="/methodologie/" class="section-manifesto__link">
+          Découvrir notre méthodologie <span aria-hidden="true">→</span>
+        </a>
+      </p>
     </div>
   </section>
 
   {/* ============================================================
        BLOC 4 — Carte de France interactive (data live Hub'Eau)
        ============================================================ */}
-  <section aria-labelledby="bloc-territoire" class="py-24 bg-surface-muted">
-    <div class="container-page">
-      <div class="mb-12 flex flex-wrap items-baseline justify-between gap-4">
-        <div>
-          <p class="kicker mb-3">Sur le territoire</p>
-          <h2
-            id="bloc-territoire"
-            class="text-3xl md:text-5xl font-semibold text-ink-900 tracking-tight"
-          >
-            Une carte par question,<br class="hidden md:block" /> une question par carte.
-          </h2>
-          <p class="mt-4 max-w-2xl text-base md:text-lg text-ink-700">
-            Aperçu : la qualité de l'eau potable, département par département. Cliquez sur un
-            département pour voir le détail.
-          </p>
-        </div>
-        <a
-          href="/carte-france/"
-          class="text-base font-medium text-brand-600 hover:text-brand-700 transition-colors no-underline shrink-0"
-        >
+  <section aria-labelledby="bloc-territoire" class="section-map">
+    <div class="container-default">
+      <header class="section-map__header">
+        <p class="caption caption-ochre">Sur le territoire</p>
+        <h2 id="bloc-territoire" class="heading-roman section-map__title">
+          Une carte par question,<br class="hidden md:block" /> une question par carte.
+        </h2>
+        <p class="section-map__lead">
+          Aperçu : la qualité de l'eau potable, département par département. Cliquez sur un
+          département pour voir le détail.
+        </p>
+      </header>
+
+      <MapEau homeMode={true} />
+
+      <div class="section-map__footer">
+        <a href="/carte-france/" class="btn-tertiary">
           Carte de France complète <span aria-hidden="true">→</span>
         </a>
       </div>
-
-      <MapEau homeMode={true} />
     </div>
   </section>
 
   {/* ============================================================
-       BLOC 5 — Trois façons de soutenir (style 01 / 02 / 03)
+       BLOC 5 — Trois façons de soutenir (charte §10.7, pattern B)
+       Numérotation 01/02/03 en Playfair italic ocre.
        ============================================================ */}
-  <section aria-labelledby="bloc-participe" id="je-participe" class="bg-brand-50 py-24">
-    <div class="container-page">
-      <div class="mb-16 max-w-2xl">
-        <p class="kicker mb-3 text-brand-700">Je participe</p>
-        <h2
-          id="bloc-participe"
-          class="text-3xl md:text-5xl font-semibold text-ink-900 tracking-tight"
-        >
+  <section aria-labelledby="bloc-participe" id="je-participe" class="section-participe">
+    <div class="container-default">
+      <header class="section-participe__header">
+        <p class="caption caption-ochre">Je participe</p>
+        <h2 id="bloc-participe" class="heading-roman section-participe__title">
           Trois façons de soutenir le projet.
         </h2>
-      </div>
+      </header>
 
-      <div class="grid gap-12 md:grid-cols-3">
-        <a href={DONATE_URL} target="_blank" rel="noopener noreferrer" class="group no-underline">
-          <div class="display text-6xl font-medium text-brand-500 mb-4 leading-none">01</div>
-          <h3 class="text-2xl font-semibold text-ink-900 mb-3 tracking-tight group-hover:text-brand-600 transition-colors">
-            Je donne
-          </h3>
-          <p class="text-base text-ink-700 leading-relaxed">
-            Maintenir et développer le site, en toute indépendance. Chaque don nous permet de garder
-            le projet 100 % bénévole et sans publicité.
+      <div class="section-participe__grid">
+        <a href={DONATE_URL} target="_blank" rel="noopener noreferrer" class="participe-card">
+          <span class="participe-card__number">01</span>
+          <h3 class="participe-card__title">Je donne</h3>
+          <p class="participe-card__lead">
+            Maintenir et développer le site, en toute indépendance. Chaque don nous permet de
+            garder le projet 100 % bénévole et sans publicité.
           </p>
-          <span class="mt-6 inline-flex items-center gap-2 text-sm font-medium text-brand-600 group-hover:text-brand-700">
-            Vers HelloAsso <span aria-hidden="true" class="transition-transform group-hover:translate-x-1">→</span>
+          <span class="participe-card__cta">
+            Vers HelloAsso <span aria-hidden="true">→</span>
           </span>
         </a>
 
-        <a href="/je-participe/#benevolat" class="group no-underline">
-          <div class="display text-6xl font-medium text-brand-500 mb-4 leading-none">02</div>
-          <h3 class="text-2xl font-semibold text-ink-900 mb-3 tracking-tight group-hover:text-brand-600 transition-colors">
-            Je rejoins l'équipe
-          </h3>
-          <p class="text-base text-ink-700 leading-relaxed">
-            Apporter mes compétences à un projet citoyen bénévole. Développement, design, rédaction,
-            animation : toutes les énergies sont accueillies.
+        <a href="/je-participe/#benevolat" class="participe-card">
+          <span class="participe-card__number">02</span>
+          <h3 class="participe-card__title">Je rejoins l'équipe</h3>
+          <p class="participe-card__lead">
+            Apporter mes compétences à un projet citoyen bénévole. Développement, design,
+            rédaction, animation : toutes les énergies sont accueillies.
           </p>
-          <span class="mt-6 inline-flex items-center gap-2 text-sm font-medium text-brand-600 group-hover:text-brand-700">
-            Comment nous rejoindre <span aria-hidden="true" class="transition-transform group-hover:translate-x-1">→</span>
+          <span class="participe-card__cta">
+            Comment nous rejoindre <span aria-hidden="true">→</span>
           </span>
         </a>
 
-        <a href="/je-participe/#diffusion" class="group no-underline">
-          <div class="display text-6xl font-medium text-brand-500 mb-4 leading-none">03</div>
-          <h3 class="text-2xl font-semibold text-ink-900 mb-3 tracking-tight group-hover:text-brand-600 transition-colors">
-            Je diffuse les cartes
-          </h3>
-          <p class="text-base text-ink-700 leading-relaxed">
-            Intégrer une cartographie sur mon site ou dans ma classe. Toutes les cartes sont en CC
-            BY-SA, librement réutilisables avec mention.
+        <a href="/je-participe/#diffusion" class="participe-card">
+          <span class="participe-card__number">03</span>
+          <h3 class="participe-card__title">Je diffuse les cartes</h3>
+          <p class="participe-card__lead">
+            Intégrer une cartographie sur mon site ou dans ma classe. Toutes les cartes sont
+            en CC BY-SA, librement réutilisables avec mention.
           </p>
-          <span class="mt-6 inline-flex items-center gap-2 text-sm font-medium text-brand-600 group-hover:text-brand-700">
-            Voir le guide d'intégration <span aria-hidden="true" class="transition-transform group-hover:translate-x-1">→</span>
+          <span class="participe-card__cta">
+            Voir le guide d'intégration <span aria-hidden="true">→</span>
           </span>
         </a>
       </div>
@@ -257,3 +225,306 @@ const DONATE_URL = 'https://www.helloasso.com/associations/l-observatoire-citoye
 
   <CopyLinkScript />
 </Base>
+
+<style is:global>
+  /* ============================================================
+     Hero « drapeau éditorial » — charte Piste B §3.1
+     Pattern signature : kicker ocre, manifeste Playfair italic
+     très grand, lead Inter 1.75, 2 CTA. Aération maximale.
+     ============================================================ */
+  .hero-flag {
+    position: relative;
+    background: var(--color-paper-100);
+    padding-top: var(--space-4xl);
+    padding-bottom: var(--space-3xl);
+  }
+  .hero-flag__inner {
+    max-width: 980px;
+  }
+  .hero-flag__kicker {
+    margin-bottom: var(--space-lg);
+  }
+  .hero-flag__title {
+    font-size: clamp(3rem, 7vw, 7rem);
+    color: var(--color-ink-900);
+    margin: 0;
+  }
+  .hero-flag__lead {
+    margin-top: var(--space-lg);
+    max-width: 580px;
+    font-family: var(--font-sans);
+    font-size: 1.125rem;
+    line-height: 1.75;
+    color: var(--color-ink-700);
+  }
+  @media (min-width: 768px) {
+    .hero-flag__lead {
+      font-size: 1.25rem;
+    }
+  }
+  .hero-flag__actions {
+    margin-top: var(--space-xl);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  /* ============================================================
+     Showcase cartographies — pattern A carte plate
+     ============================================================ */
+  .section-cartos {
+    background: var(--color-paper-100);
+    padding-top: var(--space-3xl);
+    padding-bottom: var(--space-3xl);
+  }
+  .section-cartos__header {
+    margin-bottom: var(--space-2xl);
+    max-width: 720px;
+  }
+  .section-cartos__header .caption {
+    margin-bottom: var(--space-sm);
+  }
+  .section-cartos__title {
+    font-size: clamp(2rem, 4vw, 3rem);
+    color: var(--color-ink-900);
+    margin: 0;
+  }
+  .section-cartos__grid {
+    display: grid;
+    gap: var(--space-2xl);
+  }
+  @media (min-width: 1024px) {
+    .section-cartos__grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .section-cartos__sidecol {
+    display: grid;
+    gap: var(--space-xl);
+    align-content: start;
+  }
+  .section-cartos__fallback {
+    display: grid;
+    gap: var(--space-2xl);
+  }
+  @media (min-width: 768px) {
+    .section-cartos__fallback { grid-template-columns: 1fr 1fr; }
+  }
+  @media (min-width: 1024px) {
+    .section-cartos__fallback { grid-template-columns: repeat(3, 1fr); }
+  }
+  .section-cartos__footer {
+    margin-top: var(--space-2xl);
+    text-align: center;
+  }
+
+  /* ============================================================
+     Manifeste sombre — pattern C (charte §7.1)
+     Fond ink-900, manifeste display-italic, gros chiffres clés
+     ============================================================ */
+  .section-manifesto {
+    background: var(--color-ink-900);
+    color: var(--color-paper-100);
+    padding-top: var(--space-4xl);
+    padding-bottom: var(--space-4xl);
+  }
+  .section-manifesto__kicker {
+    color: var(--color-ochre-400);
+    margin-bottom: var(--space-lg);
+  }
+  .section-manifesto__title {
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    color: var(--color-paper-100);
+    margin: 0 0 var(--space-xl) 0;
+    max-width: 1100px;
+  }
+  .section-manifesto__lead {
+    font-family: var(--font-sans);
+    font-size: 1.125rem;
+    line-height: 1.75;
+    color: var(--color-paper-200);
+    max-width: 640px;
+    margin: 0 0 var(--space-2xl) 0;
+  }
+  @media (min-width: 768px) {
+    .section-manifesto__lead { font-size: 1.25rem; }
+  }
+  .section-manifesto__numbers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-xl) var(--space-lg);
+    align-items: end;
+    margin-bottom: var(--space-xl);
+  }
+  @media (min-width: 768px) {
+    .section-manifesto__numbers {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  .big-number {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+  .big-number__value {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 900;
+    font-size: clamp(3.5rem, 7vw, 6rem);
+    line-height: 0.92;
+    letter-spacing: -0.04em;
+    color: var(--color-paper-100);
+  }
+  .big-number__value--accent {
+    color: var(--color-ochre-400);
+  }
+  .big-number__unit {
+    font-size: 0.5em;
+    margin-left: 0.05em;
+  }
+  .big-number__label {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ochre-300);
+  }
+  .section-manifesto__cta {
+    margin: 0;
+  }
+  .section-manifesto__link {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.9375rem;
+    color: var(--color-ochre-300);
+    text-decoration: underline;
+    text-decoration-color: var(--color-ochre-500);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 4px;
+    transition: color 150ms ease, text-decoration-color 150ms ease;
+  }
+  .section-manifesto__link:hover {
+    color: var(--color-paper-100);
+    text-decoration-color: var(--color-ochre-300);
+  }
+
+  /* ============================================================
+     Carte de France interactive
+     ============================================================ */
+  .section-map {
+    background: var(--color-paper-100);
+    padding-top: var(--space-3xl);
+    padding-bottom: var(--space-3xl);
+  }
+  .section-map__header {
+    margin-bottom: var(--space-2xl);
+    max-width: 720px;
+  }
+  .section-map__header .caption {
+    margin-bottom: var(--space-sm);
+  }
+  .section-map__title {
+    font-size: clamp(2rem, 4vw, 3rem);
+    color: var(--color-ink-900);
+    margin: 0 0 var(--space-md) 0;
+  }
+  .section-map__lead {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--color-ink-700);
+    max-width: 580px;
+    margin: 0;
+  }
+  .section-map__footer {
+    margin-top: var(--space-xl);
+    text-align: center;
+  }
+
+  /* ============================================================
+     Section « Trois façons de soutenir » — pattern numéroté
+     ============================================================ */
+  .section-participe {
+    background: var(--color-paper-200);
+    padding-top: var(--space-3xl);
+    padding-bottom: var(--space-3xl);
+  }
+  .section-participe__header {
+    margin-bottom: var(--space-2xl);
+    max-width: 720px;
+  }
+  .section-participe__header .caption {
+    margin-bottom: var(--space-sm);
+  }
+  .section-participe__title {
+    font-size: clamp(2rem, 4vw, 3rem);
+    color: var(--color-ink-900);
+    margin: 0;
+  }
+  .section-participe__grid {
+    display: grid;
+    gap: var(--space-2xl);
+  }
+  @media (min-width: 768px) {
+    .section-participe__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .participe-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    text-decoration: none;
+    color: var(--color-ink-900);
+  }
+  .participe-card:hover {
+    text-decoration: none;
+  }
+  .participe-card__number {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 900;
+    font-size: 3.5rem;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--color-ochre-600);
+    margin-bottom: var(--space-xs);
+  }
+  .participe-card__title {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 1.5rem;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--color-ink-900);
+    margin: 0;
+    transition: color 150ms ease;
+  }
+  .participe-card:hover .participe-card__title {
+    color: var(--color-ochre-700);
+  }
+  .participe-card__lead {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.75;
+    color: var(--color-ink-700);
+    margin: 0;
+  }
+  .participe-card__cta {
+    margin-top: var(--space-sm);
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: var(--color-ink-900);
+    text-decoration: underline;
+    text-decoration-color: var(--color-ochre-600);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+    transition: color 150ms ease;
+  }
+  .participe-card:hover .participe-card__cta {
+    color: var(--color-ochre-700);
+  }
+</style>

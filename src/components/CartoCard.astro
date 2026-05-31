@@ -76,77 +76,61 @@ const isSecondary = variant === 'secondary';
 
 {isHero ? (
   /* ============================================================
-     Vue HERO : carte vedette pleine hauteur, image dominante
-     Utilisée dans le showcase asymétrique de la home (gauche).
+     Vue HERO (Piste B pattern A) : carte plate vedette, image ratio 1:1,
+     titre Playfair Roman dessous, lien souligné ocre, pas d'ombre.
      ============================================================ */
-  <a
-    href={pageUrl}
-    {...dataAttrs}
-    class="group relative block h-full overflow-hidden rounded-2xl bg-surface shadow-card transition-all hover:shadow-card-hover hover:-translate-y-0.5 no-underline"
-  >
+  <a href={pageUrl} {...dataAttrs} class="carto-card carto-card--hero">
     {d.image && (
-      <div class="relative overflow-hidden bg-brand-50 aspect-[4/5]">
+      <div class="carto-card__image">
         <Image
           src={d.image}
           alt={d.imageAlt}
           widths={[600, 900, 1200]}
           sizes="(max-width: 1024px) 100vw, 50vw"
-          class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+          class="carto-card__img"
           loading="eager"
         />
-        {/* Dégradé bas pour lisibilité du titre */}
-        <div class="absolute inset-0 bg-gradient-to-t from-ink-900/80 via-ink-900/20 to-transparent"></div>
-        {/* Pills en haut */}
-        <div class="absolute top-5 left-5 flex flex-wrap items-center gap-2">
-          <span class="pill-brand bg-white/95">{d.category}</span>
-          {d.status === 'new' && <span class="pill-accent">Nouveau</span>}
-        </div>
-        {/* Bloc texte sur l'image */}
-        <div class="absolute bottom-0 inset-x-0 p-6 md:p-8">
-          <h3 class="display text-3xl md:text-4xl font-medium text-white tracking-tight leading-tight mb-3">
-            {d.title}
-          </h3>
-          <p class="text-sm md:text-base text-white/90 leading-relaxed line-clamp-2 mb-4">{text}</p>
-          <span class="inline-flex items-center gap-2 text-sm font-medium text-white">
-            Découvrir <span aria-hidden="true" class="transition-transform group-hover:translate-x-1">→</span>
-          </span>
-        </div>
+        {d.status === 'new' && (
+          <span class="carto-card__badge">Nouveau</span>
+        )}
       </div>
     )}
+    <div class="carto-card__body">
+      <p class="caption caption-ochre carto-card__cat">{d.category}</p>
+      <h3 class="carto-card__title carto-card__title--lg">{d.title}</h3>
+      <p class="carto-card__lead">{text}</p>
+      <span class="carto-card__cta">
+        Découvrir la cartographie <span aria-hidden="true">→</span>
+      </span>
+    </div>
   </a>
 ) : isSecondary ? (
   /* ============================================================
-     Vue SECONDARY : layout horizontal sobre, sans bouton.
-     Utilisée dans le showcase asymétrique (droite, 2 cards).
+     Vue SECONDARY (Piste B pattern A) : carte plate horizontale.
+     Image carrée à gauche, texte sobre à droite, pas d'ombre.
      ============================================================ */
-  <a
-    href={pageUrl}
-    {...dataAttrs}
-    class="group flex h-full items-stretch overflow-hidden rounded-2xl bg-surface shadow-card transition-all hover:shadow-card-hover hover:-translate-y-0.5 no-underline"
-  >
+  <a href={pageUrl} {...dataAttrs} class="carto-card carto-card--secondary">
     {d.image && (
-      <div class="relative shrink-0 w-2/5 overflow-hidden bg-brand-50">
+      <div class="carto-card__image carto-card__image--side">
         <Image
           src={d.image}
           alt={d.imageAlt}
           widths={[300, 500]}
           sizes="200px"
-          class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+          class="carto-card__img"
           loading="lazy"
         />
       </div>
     )}
-    <div class="flex flex-1 flex-col justify-center p-5 md:p-6">
-      <div class="mb-2 flex flex-wrap items-center gap-2 text-xs">
-        <span class="pill-brand">{d.category}</span>
-        {d.status === 'new' && <span class="pill-accent">Nouveau</span>}
-      </div>
-      <h3 class="text-lg md:text-xl font-semibold text-ink-900 mb-2 tracking-tight group-hover:text-brand-600 transition-colors">
-        {d.title}
-      </h3>
-      <p class="text-sm text-ink-700 leading-relaxed line-clamp-2 mb-3">{text}</p>
-      <span class="text-xs font-medium text-brand-600 group-hover:text-brand-700 inline-flex items-center gap-1">
-        Voir la cartographie <span aria-hidden="true" class="transition-transform group-hover:translate-x-1">→</span>
+    <div class="carto-card__body">
+      <p class="caption caption-ochre carto-card__cat">
+        {d.category}
+        {d.status === 'new' && <span class="carto-card__cat-tag">Nouveau</span>}
+      </p>
+      <h3 class="carto-card__title">{d.title}</h3>
+      <p class="carto-card__lead carto-card__lead--sm">{text}</p>
+      <span class="carto-card__cta carto-card__cta--sm">
+        Voir la cartographie <span aria-hidden="true">→</span>
       </span>
     </div>
   </a>
@@ -279,3 +263,162 @@ const isSecondary = variant === 'secondary';
     </div>
   </article>
 )}
+
+<style is:global>
+  /* ============================================================
+     CartoCard variants HERO & SECONDARY — Piste B pattern A
+     « carte plate » : pas de fond coloré, pas de bordure, pas
+     d'ombre. Hiérarchie par typographie + image + soulignement ocre.
+     ============================================================ */
+  .carto-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    text-decoration: none;
+    color: var(--color-ink-900);
+    background: transparent;
+    transition: opacity 200ms ease;
+  }
+  .carto-card:hover {
+    text-decoration: none;
+  }
+
+  .carto-card--secondary {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--space-md);
+  }
+
+  .carto-card__image {
+    position: relative;
+    overflow: hidden;
+    background: var(--color-paper-200);
+    aspect-ratio: 1 / 1;
+    border-radius: var(--radius-lg);
+  }
+  .carto-card--hero .carto-card__image {
+    aspect-ratio: 4 / 5;
+  }
+  .carto-card__image--side {
+    flex-shrink: 0;
+    width: 35%;
+    max-width: 180px;
+  }
+  @media (max-width: 640px) {
+    .carto-card__image--side {
+      width: 40%;
+    }
+  }
+  .carto-card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 500ms ease;
+  }
+  .carto-card:hover .carto-card__img {
+    transform: scale(1.02);
+  }
+
+  .carto-card__badge {
+    position: absolute;
+    top: var(--space-md);
+    right: var(--space-md);
+    background: var(--color-ochre-100);
+    color: var(--color-ochre-800);
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .carto-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    flex: 1;
+    min-width: 0;
+  }
+
+  .carto-card__cat {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+  .carto-card__cat-tag {
+    color: var(--color-ochre-700);
+    background: var(--color-ochre-100);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+    font-size: 0.625rem;
+    letter-spacing: 0.1em;
+    font-weight: 500;
+  }
+
+  .carto-card__title {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 1.375rem;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: var(--color-ink-900);
+    margin: 0;
+    transition: color 150ms ease;
+  }
+  .carto-card__title--lg {
+    font-size: clamp(1.625rem, 3vw, 2rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  .carto-card:hover .carto-card__title {
+    color: var(--color-ochre-700);
+  }
+
+  .carto-card__lead {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    line-height: 1.7;
+    color: var(--color-ink-700);
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .carto-card--hero .carto-card__lead {
+    font-size: 1rem;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+  }
+  .carto-card__lead--sm {
+    font-size: 0.875rem;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+
+  .carto-card__cta {
+    margin-top: auto;
+    padding-top: var(--space-xs);
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.9375rem;
+    color: var(--color-ink-900);
+    text-decoration: underline;
+    text-decoration-color: var(--color-ochre-600);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+    transition: color 150ms ease, text-decoration-color 150ms ease;
+  }
+  .carto-card__cta--sm {
+    font-size: 0.8125rem;
+  }
+  .carto-card:hover .carto-card__cta {
+    color: var(--color-ochre-700);
+    text-decoration-color: var(--color-ochre-700);
+  }
+</style>

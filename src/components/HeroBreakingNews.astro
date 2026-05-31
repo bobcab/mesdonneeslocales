@@ -1,9 +1,10 @@
 ---
 /**
- * Bandeau "En ce moment" type breaking news, affiché en bas du hero magazine.
+ * Bandeau « En ce moment » type breaking news, affiché en bas du hero.
  *
  * Lit la collection `highlights` (current.md) et affiche un bandeau pleine largeur
- * sur fond sombre, type bandeau actualité Le Monde / NYT.
+ * sur fond ink-900, type bandeau actualité Le Monde / NYT.
+ * Chiffre en Playfair italic ocre, lien soulignement éditorial.
  *
  * Si aucun highlight n'est trouvé, le composant ne rend rien.
  */
@@ -14,26 +15,93 @@ const highlight = await getEntry('highlights', 'current');
 
 {
   highlight && (
-    <aside
-      aria-label="Actualité du moment"
-      class="absolute inset-x-0 bottom-0 border-t border-brand-500/20 bg-ink-900/95 backdrop-blur"
-    >
-      <a
-        href={highlight.data.href}
-        class="container-page flex flex-wrap items-baseline gap-4 py-4 no-underline group"
-      >
-        <span class="kicker text-accent-500">● En ce moment</span>
-        <span class="text-base text-white font-medium">{highlight.data.question}</span>
-        <span class="inline-flex items-baseline gap-2">
-          <span class="display text-3xl font-medium text-accent-500 leading-none">
-            {highlight.data.figure}
-          </span>
-          <span class="text-sm text-white/70">{highlight.data.context}</span>
+    <aside aria-label="Actualité du moment" class="breaking-news">
+      <a href={highlight.data.href} class="breaking-news__link container-wide">
+        <span class="breaking-news__kicker">● En ce moment</span>
+        <span class="breaking-news__question">{highlight.data.question}</span>
+        <span class="breaking-news__figure-wrap">
+          <span class="breaking-news__figure">{highlight.data.figure}</span>
+          <span class="breaking-news__context">{highlight.data.context}</span>
         </span>
-        <span class="ml-auto text-sm text-white/70 group-hover:text-white transition-colors">
+        <span class="breaking-news__cta">
           {highlight.data.linkLabel} <span aria-hidden="true">→</span>
         </span>
       </a>
     </aside>
   )
 }
+
+<style is:global>
+  .breaking-news {
+    background: var(--color-ink-900);
+    color: var(--color-paper-100);
+    border-top: 2px solid var(--color-ochre-600);
+    margin-top: var(--space-2xl);
+  }
+  .breaking-news__link {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-md);
+    padding-top: var(--space-md);
+    padding-bottom: var(--space-md);
+    text-decoration: none;
+    color: var(--color-paper-100);
+    transition: color 150ms ease;
+  }
+  .breaking-news__link:hover {
+    text-decoration: none;
+    color: white;
+  }
+  .breaking-news__kicker {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ochre-400);
+    flex-shrink: 0;
+  }
+  .breaking-news__question {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.9375rem;
+    color: var(--color-paper-100);
+  }
+  .breaking-news__figure-wrap {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-sm);
+  }
+  .breaking-news__figure {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 900;
+    font-size: 1.75rem;
+    line-height: 1;
+    color: var(--color-ochre-400);
+    letter-spacing: -0.02em;
+  }
+  .breaking-news__context {
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    color: var(--color-paper-200);
+    opacity: 0.85;
+  }
+  .breaking-news__cta {
+    margin-left: auto;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.8125rem;
+    color: var(--color-paper-200);
+    text-decoration: underline;
+    text-decoration-color: var(--color-ochre-500);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+    transition: color 150ms ease, text-decoration-color 150ms ease;
+  }
+  .breaking-news__link:hover .breaking-news__cta {
+    color: white;
+    text-decoration-color: var(--color-ochre-300);
+  }
+</style>
