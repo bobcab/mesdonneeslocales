@@ -10,8 +10,7 @@ description: |
 
   Les données proviennent de la DREES (Direction de la Recherche, des Études, de l'Évaluation et des Statistiques), mises à disposition via le portail Data.DREES. Les millésimes 2022 et 2023 sont disponibles ; le millésime 2024 sera diffusé fin 2025-début 2026.
 
-# TODO : visuel dédié à produire (carte de France APL médecins généralistes, dominante rouge/vert).
-# imageAlt est conservé pour cohérence éditoriale même sans image.
+image: ../../assets/cartographies/deserts-medicaux.png
 imageAlt: "Carte de France colorée par commune selon l'indicateur APL pour les médecins généralistes, du rouge profond (désert médical critique) au vert (bonne accessibilité)."
 
 type: native
