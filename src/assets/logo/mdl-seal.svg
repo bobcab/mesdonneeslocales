@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="mdl">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="mdl">
   <rect width="128" height="128" rx="13" fill="#0a1f3d"/>
   <text x="64" y="80"
         font-family="Playfair Display, Georgia, serif"

@@ -18,7 +18,9 @@
     "fetch:hubeau:sample": "node scripts/fetch-hubeau.mjs --sample=100",
     "fetch:drees": "node scripts/fetch-drees-apl.mjs",
     "fetch:drees:all": "node scripts/fetch-drees-apl.mjs --all",
-    "fetch:drees:sample": "node scripts/fetch-drees-apl.mjs --sample=100"
+    "fetch:drees:sample": "node scripts/fetch-drees-apl.mjs --sample=100",
+    "generate:og": "node scripts/generate-og.mjs",
+    "generate:favicons": "node scripts/generate-favicons.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",

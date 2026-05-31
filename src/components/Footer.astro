@@ -1,5 +1,6 @@
 ---
-import logoBlanc from '../assets/logo/logo-blanc.svg';
+import { Image } from 'astro:assets';
+import logoInverted from '../assets/logo/mdl-inverted.svg';
 
 const year = new Date().getFullYear();
 const DONATE_URL = 'https://www.helloasso.com/associations/l-observatoire-citoyen/formulaires/1';
@@ -43,64 +44,47 @@ const columns = [
 ];
 ---
 
-<footer id="footer" class="bg-ink-900 text-white">
-  <div class="container-page py-20">
-    <div class="grid gap-16 lg:grid-cols-[1.4fr_2fr]">
-      {/* Bloc gauche — identité + manifeste répété */}
-      <div>
-        <a
-          href="/"
-          class="inline-block mb-8 no-underline"
-          aria-label="Mes données locales — accueil"
-        >
-          <img src={logoBlanc.src} alt="" class="h-14 w-auto" />
+<footer id="footer" class="site-footer">
+  <div class="container-page site-footer__inner">
+    <div class="site-footer__grid">
+      {/* Bloc gauche — logo inversé + manifeste */}
+      <div class="site-footer__brand">
+        <a href="/" class="site-footer__logo no-underline" aria-label="Mes données locales — accueil">
+          <Image src={logoInverted} alt="mdl" width={260} height={114} class="w-auto" />
         </a>
-        <p class="display text-2xl md:text-3xl font-medium text-white tracking-tight leading-tight max-w-md mb-8">
-          L'information publique est un bien commun.
-        </p>
-        <p class="text-base text-white/70 max-w-md leading-relaxed">
-          Cartographies citoyennes, données ouvertes, méthodologie publique. Projet associatif sans
-          publicité, sans inscription, sans collecte de données.
+        <p class="site-footer__mission">
+          Plateforme citoyenne d'accès aux données publiques fiables et qualifiées. Pas de publicité,
+          pas de tracking, pas d'inscription.
         </p>
 
         {/* Liens externes sobres */}
-        <div class="mt-8 flex flex-wrap gap-6">
+        <div class="site-footer__externals">
           <a
             href={DONATE_URL}
             target="_blank"
             rel="noopener noreferrer"
-            class="text-sm text-white/80 hover:text-accent-500 transition-colors no-underline"
+            class="site-footer__external"
           >
             Faire un don
           </a>
-          <a
-            href="/llms.txt"
-            class="text-sm text-white/80 hover:text-accent-500 transition-colors no-underline"
-          >
-            llms.txt
-          </a>
-          <a
-            href="/sitemap-index.xml"
-            class="text-sm text-white/80 hover:text-accent-500 transition-colors no-underline"
-          >
-            Plan XML
-          </a>
+          <a href="/llms.txt" class="site-footer__external">llms.txt</a>
+          <a href="/sitemap-index.xml" class="site-footer__external">Plan XML</a>
         </div>
       </div>
 
       {/* Bloc droit — 4 colonnes aérées */}
-      <div class="grid gap-10 sm:grid-cols-2 md:grid-cols-4">
+      <div class="site-footer__columns">
         {columns.map((col) => (
           <nav aria-label={col.title}>
-            <p class="kicker mb-5 text-white/60">{col.title}</p>
-            <ul class="space-y-3">
+            <p class="site-footer__col-title">{col.title}</p>
+            <ul class="site-footer__list">
               {col.items.map((item) => (
                 <li>
                   <a
                     href={item.href}
                     target={item.external ? '_blank' : undefined}
                     rel={item.external ? 'noopener noreferrer' : undefined}
-                    class="text-base text-white/90 no-underline hover:text-accent-500 transition-colors"
+                    class="site-footer__link"
                   >
                     {item.label}
                   </a>
@@ -114,12 +98,11 @@ const columns = [
   </div>
 
   {/* Pied de footer — crédits sobres */}
-  <div class="border-t border-white/10">
-    <div class="container-page py-6 flex flex-col gap-3 text-sm text-white/60 md:flex-row md:items-center md:justify-between">
+  <div class="site-footer__baseline">
+    <div class="container-page site-footer__baseline-inner">
       <p>
-        &copy; {year} <strong class="text-white/80">L'Observatoire citoyen</strong> — Association
-        loi 1901
-        <span class="text-white/40">·</span> SIRET 924 676 570 00014
+        © {year} <strong>L'Observatoire citoyen</strong> — Association loi 1901
+        <span class="site-footer__sep">·</span> SIRET 924 676 570 00014
       </p>
       <p>
         Contenu sous licence
@@ -127,7 +110,7 @@ const columns = [
           href="https://creativecommons.org/licenses/by-sa/4.0/deed.fr"
           target="_blank"
           rel="noopener noreferrer"
-          class="text-white/80 hover:text-white underline"
+          class="site-footer__baseline-link"
         >
           CC BY-SA 4.0
         </a>
@@ -135,3 +118,165 @@ const columns = [
     </div>
   </div>
 </footer>
+
+<style is:global>
+  .site-footer {
+    background: var(--color-ink-900);
+    color: var(--color-paper-100);
+  }
+
+  .site-footer__inner {
+    padding-top: var(--space-3xl);
+    padding-bottom: var(--space-xl);
+  }
+
+  .site-footer__grid {
+    display: grid;
+    gap: var(--space-2xl);
+  }
+  @media (min-width: 1024px) {
+    .site-footer__grid {
+      grid-template-columns: 1.4fr 2fr;
+      gap: var(--space-3xl);
+    }
+  }
+
+  .site-footer__logo {
+    display: inline-block;
+    margin-bottom: var(--space-lg);
+    text-decoration: none;
+  }
+  .site-footer__logo:focus-visible {
+    box-shadow: var(--shadow-focus);
+    border-radius: var(--radius-md);
+  }
+  .site-footer__logo img {
+    height: 64px;
+  }
+  @media (min-width: 768px) {
+    .site-footer__logo img {
+      height: 80px;
+    }
+  }
+
+  .site-footer__mission {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--color-paper-200);
+    max-width: 460px;
+    margin: 0;
+  }
+
+  .site-footer__externals {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    margin-top: var(--space-lg);
+  }
+
+  .site-footer__external {
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    color: var(--color-paper-200);
+    text-decoration: underline;
+    text-decoration-color: var(--color-ochre-400);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+    transition: color 150ms ease, text-decoration-color 150ms ease;
+  }
+  .site-footer__external:hover {
+    color: white;
+    text-decoration-color: var(--color-ochre-300);
+  }
+
+  .site-footer__columns {
+    display: grid;
+    gap: var(--space-lg);
+  }
+  @media (min-width: 640px) {
+    .site-footer__columns { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (min-width: 768px) {
+    .site-footer__columns { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+
+  .site-footer__col-title {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ochre-400);
+    margin: 0 0 var(--space-md) 0;
+  }
+
+  .site-footer__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .site-footer__link {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    color: var(--color-paper-100);
+    text-decoration: none;
+    transition: color 150ms ease;
+  }
+  .site-footer__link:hover {
+    color: var(--color-ochre-300);
+    text-decoration: underline;
+    text-decoration-color: var(--color-ochre-400);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+  }
+
+  .site-footer__baseline {
+    border-top: 0.5px solid rgba(245, 244, 240, 0.12);
+  }
+
+  .site-footer__baseline-inner {
+    padding-top: var(--space-md);
+    padding-bottom: var(--space-md);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    color: var(--color-paper-200);
+    opacity: 0.7;
+  }
+  @media (min-width: 768px) {
+    .site-footer__baseline-inner {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+  .site-footer__baseline-inner p {
+    margin: 0;
+  }
+  .site-footer__baseline-inner strong {
+    color: var(--color-paper-100);
+    font-weight: 500;
+  }
+  .site-footer__sep {
+    opacity: 0.5;
+    margin: 0 0.25rem;
+  }
+  .site-footer__baseline-link {
+    color: var(--color-paper-100);
+    text-decoration: underline;
+    text-decoration-color: var(--color-ochre-400);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+  }
+  .site-footer__baseline-link:hover {
+    color: white;
+    text-decoration-color: var(--color-ochre-300);
+  }
+</style>

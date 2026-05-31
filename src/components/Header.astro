@@ -1,6 +1,6 @@
 ---
-import logo from '../assets/logo/logo.svg';
-import signe from '../assets/logo/signe.svg';
+import { Image } from 'astro:assets';
+import logo from '../assets/logo/mdl-header.svg';
 
 const navItems = [
   { href: '/cartographies/', label: 'Cartographies' },
@@ -15,12 +15,21 @@ const DONATE_URL = 'https://www.helloasso.com/associations/l-observatoire-citoye
 const currentPath = Astro.url.pathname;
 ---
 
-<header class="fixed top-0 inset-x-0 z-50 h-16 md:h-20 bg-white/95 backdrop-blur shadow-sm">
+<header class="site-header fixed top-0 inset-x-0 z-50 h-16 md:h-20">
   <div class="container-page flex h-full items-center justify-between gap-2">
-    {/* Logo — signe seul sur mobile (gain de place), logo complet sur desktop */}
-    <a href="/" class="shrink-0 no-underline focus-visible:outline-2 focus-visible:outline-brand-500 focus-visible:outline-offset-2 rounded-md" aria-label="Mes données locales — accueil">
-      <img src={signe.src} alt="" class="h-10 w-10 md:hidden" />
-      <img src={logo.src} alt="" class="hidden md:block h-12 w-auto" />
+    {/* Logo mdl — Playfair italic 42px + filet ocre + tagline (toujours affiché) */}
+    <a
+      href="/"
+      class="site-header__logo shrink-0 no-underline"
+      aria-label="Mes données locales — accueil"
+    >
+      <Image
+        src={logo}
+        alt="mdl, Mes données locales"
+        width={200}
+        height={36}
+        class="h-9 md:h-10 w-auto"
+      />
     </a>
 
     {/* Nav desktop */}
@@ -30,10 +39,7 @@ const currentPath = Astro.url.pathname;
           <li>
             <a
               href={href}
-              class:list={[
-                'font-medium text-ink-900 no-underline transition-colors hover:text-brand-500',
-                currentPath === href && 'text-brand-500',
-              ]}
+              class:list={['site-header__link', currentPath === href && 'is-active']}
             >
               {label}
             </a>
@@ -42,20 +48,22 @@ const currentPath = Astro.url.pathname;
       </ul>
     </nav>
 
-    {/* Actions droite — CTA Don (toujours visible) + burger (mobile uniquement) */}
+    {/* Actions droite — CTA Don + burger mobile */}
     <div class="flex items-center gap-2 shrink-0">
       <a
         href={DONATE_URL}
         target="_blank"
         rel="noopener noreferrer"
-        class="inline-flex items-center justify-center rounded-lg bg-brand-500 px-3 py-2 md:px-4 md:py-2 text-sm font-semibold text-white no-underline transition-colors hover:bg-brand-600 active:scale-[0.98] min-h-[40px]"
+        class="btn-primary"
+        style="padding: 0.625rem 1rem; min-height: 40px; font-size: 0.8125rem;"
       >
         Faire un don
       </a>
 
       <button
         type="button"
-        class="md:hidden inline-flex h-11 w-11 items-center justify-center rounded-lg text-ink-900 hover:bg-brand-50 hover:text-brand-500 active:scale-[0.96]"
+        class="md:hidden inline-flex h-11 w-11 items-center justify-center"
+        style="color: var(--color-ink-900); border-radius: var(--radius-md);"
         aria-label="Ouvrir le menu"
         aria-expanded="false"
         aria-controls="mobile-nav"
@@ -68,10 +76,10 @@ const currentPath = Astro.url.pathname;
     </div>
   </div>
 
-  {/* Menu mobile (drawer) */}
+  {/* Menu mobile */}
   <nav
     id="mobile-nav"
-    class="hidden md:hidden absolute top-full inset-x-0 bg-white shadow-md border-t border-ink-300/20"
+    class="hidden md:hidden absolute top-full inset-x-0 site-header__mobile-nav"
     aria-label="Navigation mobile"
     data-mobile-nav
   >
@@ -80,10 +88,7 @@ const currentPath = Astro.url.pathname;
         <li>
           <a
             href={href}
-            class:list={[
-              'block px-6 py-3 text-base text-ink-900 no-underline hover:bg-brand-50 hover:text-brand-500',
-              currentPath === href && 'text-brand-500 font-semibold',
-            ]}
+            class:list={['site-header__mobile-link', currentPath === href && 'is-active']}
           >
             {label}
           </a>
@@ -92,6 +97,61 @@ const currentPath = Astro.url.pathname;
     </ul>
   </nav>
 </header>
+
+<style is:global>
+  .site-header {
+    background: var(--color-paper-100);
+    border-bottom: 0.5px solid var(--color-ink-100);
+  }
+
+  .site-header__logo {
+    display: inline-flex;
+    align-items: center;
+  }
+  .site-header__logo:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+    border-radius: var(--radius-md);
+  }
+
+  .site-header__link {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.9375rem;
+    color: var(--color-ink-900);
+    text-decoration: none;
+    transition: color 150ms ease;
+  }
+  .site-header__link:hover {
+    color: var(--color-ochre-600);
+    text-decoration: none;
+  }
+  .site-header__link.is-active {
+    color: var(--color-ochre-600);
+  }
+
+  .site-header__mobile-nav {
+    background: var(--color-paper-100);
+    border-top: 0.5px solid var(--color-ink-100);
+  }
+  .site-header__mobile-link {
+    display: block;
+    padding: 0.75rem 1.5rem;
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    color: var(--color-ink-900);
+    text-decoration: none;
+  }
+  .site-header__mobile-link:hover {
+    background: var(--color-paper-200);
+    color: var(--color-ochre-600);
+    text-decoration: none;
+  }
+  .site-header__mobile-link.is-active {
+    color: var(--color-ochre-600);
+    font-weight: 500;
+  }
+</style>
 
 <script>
   const toggle = document.querySelector<HTMLButtonElement>('[data-mobile-nav-toggle]');

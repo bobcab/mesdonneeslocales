@@ -6,6 +6,8 @@
  *   node scripts/generate-og.mjs
  *
  * Utilise sharp (installé en tant que dépendance transitive d'Astro).
+ * Charte Piste B : bleu de Prusse (#0a1f3d) + ocre (#92400e) + paper (#f5f4f0)
+ * + Playfair Display italic + Inter.
  */
 
 import { writeFile } from 'node:fs/promises';
@@ -16,51 +18,43 @@ import sharp from 'sharp';
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const outPath = join(__dirname, '..', 'public', 'og-default.png');
 
-// NOTE : ce script est conservé pour pouvoir régénérer l'image OG en cas de changement
-// de charte. L'OG livrée par le designer (Piste A, package/public/og-default.png) est en
-// place dans `public/og-default.png` et n'a pas à être écrasée par ce script tant que la
-// charte n'évolue pas. Ne pas exécuter sans nécessité — on perd le rendu typographique
-// soigné du designer.
+// Pattern « drapeau éditorial » : wordmark mdl + filet ocre + tagline,
+// puis manifeste « L'information est un bien commun. » en Playfair italic.
 const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <!-- Fond warm beige (Piste A) -->
+  <!-- Fond paper (beige chaud Piste B) -->
   <rect width="1200" height="630" fill="#f5f4f0"/>
 
-  <!-- Bandeau indigo sur le côté gauche -->
-  <rect x="0" y="0" width="12" height="630" fill="#4f46e5"/>
+  <!-- Bloc logo mdl en haut à gauche -->
+  <text x="100" y="180"
+        font-family="'Playfair Display', Georgia, serif"
+        font-style="italic" font-weight="900" font-size="120"
+        letter-spacing="-4.8" fill="#0a1f3d">mdl</text>
+  <rect x="100" y="200" width="42" height="4" fill="#92400e"/>
+  <text x="158" y="215"
+        font-family="Inter, system-ui, sans-serif"
+        font-weight="500" font-size="13" letter-spacing="1.6"
+        fill="#0a1f3d" opacity="0.8">SAVOIR C'EST POUVOIR</text>
 
-  <!-- Kicker (étiquette en haut) -->
-  <text x="100" y="160" font-family="'Open Sans', system-ui, sans-serif" font-size="18" font-weight="600" fill="#6b7280" letter-spacing="3">
-    L'OBSERVATOIRE CITOYEN
-  </text>
-
-  <!-- Title -->
-  <text x="100" y="260" font-family="'Poppins', system-ui, sans-serif" font-size="72" font-weight="700" fill="#111827">
-    Mes données locales
-  </text>
-
-  <!-- Baseline -->
-  <text x="100" y="340" font-family="'Open Sans', system-ui, sans-serif" font-size="34" font-weight="400" fill="#374151">
-    Savoir, c'est pouvoir.
-  </text>
-
-  <!-- Tagline -->
-  <text x="100" y="480" font-family="'Open Sans', system-ui, sans-serif" font-size="22" font-weight="400" fill="#374151">
-    Données publiques fiables, cartographiées et qualifiées,
-  </text>
-  <text x="100" y="515" font-family="'Open Sans', system-ui, sans-serif" font-size="22" font-weight="400" fill="#374151">
-    pour mieux comprendre votre territoire.
-  </text>
+  <!-- Manifeste central en Playfair italic -->
+  <text x="100" y="380"
+        font-family="'Playfair Display', Georgia, serif"
+        font-style="italic" font-weight="900" font-size="68"
+        letter-spacing="-2.7" fill="#0a1f3d">L'information</text>
+  <text x="100" y="455"
+        font-family="'Playfair Display', Georgia, serif"
+        font-style="italic" font-weight="900" font-size="68"
+        letter-spacing="-2.7" fill="#0a1f3d">est un bien commun.</text>
 
   <!-- URL bottom-right -->
-  <text x="1100" y="580" text-anchor="end" font-family="'Open Sans', system-ui, sans-serif" font-size="20" font-weight="600" fill="#4f46e5">
+  <text x="1100" y="580" text-anchor="end"
+        font-family="Inter, system-ui, sans-serif"
+        font-size="20" font-weight="500" fill="#0a1f3d">
     mesdonneeslocales.fr
   </text>
 
-  <!-- Trois points colorés en bas à droite (indigo brand + ambre accent + teal eau) -->
-  <circle cx="1010" cy="540" r="8" fill="#4f46e5"/>
-  <circle cx="1040" cy="540" r="8" fill="#f59e0b"/>
-  <circle cx="1070" cy="540" r="8" fill="#1D9E75"/>
+  <!-- Filet ocre signature en bas à gauche -->
+  <rect x="100" y="555" width="120" height="3" fill="#92400e"/>
 </svg>`;
 
 const buffer = await sharp(Buffer.from(svg))
