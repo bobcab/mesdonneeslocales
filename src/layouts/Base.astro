@@ -81,7 +81,7 @@ const ogImageUrl = new URL(ogImage ?? '/og-default.png', siteUrl).toString();
   <body class={bodyClass}>
     <a href="#main" class="skip-link">Aller au contenu principal</a>
     <Header />
-    <main id="main" tabindex="-1" class="pt-16 md:pt-20">
+    <main id="main" tabindex="-1">
       <slot />
     </main>
     <Footer />

@@ -1,182 +1,31 @@
 ---
-import { Image } from 'astro:assets';
-import logo from '../assets/logo/mdl-header.svg';
-
-const navItems = [
-  { href: '/cartographies/', label: 'Cartographies' },
-  { href: '/a-propos/', label: 'À propos' },
-  { href: '/methodologie/', label: 'Méthodologie' },
-  { href: '/je-participe/', label: 'Je participe' },
-  { href: '/contact/', label: 'Contact' },
-];
-
-const DONATE_URL = 'https://www.helloasso.com/associations/l-observatoire-citoyen/formulaires/1';
-
-const currentPath = Astro.url.pathname;
+// Import du SVG pur du wordmark (sans tagline, sans filet) en raw string
+// pour pouvoir l'inliner via set:html et qu'il hérite de currentColor.
+import mdlSvg from '../assets/logo/mdl-wordmark-pure.svg?raw';
 ---
 
-<header class="site-header fixed top-0 inset-x-0 z-50 h-16 md:h-20">
-  <div class="container-page flex h-full items-center justify-between gap-2">
-    {/* Logo mdl — Playfair italic 42px + filet ocre + tagline (toujours affiché) */}
-    <a
-      href="/"
-      class="site-header__logo shrink-0 no-underline"
-      aria-label="Mes données locales — accueil"
-    >
-      <Image
-        src={logo}
-        alt="mdl, Mes données locales — Savoir c'est pouvoir"
-        width={240}
-        height={49}
-        class="h-9 md:h-10 w-auto"
-      />
+<header class="site-header">
+  <div class="site-header__inner">
+    {/* LOGO : wordmark SVG + filet ocre + tagline texte */}
+    <a href="/" class="site-header__logo" aria-label="mdl, Mes données locales — accueil">
+      <span class="site-header__wordmark" set:html={mdlSvg} />
+      <span class="site-header__separator" aria-hidden="true"></span>
+      <span class="site-header__tagline">Savoir c'est pouvoir</span>
     </a>
 
-    {/* Nav desktop */}
-    <nav class="hidden md:block" aria-label="Navigation principale">
-      <ul class="flex items-center gap-6 lg:gap-8">
-        {navItems.map(({ href, label }) => (
-          <li>
-            <a
-              href={href}
-              class:list={['site-header__link', currentPath === href && 'is-active']}
-            >
-              {label}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
-
-    {/* Actions droite — CTA Don + burger mobile */}
-    <div class="flex items-center gap-2 shrink-0">
+    {/* NAV : 5 items principaux + CTA don en lien souligné ocre */}
+    <nav class="site-header__nav" aria-label="Navigation principale">
+      <a href="/cartographies/" class="site-header__nav-item">Cartographies</a>
+      <a href="/a-propos/" class="site-header__nav-item">À propos</a>
+      <a href="/methodologie/" class="site-header__nav-item">Méthodologie</a>
+      <a href="/je-participe/" class="site-header__nav-item">Je participe</a>
+      <a href="/contact/" class="site-header__nav-item">Contact</a>
       <a
-        href={DONATE_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="btn-primary"
-        style="padding: 0.625rem 1rem; min-height: 40px; font-size: 0.8125rem;"
+        href="/je-participe/#don"
+        class="site-header__nav-item site-header__nav-item--accent"
       >
         Faire un don
       </a>
-
-      <button
-        type="button"
-        class="md:hidden inline-flex h-11 w-11 items-center justify-center"
-        style="color: var(--color-ink-900); border-radius: var(--radius-md);"
-        aria-label="Ouvrir le menu"
-        aria-expanded="false"
-        aria-controls="mobile-nav"
-        data-mobile-nav-toggle
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
-          <path d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
-        </svg>
-      </button>
-    </div>
+    </nav>
   </div>
-
-  {/* Menu mobile */}
-  <nav
-    id="mobile-nav"
-    class="hidden md:hidden absolute top-full inset-x-0 site-header__mobile-nav"
-    aria-label="Navigation mobile"
-    data-mobile-nav
-  >
-    <ul class="flex flex-col py-2">
-      {navItems.map(({ href, label }) => (
-        <li>
-          <a
-            href={href}
-            class:list={['site-header__mobile-link', currentPath === href && 'is-active']}
-          >
-            {label}
-          </a>
-        </li>
-      ))}
-    </ul>
-  </nav>
 </header>
-
-<style is:global>
-  .site-header {
-    background: var(--color-paper-100);
-    border-bottom: 0.5px solid var(--color-ink-100);
-  }
-
-  .site-header__logo {
-    display: inline-flex;
-    align-items: center;
-  }
-  .site-header__logo:focus-visible {
-    outline: none;
-    box-shadow: var(--shadow-focus);
-    border-radius: var(--radius-md);
-  }
-
-  .site-header__link {
-    font-family: var(--font-sans);
-    font-weight: 500;
-    font-size: 0.9375rem;
-    color: var(--color-ink-900);
-    text-decoration: none;
-    transition: color 150ms ease;
-  }
-  .site-header__link:hover {
-    color: var(--color-ochre-600);
-    text-decoration: none;
-  }
-  .site-header__link.is-active {
-    color: var(--color-ochre-600);
-  }
-
-  .site-header__mobile-nav {
-    background: var(--color-paper-100);
-    border-top: 0.5px solid var(--color-ink-100);
-  }
-  .site-header__mobile-link {
-    display: block;
-    padding: 0.75rem 1.5rem;
-    font-family: var(--font-sans);
-    font-size: 1rem;
-    color: var(--color-ink-900);
-    text-decoration: none;
-  }
-  .site-header__mobile-link:hover {
-    background: var(--color-paper-200);
-    color: var(--color-ochre-600);
-    text-decoration: none;
-  }
-  .site-header__mobile-link.is-active {
-    color: var(--color-ochre-600);
-    font-weight: 500;
-  }
-</style>
-
-<script>
-  const toggle = document.querySelector<HTMLButtonElement>('[data-mobile-nav-toggle]');
-  const menu = document.querySelector<HTMLElement>('[data-mobile-nav]');
-
-  function setExpanded(open: boolean) {
-    toggle?.setAttribute('aria-expanded', String(open));
-    if (open) menu?.classList.remove('hidden');
-    else menu?.classList.add('hidden');
-  }
-
-  toggle?.addEventListener('click', () => {
-    const isOpen = !menu?.classList.contains('hidden');
-    setExpanded(!isOpen);
-  });
-
-  menu?.querySelectorAll('a').forEach((a) =>
-    a.addEventListener('click', () => setExpanded(false)),
-  );
-
-  // Fermer au Escape
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && menu && !menu.classList.contains('hidden')) {
-      setExpanded(false);
-      toggle?.focus();
-    }
-  });
-</script>
