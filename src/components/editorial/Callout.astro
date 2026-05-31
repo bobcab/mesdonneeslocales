@@ -1,0 +1,28 @@
+---
+type CalloutType = 'info' | 'note' | 'important' | 'alert';
+
+interface Props {
+  type?: CalloutType;
+  title?: string;
+}
+
+const { type = 'info', title } = Astro.props;
+
+const styles = {
+  info:      { bg: 'bg-brand-50',      border: 'border-brand-500',   text: 'text-brand-700' },
+  note:      { bg: 'bg-surface-muted', border: 'border-ink-700',     text: 'text-ink-900' },
+  important: { bg: 'bg-accent-50',     border: 'border-accent-500',  text: 'text-accent-700' },
+  alert:     { bg: 'bg-warning-50',    border: 'border-warning-500', text: 'text-warning-700' },
+};
+
+const s = styles[type];
+---
+
+<aside class:list={['my-8 border-l-4 p-6 rounded-r-xl not-prose', s.bg, s.border]}>
+  {title && (
+    <p class:list={['kicker mb-3', s.text]}>{title}</p>
+  )}
+  <div class="text-base text-ink-900 leading-relaxed">
+    <slot />
+  </div>
+</aside>

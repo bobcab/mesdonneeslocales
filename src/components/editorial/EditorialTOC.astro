@@ -1,0 +1,89 @@
+---
+interface TOCItem {
+  id: string;
+  label: string;
+  level?: 2 | 3;
+}
+
+interface Props {
+  items: TOCItem[];
+  title?: string;
+}
+
+const { items, title = 'Sur cette page' } = Astro.props;
+---
+
+<aside class="hidden lg:block" aria-label="Sommaire de la page">
+  <nav class="sticky top-28">
+    <p class="kicker mb-4 text-ink-500">{title}</p>
+    <ul class="space-y-2 border-l border-ink-300/40">
+      {items.map((item) => (
+        <li>
+          <a
+            href={`#${item.id}`}
+            class:list={[
+              'block py-1 pl-4 -ml-px border-l-2 border-transparent text-sm text-ink-700 no-underline transition-colors hover:text-brand-600 hover:border-brand-500',
+              item.level === 3 && 'pl-8 text-xs',
+            ]}
+            data-toc-link={item.id}
+          >
+            {item.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+</aside>
+
+<details class="lg:hidden mb-8 rounded-xl border border-ink-300/40 bg-surface-muted">
+  <summary class="cursor-pointer px-6 py-4 text-sm font-medium text-ink-900 list-none flex items-center justify-between">
+    <span>{title}</span>
+    <svg class="h-5 w-5 text-ink-500 transition-transform" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+      <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.06l3.71-3.83a.75.75 0 1 1 1.08 1.04l-4.25 4.38a.75.75 0 0 1-1.08 0L5.21 8.27a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd"/>
+    </svg>
+  </summary>
+  <ul class="px-6 pb-4 space-y-1">
+    {items.map((item) => (
+      <li>
+        <a
+          href={`#${item.id}`}
+          class:list={[
+            'block py-1 text-sm text-ink-700 no-underline hover:text-brand-600',
+            item.level === 3 && 'pl-4 text-xs',
+          ]}
+        >
+          {item.label}
+        </a>
+      </li>
+    ))}
+  </ul>
+</details>
+
+<script>
+  const links = document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]');
+  const sections = Array.from(links)
+    .map((link) => {
+      const id = link.dataset.tocLink;
+      return id ? document.getElementById(id) : null;
+    })
+    .filter((s): s is HTMLElement => s !== null);
+
+  if (sections.length > 0 && 'IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            links.forEach((link) => {
+              const isActive = link.dataset.tocLink === entry.target.id;
+              link.classList.toggle('border-brand-500', isActive);
+              link.classList.toggle('text-brand-700', isActive);
+              link.classList.toggle('font-medium', isActive);
+            });
+          }
+        });
+      },
+      { rootMargin: '-100px 0px -70% 0px' },
+    );
+    sections.forEach((s) => observer.observe(s));
+  }
+</script>

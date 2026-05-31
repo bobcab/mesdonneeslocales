@@ -12,11 +12,42 @@ ogTitle: Je participe — Mes données locales
 ogDescription: Soutenir le projet par un don, rejoindre l'équipe bénévole, ou diffuser les cartographies.
 lastUpdated: 2026-05-29
 schemaType: WebPage
+
+kicker: Participer
+lead: |
+  Trois façons de contribuer : votre temps, vos compétences ou vos relais. Chacune est utile, à son échelle.
+toc:
+  - id: don
+    label: Faire un don
+  - id: benevolat
+    label: Rejoindre l'équipe bénévole
+  - id: diffusion
+    label: Diffuser les cartographies
+  - id: proposer
+    label: Proposer une nouvelle thématique
 ---
 
-Mes données locales est un projet collectif. Trois façons de contribuer à son développement : par un don, par un engagement bénévole, ou par la diffusion des cartographies. Chacune est utile, à son échelle.
+import NumberedSteps from '../../components/editorial/NumberedSteps.astro';
+import DefList from '../../components/editorial/DefList.astro';
+import Callout from '../../components/editorial/Callout.astro';
+import FurtherReading from '../../components/editorial/FurtherReading.astro';
 
-## Faire un don {#don}
+<NumberedSteps items={[
+  {
+    title: "Je donne",
+    description: "Maintenir et développer le site, en toute indépendance. Chaque don nous permet de garder le projet 100 % bénévole et sans publicité."
+  },
+  {
+    title: "Je rejoins l'équipe",
+    description: "Apporter mes compétences à un projet citoyen bénévole. Développement, design, rédaction, animation : nous accueillons toutes les énergies."
+  },
+  {
+    title: "Je diffuse",
+    description: "Intégrer une cartographie sur mon site ou dans ma classe. Toutes les cartes sont en CC BY-SA, librement réutilisables avec mention."
+  },
+]} />
+
+<h2 id="don">Faire un don</h2>
 
 L'Observatoire citoyen fonctionne sans subvention conditionnelle. Les dons des particuliers couvrent l'essentiel des frais : hébergement du site, outils techniques, conception de nouvelles cartographies, déplacements ponctuels pour la coordination avec les partenaires.
 
@@ -26,29 +57,46 @@ Un don de toute nature contribue à maintenir un service entièrement gratuit, i
 
 L'association privilégie HelloAsso pour la collecte des dons en ligne : plateforme française, sans commission prélevée sur les dons, conformité fiscale assurée.
 
-## Rejoindre l'équipe bénévole {#benevolat}
+<h2 id="benevolat">Rejoindre l'équipe bénévole</h2>
 
 L'équipe bénévole rassemble des citoyennes et citoyens engagés sur la diffusion des données publiques. Aucun profil particulier n'est requis : la diversité des compétences est précisément ce qui rend le projet possible.
 
 Les contributions les plus utiles aujourd'hui concernent :
 
-**Développement et technique.** Maintenance du site, intégration de nouvelles cartographies, automatisation des mises à jour, amélioration de l'accessibilité, contributions au logiciel mviewer.
+<DefList items={[
+  {
+    term: "Développement et technique",
+    description: "Maintenance du site, intégration de nouvelles cartographies, automatisation des mises à jour, amélioration de l'accessibilité, contributions au logiciel mviewer."
+  },
+  {
+    term: "Expertise sectorielle",
+    description: "Connaissance d'une thématique précise (santé, justice, environnement, énergie, éducation, logement, démocratie locale) qui permet d'identifier les bonnes sources, les bons indicateurs et les bons partenaires."
+  },
+  {
+    term: "Rédaction et pédagogie",
+    description: "Production des fiches méthodologiques, des notices explicatives, des contenus éditoriaux qui accompagnent chaque cartographie."
+  },
+  {
+    term: "Communication",
+    description: "Animation des relais auprès du public, lien avec les médias, présentations en conférences ou en réseaux associatifs."
+  },
+  {
+    term: "Gestion de projet",
+    description: "Suivi des partenariats, coordination des publications, animation des réunions mensuelles."
+  },
+  {
+    term: "Compétences juridiques",
+    description: "Expertise sur l'ouverture des données, les licences, la protection des données personnelles, le droit associatif."
+  },
+]} />
 
-**Expertise sectorielle.** Connaissance d'une thématique précise (santé, justice, environnement, énergie, éducation, logement, démocratie locale) qui permet d'identifier les bonnes sources, les bons indicateurs et les bons partenaires.
-
-**Rédaction et pédagogie.** Production des fiches méthodologiques, des notices explicatives, des contenus éditoriaux qui accompagnent chaque cartographie.
-
-**Communication.** Animation des relais auprès du public, lien avec les médias, présentations en conférences ou en réseaux associatifs.
-
-**Gestion de projet.** Suivi des partenariats, coordination des publications, animation des réunions mensuelles.
-
-**Compétences juridiques.** Expertise sur l'ouverture des données, les licences, la protection des données personnelles, le droit associatif.
-
+<Callout type="important" title="Pas de rémunération, pas d'engagement minimal">
 L'équipe se réunit chaque mois en visioconférence, dans un format souple. Les nouveaux contributeurs sont accueillis sans formalité particulière : il suffit d'écrire pour exprimer son intérêt.
+</Callout>
 
 **Écrire à [contact@mesdonneeslocales.fr](mailto:contact@mesdonneeslocales.fr?subject=Je%20souhaite%20rejoindre%20l%27%C3%A9quipe%20b%C3%A9n%C3%A9vole)** en indiquant : votre prénom, vos centres d'intérêt thématiques, vos compétences éventuelles, et une disponibilité approximative. Une réponse vous sera apportée dans les jours qui suivent.
 
-## Diffuser les cartographies {#diffusion}
+<h2 id="diffusion">Diffuser les cartographies</h2>
 
 Les cartographies publiées par Mes données locales sont conçues pour être largement diffusées. Plus elles circulent, plus elles atteignent leur objectif : permettre à chacun de mieux comprendre son territoire.
 
@@ -72,12 +120,47 @@ Les associations spécialisées sur une thématique couverte par une cartographi
 
 Les partenariats de diffusion reposent sur un principe simple : la cartographie n'a pas vocation à rester sur un seul site, mais à être accessible là où le public concerné la cherche déjà.
 
-## Proposer une nouvelle thématique
+<h2 id="proposer">Proposer une nouvelle thématique</h2>
 
 Les propositions de nouvelles cartographies sont bienvenues. Pour qu'une proposition puisse être étudiée, elle gagne à comporter trois éléments :
 
-1. Une description de la **question citoyenne** que la cartographie permettrait d'éclairer.
-2. Une identification des **sources de données** disponibles (organismes producteurs, portails open data, fréquence de publication).
-3. Une suggestion de **partenaires thématiques** susceptibles d'apporter leur expertise sur le sujet (associations, observatoires, fondations).
+<NumberedSteps items={[
+  {
+    title: "Question citoyenne",
+    description: "Une description de la question que la cartographie permettrait d'éclairer."
+  },
+  {
+    title: "Sources de données",
+    description: "Une identification des sources disponibles : organismes producteurs, portails open data, fréquence de publication."
+  },
+  {
+    title: "Partenaires thématiques",
+    description: "Une suggestion d'organisations susceptibles d'apporter leur expertise sur le sujet — associations, observatoires, fondations."
+  },
+]} />
 
 Adressez vos propositions à [contact@mesdonneeslocales.fr](mailto:contact@mesdonneeslocales.fr?subject=Proposition%20de%20nouvelle%20cartographie). Chaque proposition est examinée lors de la réunion mensuelle de l'équipe bénévole.
+
+<FurtherReading items={[
+  {
+    href: "https://www.helloasso.com/associations/l-observatoire-citoyen/formulaires/1",
+    label: "Faire un don sur HelloAsso",
+    description: "Plateforme française, sans commission prélevée sur les dons",
+    external: true
+  },
+  {
+    href: "/methodologie/",
+    label: "Méthodologie",
+    description: "Comment l'association sélectionne, vérifie et actualise les données"
+  },
+  {
+    href: "/a-propos/",
+    label: "À propos de l'association",
+    description: "Vision, mission, équipe et valeurs"
+  },
+  {
+    href: "/contact/",
+    label: "Nous contacter",
+    description: "Six adresses dédiées selon ce qui vous amène"
+  },
+]} />

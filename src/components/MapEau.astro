@@ -18,6 +18,13 @@
  */
 import { aggregateByDepartment } from '../lib/hubeau';
 
+interface Props {
+  /** Mode home : taille plus grande, clic département redirige vers la page eau,
+   *  clic commune désactivé (sinon trop d'interactions confuses en home). */
+  homeMode?: boolean;
+}
+const { homeMode = false } = Astro.props;
+
 const aggregates = aggregateByDepartment();
 
 // Les agrégats restent inline (96 départements = ~5 KB)
@@ -35,14 +42,18 @@ for (const a of aggregates) {
 
 <div
   data-map-eau
+  data-home-mode={homeMode ? 'true' : undefined}
   role="application"
   aria-label="Carte de France des communes avec données de qualité de l'eau potable. Cliquez sur un département ou un point commune."
-  class="relative h-[480px] w-full overflow-hidden rounded-sm border border-ink-300 bg-surface-muted lg:h-[600px]"
+  class:list={[
+    'relative w-full overflow-hidden rounded-2xl bg-surface-muted shadow-hero',
+    homeMode ? 'h-[520px] lg:h-[680px]' : 'h-[480px] lg:h-[600px]',
+  ]}
 >
   <div data-map class="absolute inset-0"></div>
 
   {/* Légende */}
-  <div class="absolute bottom-3 left-3 max-w-[220px] rounded-sm bg-surface/95 px-3 py-2 text-xs text-ink-700 shadow-sm backdrop-blur">
+  <div class="absolute bottom-3 left-3 max-w-[220px] rounded-lg bg-surface/95 px-3 py-2 text-xs text-ink-700 shadow-card backdrop-blur">
     <p class="kicker mb-2">Taux de conformité par département</p>
     <div class="flex items-center gap-1 mb-2">
       <span class="block h-3 w-6 bg-ink-300"></span>
@@ -68,9 +79,9 @@ for (const a of aggregates) {
 
   {/* Contrôles */}
   <div class="absolute right-3 top-3 flex flex-col gap-1">
-    <button type="button" data-zoom-in aria-label="Zoomer" class="h-11 w-11 md:h-9 md:w-9 rounded-sm bg-surface text-ink-900 shadow-sm hover:bg-brand-50 hover:text-brand-500 active:scale-[0.96]">+</button>
-    <button type="button" data-zoom-out aria-label="Dézoomer" class="h-11 w-11 md:h-9 md:w-9 rounded-sm bg-surface text-ink-900 shadow-sm hover:bg-brand-50 hover:text-brand-500 active:scale-[0.96]">−</button>
-    <button type="button" data-zoom-reset aria-label="Réinitialiser la vue" class="h-11 w-11 md:h-9 md:w-9 rounded-sm bg-surface text-ink-900 shadow-sm hover:bg-brand-50 hover:text-brand-500 active:scale-[0.96]">⌂</button>
+    <button type="button" data-zoom-in aria-label="Zoomer" class="h-11 w-11 md:h-9 md:w-9 rounded-lg bg-surface text-ink-900 shadow-card hover:bg-brand-50 hover:text-brand-500 active:scale-[0.96]">+</button>
+    <button type="button" data-zoom-out aria-label="Dézoomer" class="h-11 w-11 md:h-9 md:w-9 rounded-lg bg-surface text-ink-900 shadow-card hover:bg-brand-50 hover:text-brand-500 active:scale-[0.96]">−</button>
+    <button type="button" data-zoom-reset aria-label="Réinitialiser la vue" class="h-11 w-11 md:h-9 md:w-9 rounded-lg bg-surface text-ink-900 shadow-card hover:bg-brand-50 hover:text-brand-500 active:scale-[0.96]">⌂</button>
   </div>
 
   <div data-map-loading class="absolute inset-0 flex items-center justify-center bg-surface-muted">
@@ -78,7 +89,7 @@ for (const a of aggregates) {
   </div>
 
   {/* Agrégats département inline (léger). Points communes chargés via /data/eau-points.json */}
-  <script type="application/json" data-aggregates set:html={JSON.stringify(aggregatesMap)}></script>
+  <script is:inline type="application/json" data-aggregates set:html={JSON.stringify(aggregatesMap)}></script>
 </div>
 
 <style is:global>
@@ -383,18 +394,28 @@ for (const a of aggregates) {
       }
       (root as HTMLElement & { __clearMapSelection?: () => void }).__clearMapSelection = () => selectDept(null);
 
+      const homeMode = root.dataset.homeMode === 'true';
+
       map.on('click', 'depts-fill', (e) => {
         if (!e.features?.[0]) return;
         const code = String(e.features[0].id);
+        if (homeMode) {
+          // En home : un clic département ouvre directement la cartographie eau
+          window.location.href = '/cartographies/qualite-eau/';
+          return;
+        }
         selectDept(code);
       });
 
-      // Click commune → redirection directe via event (la page parent gère)
-      map.on('click', 'communes-points', (e) => {
-        if (!e.features?.[0]) return;
-        const code = String(e.features[0].id);
-        root.dispatchEvent(new CustomEvent('commune-selected', { detail: { code }, bubbles: true }));
-      });
+      // Click commune → redirection directe via event (la page parent gère).
+      // Désactivé en homeMode pour éviter les interactions confuses.
+      if (!homeMode) {
+        map.on('click', 'communes-points', (e) => {
+          if (!e.features?.[0]) return;
+          const code = String(e.features[0].id);
+          root.dispatchEvent(new CustomEvent('commune-selected', { detail: { code }, bubbles: true }));
+        });
+      }
 
       loading?.remove();
     });

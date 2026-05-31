@@ -1,0 +1,39 @@
+---
+/**
+ * Bandeau "En ce moment" type breaking news, affiché en bas du hero magazine.
+ *
+ * Lit la collection `highlights` (current.md) et affiche un bandeau pleine largeur
+ * sur fond sombre, type bandeau actualité Le Monde / NYT.
+ *
+ * Si aucun highlight n'est trouvé, le composant ne rend rien.
+ */
+import { getEntry } from 'astro:content';
+
+const highlight = await getEntry('highlights', 'current');
+---
+
+{
+  highlight && (
+    <aside
+      aria-label="Actualité du moment"
+      class="absolute inset-x-0 bottom-0 border-t border-brand-500/20 bg-ink-900/95 backdrop-blur"
+    >
+      <a
+        href={highlight.data.href}
+        class="container-page flex flex-wrap items-baseline gap-4 py-4 no-underline group"
+      >
+        <span class="kicker text-accent-500">● En ce moment</span>
+        <span class="text-base text-white font-medium">{highlight.data.question}</span>
+        <span class="inline-flex items-baseline gap-2">
+          <span class="display text-3xl font-medium text-accent-500 leading-none">
+            {highlight.data.figure}
+          </span>
+          <span class="text-sm text-white/70">{highlight.data.context}</span>
+        </span>
+        <span class="ml-auto text-sm text-white/70 group-hover:text-white transition-colors">
+          {highlight.data.linkLabel} <span aria-hidden="true">→</span>
+        </span>
+      </a>
+    </aside>
+  )
+}

@@ -1,0 +1,163 @@
+---
+title: À propos
+slug: a-propos
+description: Mes données locales est édité par L'Observatoire citoyen, association loi 1901 créée en 2025. Vision, mission, équipe et valeurs d'un projet citoyen pour l'accès aux données publiques.
+keywords:
+  - Observatoire citoyen
+  - association
+  - mission
+  - vision
+  - bénévoles
+ogTitle: À propos — Mes données locales
+ogDescription: Une association loi 1901 au service de l'accès citoyen aux données publiques.
+lastUpdated: 2026-05-29
+schemaType: AboutPage
+
+kicker: L'Association
+lead: |
+  L'Observatoire citoyen est une association loi 1901 créée en 2025. Le projet est inédit en France : faire en sorte que les données publiques deviennent un bien commun lisible, contextualisé et accessible à tous.
+toc:
+  - id: observatoire
+    label: L'Observatoire citoyen
+  - id: vision
+    label: Vision
+  - id: mission
+    label: Mission
+  - id: valeurs
+    label: Valeurs
+  - id: equipe
+    label: L'équipe
+  - id: trajectoire
+    label: Trajectoire 2026-2031
+  - id: identite
+    label: Identité légale
+---
+
+import Lead from '../../components/editorial/Lead.astro';
+import PullQuote from '../../components/editorial/PullQuote.astro';
+import DefList from '../../components/editorial/DefList.astro';
+import Callout from '../../components/editorial/Callout.astro';
+import NumberedSteps from '../../components/editorial/NumberedSteps.astro';
+import StatBlock from '../../components/editorial/StatBlock.astro';
+import KeyValueTable from '../../components/editorial/KeyValueTable.astro';
+import FurtherReading from '../../components/editorial/FurtherReading.astro';
+
+<h2 id="observatoire">L'Observatoire citoyen</h2>
+
+Mes données locales est édité par **L'Observatoire citoyen**, association loi 1901 créée en 2025. L'association porte un projet inédit en France : ne pas se contenter de diffuser des données publiques — il existe déjà des dizaines de portails pour cela — mais les **rendre lisibles, contextualisées et accessibles** à tout citoyen, sans inscription ni connaissance technique préalable.
+
+L'association s'inscrit dans la continuité de la loi pour une République numérique de 2016, qui a posé le principe d'ouverture par défaut des données publiques.
+
+<PullQuote source="Loi pour une République numérique, article 1">
+Les administrations rendent publics les principaux documents qu'elles produisent ou reçoivent.
+</PullQuote>
+
+L'Observatoire citoyen considère que **cette ouverture est une condition nécessaire mais non suffisante**. Pour que les données deviennent réellement un bien commun, il faut franchir trois marches supplémentaires que l'État ne franchit pas seul : la lisibilité, la contextualisation et l'accessibilité à des publics non spécialistes.
+
+<h2 id="vision">Vision</h2>
+
+<Lead>
+L'expertise n'est utile que si elle est partagée.
+</Lead>
+
+L'accès inégal à l'information publique nourrit le sentiment de subir des décisions sans pouvoir les comprendre ni les discuter. Cette asymétrie d'information dégrade la qualité du débat démocratique : les données existent et sont ouvertes, mais elles restent dispersées sur des dizaines de portails techniques que peu de citoyens consultent.
+
+En rendant les données accessibles, l'association vise à recréer les conditions d'un **débat éclairé** sur les sujets qui concernent directement la vie des territoires : santé, environnement, justice, énergie, éducation, logement, démocratie locale.
+
+<h2 id="mission">Mission</h2>
+
+L'Observatoire citoyen a pour mission de rendre accessibles les données publiques utiles aux citoyens. Cette mission se traduit par trois activités principales :
+
+<NumberedSteps items={[
+  {
+    title: "Identifier les données pertinentes",
+    description: "En lien avec des partenaires reconnus pour leur expertise sur chaque thématique : associations spécialisées (UFC-Que Choisir, France Nature Environnement, Fondation Abbé Pierre…), institutions publiques (DREES, ADEME, ANCT…) et chercheurs."
+  },
+  {
+    title: "Produire des cartographies",
+    description: "En transformant des fichiers techniques dispersés — CSV bruts, API REST, fichiers GeoJSON — en visualisations claires, accessibles sans connaissance préalable. Quatre cartographies en ligne aujourd'hui, cinquante visées d'ici 2031."
+  },
+  {
+    title: "Garantir la fiabilité",
+    description: "En mettant à jour les données régulièrement et en documentant systématiquement les sources, la méthodologie et les limites de chaque cartographie. Aucune donnée n'est anonymisée ni transformée sans que cela soit explicitement signalé."
+  },
+]} />
+
+<h2 id="valeurs">Valeurs</h2>
+
+<DefList items={[
+  {
+    term: "Implication bénévole",
+    description: "L'association repose sur la mobilisation de citoyens convaincus que l'égalité d'accès au savoir est une exigence démocratique. Aucune rémunération ne motive les contributeurs : le travail produit est offert."
+  },
+  {
+    term: "Expertise partagée",
+    description: "L'Observatoire citoyen s'appuie sur les expertises reconnues — institutionnelles, associatives, scientifiques — et travaille à les populariser. L'objectif n'est pas de produire un savoir nouveau, mais de rendre lisible un savoir existant."
+  },
+  {
+    term: "Partenariat non lucratif",
+    description: "L'association privilégie les partenariats avec des structures sans but lucratif. Chaque cartographie est conçue en coopération avec un partenaire thématique, qui apporte son expertise métier et bénéficie en retour d'une diffusion élargie."
+  },
+  {
+    term: "Indépendance",
+    description: "L'association ne reçoit aucune subvention conditionnelle. Son fonctionnement repose sur les dons de particuliers et sur des prestations ponctuelles dans le cadre de partenariats. Cette indépendance garantit la neutralité éditoriale."
+  },
+]} />
+
+<Callout type="important" title="Pas de publicité, pas de tracking">
+Mes données locales ne contient aucune publicité, aucune collecte de données utilisateurs, aucun cookie tiers. Le site est entièrement financé par les dons à l'association.
+</Callout>
+
+<h2 id="equipe">L'équipe</h2>
+
+L'Observatoire citoyen est administré par deux membres, et porté au quotidien par une équipe bénévole de citoyennes et citoyens engagés. L'équipe rassemble des compétences complémentaires : développement logiciel, cartographie, analyse de données, gestion de projet, journalisme, expertise sectorielle.
+
+Les bénévoles se réunissent chaque mois en visioconférence pour faire le point sur les cartographies en cours, accueillir les nouveaux contributeurs et préparer les publications à venir. La gouvernance reste légère et collégiale.
+
+L'équipe accueille en permanence de nouvelles compétences. Toute personne souhaitant contribuer — par son temps, ses connaissances ou ses contacts professionnels — peut [rejoindre l'équipe](/je-participe/).
+
+<h2 id="trajectoire">Trajectoire 2026-2031</h2>
+
+L'association s'est donné un cap chiffré et public :
+
+<StatBlock value="50" label="cartographies publiées d'ici 2031" accent={true} />
+
+Cet objectif suppose un rythme d'environ **cinq publications par an en moyenne**, ce qui passe par la multiplication des partenariats thématiques et la consolidation de l'équipe bénévole. À fin 2026, quatre cartographies sont publiées (densité carcérale, incidents nucléaires, qualité de l'eau potable, déserts médicaux). Le plan détaillé est disponible dans la [méthodologie](/methodologie/).
+
+Les thématiques visées couvrent l'ensemble des préoccupations citoyennes : santé, environnement, justice, énergie, éducation, logement, transports, démocratie locale, économie.
+
+<h2 id="identite">Identité légale</h2>
+
+<KeyValueTable rows={[
+  { label: "Forme juridique", value: "Association déclarée loi 1901" },
+  { label: "Nom", value: "L'Observatoire citoyen" },
+  { label: "Siège social", value: "Paris, France" },
+  { label: "SIRET", value: "924 676 570 00014" },
+  { label: "Numéro RNA", value: "W751272998" },
+  { label: "Année de création", value: "2025" },
+  { label: "Directeur de la publication", value: "Laurent Piolatto" },
+  { label: "Contact", value: "contact@mesdonneeslocales.fr", link: "mailto:contact@mesdonneeslocales.fr" },
+]} />
+
+<FurtherReading items={[
+  {
+    href: "/methodologie/",
+    label: "Méthodologie",
+    description: "Comment l'association sélectionne, vérifie et actualise les données"
+  },
+  {
+    href: "/je-participe/",
+    label: "Rejoindre l'équipe",
+    description: "Trois façons de contribuer au projet"
+  },
+  {
+    href: "/cartographies/",
+    label: "Voir toutes les cartographies",
+    description: "Quatre cartographies publiées, cinquante visées"
+  },
+  {
+    href: "/contact/",
+    label: "Nous contacter",
+    description: "Pour les partenariats, la presse, les questions"
+  },
+]} />

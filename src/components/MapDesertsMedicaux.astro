@@ -36,12 +36,12 @@ for (const a of aggregates) {
   data-map-deserts
   role="application"
   aria-label="Carte de France des communes selon l'indicateur d'accessibilité aux médecins généralistes (APL DREES). Cliquez sur un point pour ouvrir la fiche commune."
-  class="relative h-[480px] w-full overflow-hidden rounded-md border border-ink-300 bg-surface-muted lg:h-[640px]"
+  class="relative h-[480px] w-full overflow-hidden rounded-2xl bg-surface-muted shadow-hero lg:h-[640px]"
 >
   <div data-map class="absolute inset-0"></div>
 
   {/* Légende */}
-  <div class="absolute bottom-3 left-3 max-w-[240px] rounded-md bg-surface/95 px-3 py-2 text-xs text-ink-700 shadow-sm backdrop-blur">
+  <div class="absolute bottom-3 left-3 max-w-[240px] rounded-lg bg-surface/95 px-3 py-2 text-xs text-ink-700 shadow-card backdrop-blur">
     <p class="kicker mb-2">Accessibilité médecins généralistes (APL)</p>
     <ul class="space-y-1">
       <li class="flex items-center gap-2">
@@ -72,9 +72,9 @@ for (const a of aggregates) {
 
   {/* Contrôles */}
   <div class="absolute right-3 top-3 flex flex-col gap-1">
-    <button type="button" data-zoom-in aria-label="Zoomer" class="h-11 w-11 md:h-9 md:w-9 rounded-md bg-surface text-ink-900 shadow-sm hover:bg-brand-50 hover:text-brand-500 active:scale-[0.96]">+</button>
-    <button type="button" data-zoom-out aria-label="Dézoomer" class="h-11 w-11 md:h-9 md:w-9 rounded-md bg-surface text-ink-900 shadow-sm hover:bg-brand-50 hover:text-brand-500 active:scale-[0.96]">−</button>
-    <button type="button" data-zoom-reset aria-label="Réinitialiser la vue" class="h-11 w-11 md:h-9 md:w-9 rounded-md bg-surface text-ink-900 shadow-sm hover:bg-brand-50 hover:text-brand-500 active:scale-[0.96]">⌂</button>
+    <button type="button" data-zoom-in aria-label="Zoomer" class="h-11 w-11 md:h-9 md:w-9 rounded-lg bg-surface text-ink-900 shadow-card hover:bg-brand-50 hover:text-brand-500 active:scale-[0.96]">+</button>
+    <button type="button" data-zoom-out aria-label="Dézoomer" class="h-11 w-11 md:h-9 md:w-9 rounded-lg bg-surface text-ink-900 shadow-card hover:bg-brand-50 hover:text-brand-500 active:scale-[0.96]">−</button>
+    <button type="button" data-zoom-reset aria-label="Réinitialiser la vue" class="h-11 w-11 md:h-9 md:w-9 rounded-lg bg-surface text-ink-900 shadow-card hover:bg-brand-50 hover:text-brand-500 active:scale-[0.96]">⌂</button>
   </div>
 
   <div data-map-loading class="absolute inset-0 flex items-center justify-center bg-surface-muted">
@@ -82,7 +82,7 @@ for (const a of aggregates) {
   </div>
 
   {/* JSON inline pour les agrégats département (le panneau lit ces données) */}
-  <script type="application/json" data-aggregates set:html={JSON.stringify(aggregatesMap)}></script>
+  <script is:inline type="application/json" data-aggregates set:html={JSON.stringify(aggregatesMap)}></script>
 </div>
 
 <style is:global>

@@ -1,0 +1,180 @@
+---
+title: Méthodologie
+slug: methodologie
+description: Comment Mes données locales sélectionne, vérifie et actualise les données publiques cartographiées. Critères de qualité, sources, fréquences de mise à jour, limites assumées.
+keywords:
+  - méthodologie
+  - sources de données
+  - qualité
+  - vérification
+  - open data
+ogTitle: Méthodologie — Mes données locales
+ogDescription: Critères de sélection, vérification et actualisation des données publiques cartographiées.
+lastUpdated: 2026-05-29
+schemaType: TechArticle
+
+kicker: Comment ça marche
+lead: |
+  Toute donnée a une histoire. Toute cartographie a des limites. Voici les principes que L'Observatoire citoyen applique à chaque publication, pour permettre à chacun de juger par lui-même de la fiabilité de l'information.
+toc:
+  - id: thematiques
+    label: Choix des thématiques
+  - id: indicateurs
+    label: Sélection des indicateurs
+  - id: provenance
+    label: Provenance des données
+  - id: traitement
+    label: Traitement et qualification
+  - id: mises-a-jour
+    label: Mises à jour
+  - id: limites
+    label: Limites assumées
+  - id: signalement
+    label: Signaler une erreur
+  - id: evolution
+    label: Évolution de cette méthodologie
+---
+
+import Lead from '../../components/editorial/Lead.astro';
+import DefList from '../../components/editorial/DefList.astro';
+import NumberedSteps from '../../components/editorial/NumberedSteps.astro';
+import Callout from '../../components/editorial/Callout.astro';
+import FurtherReading from '../../components/editorial/FurtherReading.astro';
+
+<h2 id="thematiques">Choix des thématiques</h2>
+
+Une cartographie est mise en chantier lorsque trois conditions sont réunies.
+
+<DefList items={[
+  {
+    term: "Intérêt citoyen avéré",
+    description: "La donnée doit éclairer une question qui concerne directement la vie des territoires : santé, environnement, justice, énergie, éducation, logement, transports, démocratie locale, économie. Les thématiques privilégiées sont celles pour lesquelles l'information existe mais reste difficile d'accès pour le public."
+  },
+  {
+    term: "Source officielle stable",
+    description: "Les données utilisées proviennent d'institutions publiques (ministères, agences, autorités indépendantes), d'opérateurs de service public, ou d'organismes reconnus dans leur domaine. Les sources non vérifiables ou à diffusion confidentielle ne sont pas retenues."
+  },
+  {
+    term: "Partenaire thématique",
+    description: "Chaque cartographie est conçue en lien avec une organisation spécialisée — association, ONG, observatoire métier — qui apporte son expertise sur les données, leur interprétation et leurs limites. Ce partenariat garantit la pertinence des indicateurs choisis."
+  },
+]} />
+
+<h2 id="indicateurs">Sélection des indicateurs</h2>
+
+Pour chaque thématique, L'Observatoire citoyen identifie les indicateurs les plus pertinents en concertation avec ses partenaires. Le choix est guidé par trois critères :
+
+<DefList items={[
+  {
+    term: "Signification",
+    description: "L'indicateur doit avoir un sens immédiat pour le public — pas seulement pour les spécialistes."
+  },
+  {
+    term: "Comparabilité",
+    description: "Les valeurs doivent pouvoir être comparées dans le temps et entre territoires, à partir d'une définition stable."
+  },
+  {
+    term: "Disponibilité",
+    description: "L'indicateur doit être publié à une fréquence permettant une actualisation régulière."
+  },
+]} />
+
+Lorsqu'un indicateur est techniquement valable mais complexe à interpréter, il est accompagné d'une définition claire et de seuils de référence (normes officielles, valeurs limites, moyennes nationales).
+
+<h2 id="provenance">Provenance des données</h2>
+
+Toutes les données utilisées sont **publiques et ouvertes**. L'Observatoire citoyen ne collecte aucune donnée par lui-même : il s'appuie sur des fichiers déjà produits et diffusés par des organismes officiels.
+
+<Callout type="info" title="Ce qui figure sur chaque carto">
+Le nom de l'organisme producteur, un lien vers le portail source, la licence applicable (Licence Ouverte 2.0, ODbL, autres), la date du dernier import, la fréquence de mise à jour, la couverture géographique et temporelle. Aucune donnée n'est anonymisée ni transformée sans que cela soit explicitement signalé.
+</Callout>
+
+<h2 id="traitement">Traitement et qualification</h2>
+
+Entre le fichier brut et la cartographie publiée, plusieurs étapes de traitement sont appliquées. Chacune est documentée dans la fiche méthodologique de la cartographie.
+
+<NumberedSteps items={[
+  {
+    title: "Vérification de cohérence",
+    description: "Les fichiers source sont contrôlés pour détecter les valeurs aberrantes, les doublons, les enregistrements incomplets. Les anomalies signalées par les contrôles automatiques sont vérifiées manuellement."
+  },
+  {
+    title: "Géocodage",
+    description: "Lorsque les données ne comportent pas de coordonnées géographiques, les adresses sont géolocalisées à partir des référentiels officiels (Base Adresse Nationale, IGN). Le taux de géocodage réussi est indiqué dans la fiche méthodologique."
+  },
+  {
+    title: "Calcul d'indicateurs dérivés",
+    description: "Lorsque l'indicateur publié est calculé (taux d'occupation, ratio, moyenne), la formule de calcul est explicitée et les variables d'entrée sont citées. Les choix graphiques (seuils, classes, représentations) sont eux aussi documentés."
+  },
+]} />
+
+<h2 id="mises-a-jour">Mises à jour</h2>
+
+Les données affichées sont mises à jour à la fréquence indiquée pour chaque cartographie. Trois rythmes coexistent selon les sources :
+
+<DefList items={[
+  {
+    term: "Continue",
+    description: "Lorsque le producteur publie en temps réel — c'est le cas de la qualité de l'eau potable, alimentée par Hub'Eau."
+  },
+  {
+    term: "Mensuelle",
+    description: "Pour les indicateurs dont les fichiers sont publiés chaque mois (densité carcérale, par exemple)."
+  },
+  {
+    term: "Ponctuelle",
+    description: "Pour les sources publiées à intervalles plus larges (rapports annuels, recensements)."
+  },
+]} />
+
+Chaque page de cartographie affiche la date du dernier import effectif, qui peut différer légèrement de la date de publication par la source.
+
+<h2 id="limites">Limites assumées</h2>
+
+L'Observatoire citoyen reconnaît trois limites principales aux cartographies publiées, et choisit de les expliciter plutôt que de les masquer.
+
+<DefList items={[
+  {
+    term: "Les données ne disent pas tout",
+    description: "Une cartographie présente un indicateur, pas une réalité dans son ensemble. La densité carcérale donne une information précieuse sur les conditions de détention, mais ne suffit pas à les décrire. Chaque fiche signale ce que l'indicateur dit — et ce qu'il ne dit pas."
+  },
+  {
+    term: "Les données publiques comportent des erreurs",
+    description: "Aucune donnée n'est exempte d'imprécision. Les fichiers produits par les institutions peuvent contenir des saisies erronées, des retards de mise à jour, des changements de méthodologie. L'Observatoire citoyen signale les écarts détectés lorsqu'ils sont significatifs."
+  },
+  {
+    term: "Les choix de représentation orientent la lecture",
+    description: "Le choix des couleurs, des seuils ou des unités influence la perception. L'association s'efforce d'être neutre dans ses représentations, et publie les paramètres choisis pour permettre à chacun d'en juger."
+  },
+]} />
+
+<h2 id="signalement">Signaler une erreur</h2>
+
+Si vous constatez une donnée erronée ou un choix de représentation discutable, vous pouvez le signaler par email à [contact@mesdonneeslocales.fr](mailto:contact@mesdonneeslocales.fr). Les signalements sont examinés à chaque réunion mensuelle de l'équipe bénévole et donnent lieu, si nécessaire, à une correction documentée.
+
+<h2 id="evolution">Évolution de cette méthodologie</h2>
+
+Cette méthodologie est susceptible d'évoluer à mesure que de nouvelles thématiques sont traitées. Toute modification substantielle sera consignée publiquement sur cette page, avec sa date d'application.
+
+<FurtherReading items={[
+  {
+    href: "/cartographies/",
+    label: "Voir les cartographies publiées",
+    description: "Quatre cartographies en ligne, cinquante visées d'ici 2031"
+  },
+  {
+    href: "/a-propos/",
+    label: "À propos de l'association",
+    description: "L'Observatoire citoyen, vision, mission, valeurs"
+  },
+  {
+    href: "/je-participe/",
+    label: "Proposer une nouvelle thématique",
+    description: "Trois éléments à fournir pour qu'une proposition soit étudiée"
+  },
+  {
+    href: "/contact/",
+    label: "Signaler une erreur",
+    description: "Adresses dédiées et délais de réponse"
+  },
+]} />

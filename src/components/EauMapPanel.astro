@@ -8,12 +8,7 @@
  * Stratégie zero-hydratation : tous les états sont rendus côté serveur, le JS toggle les
  * classes `.hidden`.
  */
-import {
-  aggregateByDepartment,
-  listAvailableCommunes,
-  listCommunesSummary,
-  getCommuneData,
-} from '../lib/hubeau';
+import { aggregateByDepartment, listCommunesSummary } from '../lib/hubeau';
 import { getAllDepartments } from '../lib/departments';
 
 const aggregates = aggregateByDepartment();
@@ -35,7 +30,7 @@ const nationalRate = totalCommunes > 0 ? (totalCompliant / totalCommunes) * 100 
 <aside
   data-eau-panel
   aria-label="Panneau contextuel de la carte de l'eau"
-  class="rounded-sm border border-ink-300 bg-surface lg:max-h-[600px] lg:overflow-y-auto"
+  class="rounded-2xl bg-surface shadow-card lg:max-h-[600px] lg:overflow-y-auto"
 >
   {/* État initial — résumé national */}
   <div data-panel-state="initial" class="p-5">
@@ -43,17 +38,17 @@ const nationalRate = totalCommunes > 0 ? (totalCompliant / totalCommunes) * 100 
     <h3 class="text-lg font-bold text-ink-900 mb-3">France — données disponibles</h3>
 
     <dl class="grid grid-cols-2 gap-3 mb-4">
-      <div class="rounded-sm bg-surface-muted p-3">
+      <div class="rounded-lg bg-surface-muted p-3">
         <dt class="kicker">Communes</dt>
         <dd class="text-2xl font-bold text-ink-900">{totalCommunes}</dd>
       </div>
-      <div class="rounded-sm bg-surface-muted p-3">
+      <div class="rounded-lg bg-surface-muted p-3">
         <dt class="kicker">Conformes</dt>
         <dd class={`text-2xl font-bold ${nationalRate >= 100 ? 'text-success-500' : 'text-warning-500'}`}>
           {nationalRate.toFixed(0)}%
         </dd>
       </div>
-      <div class="rounded-sm bg-surface-muted p-3 col-span-2">
+      <div class="rounded-lg bg-surface-muted p-3 col-span-2">
         <dt class="kicker">Départements couverts</dt>
         <dd class="text-2xl font-bold text-ink-900">{totalDepts}</dd>
         <p class="text-xs text-ink-500 mt-1">sur 96 départements métropolitains</p>
@@ -84,11 +79,11 @@ const nationalRate = totalCommunes > 0 ? (totalCompliant / totalCommunes) * 100 
         {hasData ? (
           <>
             <dl class="grid grid-cols-2 gap-3 mb-4">
-              <div class="rounded-sm bg-surface-muted p-3">
+              <div class="rounded-lg bg-surface-muted p-3">
                 <dt class="kicker">Communes connues</dt>
                 <dd class="text-2xl font-bold text-ink-900">{agg!.totalCommunes}</dd>
               </div>
-              <div class="rounded-sm bg-surface-muted p-3">
+              <div class="rounded-lg bg-surface-muted p-3">
                 <dt class="kicker">Conformes</dt>
                 <dd class={`text-2xl font-bold ${agg!.complianceRate >= 1 ? 'text-success-500' : 'text-warning-500'}`}>
                   {(agg!.complianceRate * 100).toFixed(0)}%
@@ -102,7 +97,7 @@ const nationalRate = totalCommunes > 0 ? (totalCompliant / totalCommunes) * 100 
                 <li>
                   <a
                     href={`/cartographies/qualite-eau/${c.code}/`}
-                    class="flex items-center justify-between gap-2 rounded-sm bg-surface-muted p-2 text-sm no-underline hover:bg-brand-50"
+                    class="flex items-center justify-between gap-2 rounded-lg bg-surface-muted p-2 text-sm no-underline hover:bg-brand-50"
                   >
                     <span class="font-medium text-ink-900">{c.name}</span>
                     <span class={c.compliant ? 'pill-success' : 'pill-danger'}>
@@ -119,7 +114,7 @@ const nationalRate = totalCommunes > 0 ? (totalCompliant / totalCommunes) * 100 
             )}
           </>
         ) : (
-          <div class="rounded-sm bg-surface-muted p-4 text-sm text-ink-700">
+          <div class="rounded-lg bg-surface-muted p-4 text-sm text-ink-700">
             <p class="font-semibold text-ink-900 mb-1">Aucune donnée disponible pour ce département</p>
             <p>
               L'échantillon actuel ne couvre pas {dept.name}. La couverture complète des 34 969

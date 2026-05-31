@@ -14,7 +14,7 @@ if (says.length === 0 && saysNot.length === 0) return null;
 
   <div class="grid gap-6 md:grid-cols-2">
     {says.length > 0 && (
-      <div class="rounded-sm border-l-4 border-success-500 bg-success-50 p-5">
+      <div class="rounded-xl border-l-4 border-success-500 bg-success-50 p-5">
         <h3 class="text-base font-semibold text-ink-900 mb-3">Ce que dit cette cartographie</h3>
         <ul class="space-y-2 text-sm text-ink-700">
           {says.map((point) => (
@@ -28,7 +28,7 @@ if (says.length === 0 && saysNot.length === 0) return null;
     )}
 
     {saysNot.length > 0 && (
-      <div class="rounded-sm border-l-4 border-warning-500 bg-warning-50 p-5">
+      <div class="rounded-xl border-l-4 border-warning-500 bg-warning-50 p-5">
         <h3 class="text-base font-semibold text-ink-900 mb-3">Ce qu'elle ne dit pas</h3>
         <ul class="space-y-2 text-sm text-ink-700">
           {saysNot.map((point) => (

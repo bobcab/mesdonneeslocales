@@ -12,7 +12,7 @@
  *   FTP_DRY_RUN  (true → ne touche à rien, affiche juste le diff)
  */
 
-import { readFileSync, statSync } from 'node:fs';
+import { statSync } from 'node:fs';
 import { readdir, stat } from 'node:fs/promises';
 import { join, posix, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';

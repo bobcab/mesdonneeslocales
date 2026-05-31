@@ -1,0 +1,33 @@
+---
+interface Props {
+  kicker?: string;
+  title: string;
+  lead: string;
+  lastUpdated?: Date;
+}
+
+const { kicker, title, lead, lastUpdated } = Astro.props;
+
+const dateFmt = new Intl.DateTimeFormat('fr-FR', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+---
+
+<header class="border-b border-ink-300/20 pb-12 mb-12 lg:pb-16 lg:mb-16">
+  {kicker && (
+    <p class="kicker mb-6 text-brand-700">{kicker}</p>
+  )}
+  <h1 class="display text-5xl md:text-7xl font-medium text-ink-900 tracking-tight leading-[0.95]">
+    {title}
+  </h1>
+  <p class="mt-8 max-w-3xl text-xl md:text-2xl text-ink-700 leading-relaxed">
+    {lead}
+  </p>
+  {lastUpdated && (
+    <p class="mt-8 text-sm text-ink-500">
+      Mis à jour le <time datetime={lastUpdated.toISOString().slice(0, 10)}>{dateFmt.format(lastUpdated)}</time>
+    </p>
+  )}
+</header>

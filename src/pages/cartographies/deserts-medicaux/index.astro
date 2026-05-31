@@ -25,9 +25,6 @@ const d = carto.data;
 const communes = listCommunesSummary();
 const lastImport = getLastImportDate();
 const meta = getMeta();
-
-const site = Astro.site?.toString() ?? 'https://mesdonneeslocales.fr/';
-const pageUrl = `${site}cartographies/deserts-medicaux/`;
 ---
 
 <Base title={d.title} description={d.shortDescription ?? d.description.slice(0, 200)}>
@@ -89,7 +86,7 @@ const pageUrl = `${site}cartographies/deserts-medicaux/`;
               id="deserts-q"
               autocomplete="off"
               placeholder="Mende, Rocamadour, 75101..."
-              class="w-full rounded-md border border-ink-300 bg-surface py-3 pl-10 pr-4 text-ink-900 placeholder:text-ink-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+              class="w-full rounded-lg border border-ink-300 bg-surface py-3 pl-10 pr-4 text-ink-900 placeholder:text-ink-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
               list="deserts-commune-list"
             />
             <datalist id="deserts-commune-list">
@@ -163,7 +160,7 @@ const pageUrl = `${site}cartographies/deserts-medicaux/`;
             return (
               <a
                 href={`/cartographies/deserts-medicaux/${c.code}/`}
-                class={`group flex items-center justify-between gap-3 rounded-md border p-4 no-underline transition-colors ${isAlert ? 'border-danger-500 bg-danger-50' : 'border-ink-300 bg-surface hover:border-brand-500'}`}
+                class={`group flex items-center justify-between gap-3 rounded-xl p-4 no-underline transition-all ${isAlert ? 'border border-danger-500 bg-danger-50' : 'bg-surface shadow-card hover:shadow-card-hover hover:-translate-y-0.5'}`}
               >
                 <div class="min-w-0">
                   <p class="font-semibold text-ink-900 group-hover:text-brand-500 truncate">{c.name}</p>

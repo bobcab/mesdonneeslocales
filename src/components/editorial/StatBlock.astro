@@ -1,0 +1,19 @@
+---
+interface Props {
+  value: string;
+  label: string;
+  accent?: boolean;
+}
+
+const { value, label, accent = false } = Astro.props;
+---
+
+<div class="not-prose my-8 inline-flex items-baseline gap-3">
+  <span class:list={[
+    'display text-5xl font-medium tracking-tight leading-none',
+    accent ? 'text-accent-500' : 'text-brand-500',
+  ]}>
+    {value}
+  </span>
+  <span class="text-sm text-ink-700">{label}</span>
+</div>

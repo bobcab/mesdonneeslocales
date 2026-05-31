@@ -12,7 +12,7 @@
  * Pour forcer l'invalidation lors d'un déploiement, incrémenter CACHE_VERSION.
  */
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const RUNTIME_CACHE = `mdl-runtime-${CACHE_VERSION}`;
 const STATIC_CACHE = `mdl-static-${CACHE_VERSION}`;
 const KNOWN_CACHES = [RUNTIME_CACHE, STATIC_CACHE];
@@ -28,8 +28,8 @@ const PRECACHE_URLS = [
   '/je-participe/',
   '/contact/',
   '/404.html',
-  '/fonts/open-sans.woff2',
-  '/fonts/poppins-600.woff2',
+  '/fonts/inter.woff2',
+  '/fonts/space-grotesk.woff2',
   '/favicon.png',
   '/manifest.json',
 ];

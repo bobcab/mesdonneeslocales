@@ -45,14 +45,14 @@ const { submitLabel = 'Voir ma commune' } = Astro.props;
         aria-autocomplete="list"
         aria-controls="ban-suggestions"
         aria-expanded="false"
-        class="w-full rounded-sm border border-ink-300 bg-surface py-3 pl-10 pr-4 text-ink-900 placeholder:text-ink-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
+        class="w-full rounded-lg border border-ink-300 bg-surface py-3 pl-10 pr-4 text-ink-900 placeholder:text-ink-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30"
       />
 
       <ul
         id="ban-suggestions"
         role="listbox"
         aria-label="Suggestions"
-        class="absolute left-0 right-0 top-full z-30 mt-1 hidden max-h-72 overflow-y-auto rounded-sm border border-ink-300 bg-surface shadow-lg"
+        class="absolute left-0 right-0 top-full z-30 mt-1 hidden max-h-72 overflow-y-auto rounded-lg border border-ink-300 bg-surface shadow-card-hover"
       ></ul>
     </div>
     <button type="submit" class="btn-primary">{submitLabel}</button>

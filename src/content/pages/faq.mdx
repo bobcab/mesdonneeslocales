@@ -12,9 +12,26 @@ ogTitle: Questions fréquentes — Mes données locales
 ogDescription: "Sources, mises à jour, partenariats, réutilisation des cartes : toutes les réponses."
 lastUpdated: 2026-05-29
 schemaType: FAQPage
+
+kicker: Questions fréquentes
+lead: |
+  Vingt questions pour comprendre comment Mes données locales est conçu, financé, gouverné — et comment réutiliser ses cartographies.
+toc:
+  - id: projet
+    label: Sur le projet
+  - id: donnees
+    label: Sur les données
+  - id: usage
+    label: Sur l'usage des cartographies
+  - id: collaboration
+    label: Sur la collaboration
+  - id: confidentialite
+    label: Sur la confidentialité
 ---
 
-## Sur le projet
+import FurtherReading from '../../components/editorial/FurtherReading.astro';
+
+<h2 id="projet">Sur le projet</h2>
 
 ### Qu'est-ce que Mes données locales ?
 
@@ -32,7 +49,7 @@ L'Observatoire citoyen est financé par les dons de particuliers et par des pres
 
 Trois façons de contribuer : [faire un don](/je-participe/#don) pour soutenir le fonctionnement et le développement de nouvelles cartographies, [rejoindre l'équipe bénévole](/je-participe/#benevolat) pour apporter ses compétences, ou [diffuser les cartographies](/je-participe/#diffusion) sur d'autres sites pour en élargir l'audience.
 
-## Sur les données
+<h2 id="donnees">Sur les données</h2>
 
 ### D'où viennent les données utilisées ?
 
@@ -54,7 +71,7 @@ Les signalements sont les bienvenus. Vous pouvez écrire à [contact@mesdonneesl
 
 Lorsque la licence de la source le permet, un lien de téléchargement direct est proposé sur chaque page de cartographie (formats CSV, GeoJSON selon les cas). Pour les données diffusées par les producteurs sous licence restrictive, un lien renvoie vers le portail officiel d'origine.
 
-## Sur l'usage des cartographies
+<h2 id="usage">Sur l'usage des cartographies</h2>
 
 ### Puis-je intégrer une cartographie sur mon propre site ?
 
@@ -68,7 +85,7 @@ Oui, dans le respect des licences applicables. Les cartographies produites par L
 
 L'Observatoire citoyen s'engage à respecter le Référentiel général d'amélioration de l'accessibilité (RGAA). Pour les cartographies, dont la navigation visuelle ne peut pas être pleinement adaptée à tous les profils, une alternative textuelle (tableau de données accessible) est proposée sur chaque page. Le niveau de conformité actuel est détaillé dans la [déclaration d'accessibilité](/accessibilite/).
 
-## Sur la collaboration
+<h2 id="collaboration">Sur la collaboration</h2>
 
 ### Comment proposer une nouvelle thématique ?
 
@@ -82,7 +99,7 @@ L'Observatoire citoyen privilégie les partenariats avec des organisations non l
 
 Toutes les compétences utiles à un projet de visualisation de données : développement logiciel (web, cartographie, traitement de données), expertise sectorielle sur une thématique (santé, justice, environnement, énergie...), rédaction et pédagogie, communication, gestion de projet, expertise juridique sur l'ouverture des données. Les contributeurs sont accueillis lors de la réunion mensuelle de l'équipe.
 
-## Sur la confidentialité
+<h2 id="confidentialite">Sur la confidentialité</h2>
 
 ### Le site collecte-t-il des données personnelles ?
 
@@ -92,6 +109,25 @@ Mes données locales ne collecte pas de données personnelles permettant d'ident
 
 Non. Aucun cookie publicitaire ni de suivi tiers n'est utilisé. Les ressources externes éventuellement chargées (polices, fonds de carte) sont sélectionnées pour limiter au maximum les transferts d'information vers des tiers.
 
----
-
-Une question qui n'a pas trouvé de réponse ici ? Écrivez à [contact@mesdonneeslocales.fr](mailto:contact@mesdonneeslocales.fr), la liste des questions fréquentes est mise à jour régulièrement en fonction des demandes reçues.
+<FurtherReading items={[
+  {
+    href: "/contact/",
+    label: "Une question sans réponse ici ?",
+    description: "Écrivez à L'Observatoire citoyen — la FAQ est mise à jour selon les demandes"
+  },
+  {
+    href: "/methodologie/",
+    label: "Méthodologie",
+    description: "Comment l'association sélectionne, vérifie et actualise les données"
+  },
+  {
+    href: "/je-participe/",
+    label: "Comment participer",
+    description: "Trois façons de soutenir le projet"
+  },
+  {
+    href: "/cartographies/",
+    label: "Voir les cartographies",
+    description: "Quatre cartographies en ligne, cinquante visées"
+  },
+]} />

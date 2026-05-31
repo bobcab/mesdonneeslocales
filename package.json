@@ -28,10 +28,14 @@
     "tailwindcss": "^4.3.0"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "@astrojs/mdx": "^6.0.1",
     "@tailwindcss/typography": "^0.5.19",
     "basic-ftp": "^6.0.1",
     "cross-env": "^10.1.0",
     "dotenv": "^17.4.2",
+    "rehype-slug": "^6.0.0",
+    "typescript": "^6.0.3",
     "xlsx": "^0.18.5"
   }
 }

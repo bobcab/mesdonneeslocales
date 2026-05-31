@@ -22,10 +22,6 @@ export async function getStaticPaths() {
   }));
 }
 
-interface Props {
-  code: string;
-}
-
 const { code } = Astro.props;
 const data = getCommuneData(code) as HubeauCommune;
 
@@ -145,7 +141,7 @@ const statusBadge = data.compliantOverall
       </header>
 
       {/* Statut global de conformité */}
-      <section aria-labelledby="status-title" class={`mb-8 rounded-sm p-6 ${data.compliantOverall ? 'bg-success-50 border-l-4 border-success-500' : 'bg-danger-50 border-l-4 border-danger-500'}`}>
+      <section aria-labelledby="status-title" class={`mb-8 rounded-xl p-6 ${data.compliantOverall ? 'bg-success-50 border-l-4 border-success-500' : 'bg-danger-50 border-l-4 border-danger-500'}`}>
         <div class="flex items-start gap-4">
           <div class={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-2xl font-bold ${statusBadge.class}`} aria-hidden="true">
             {statusBadge.icon}
@@ -166,19 +162,19 @@ const statusBadge = data.compliantOverall
       <section aria-labelledby="figures-title" class="mb-8">
         <h2 id="figures-title" class="sr-only">Chiffres clés</h2>
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <div class="rounded-sm border border-ink-300 bg-surface p-4">
+          <div class="rounded-xl bg-surface p-4 shadow-card">
             <p class="text-3xl font-bold text-ink-900 leading-none">{data.samplesCount ?? 0}</p>
             <p class="mt-2 text-xs text-ink-500">prélèvements récents</p>
           </div>
-          <div class="rounded-sm border border-ink-300 bg-surface p-4">
+          <div class="rounded-xl bg-surface p-4 shadow-card">
             <p class="text-3xl font-bold text-ink-900 leading-none">{data.paramsCount ?? 0}</p>
             <p class="mt-2 text-xs text-ink-500">paramètres mesurés</p>
           </div>
-          <div class="rounded-sm border border-ink-300 bg-surface p-4">
+          <div class="rounded-xl bg-surface p-4 shadow-card">
             <p class="text-3xl font-bold leading-none {principal.length > 0 ? 'text-success-500' : 'text-ink-500'}">{principal.length}</p>
             <p class="mt-2 text-xs text-ink-500">paramètres principaux</p>
           </div>
-          <div class="rounded-sm border border-ink-300 bg-surface p-4">
+          <div class="rounded-xl bg-surface p-4 shadow-card">
             <p class={`text-3xl font-bold leading-none ${pfas.length > 0 ? 'text-warning-500' : 'text-ink-500'}`}>{pfas.length}</p>
             <p class="mt-2 text-xs text-ink-500">paramètres PFAS{pfas.length > 0 ? ' analysés' : ''}</p>
           </div>
@@ -189,7 +185,7 @@ const statusBadge = data.compliantOverall
       {principal.length > 0 && (
         <section aria-labelledby="principal-title" class="mb-8">
           <h2 id="principal-title" class="text-xl font-bold text-ink-900 mb-4">Paramètres principaux</h2>
-          <div class="overflow-x-auto rounded-sm border border-ink-300">
+          <div class="overflow-x-auto rounded-xl shadow-card">
             <table class="min-w-full divide-y divide-ink-300 text-sm">
               <thead class="bg-surface-muted">
                 <tr>
@@ -240,7 +236,7 @@ const statusBadge = data.compliantOverall
 
       {/* PFAS si analysés */}
       {pfas.length > 0 && (
-        <section aria-labelledby="pfas-title" class="mb-8 rounded-sm border-l-4 border-warning-500 bg-warning-50 p-5">
+        <section aria-labelledby="pfas-title" class="mb-8 rounded-xl border-l-4 border-warning-500 bg-warning-50 p-5">
           <h2 id="pfas-title" class="text-lg font-bold text-ink-900 mb-2">
             PFAS — Substances perfluoroalkylées et polyfluoroalkylées
           </h2>
@@ -266,7 +262,7 @@ const statusBadge = data.compliantOverall
       {/* Autres paramètres */}
       {others.length > 0 && (
         <section aria-labelledby="others-title" class="mb-8">
-          <details class="rounded-sm border border-ink-300 bg-surface">
+          <details class="rounded-xl bg-surface shadow-card">
             <summary id="others-title" class="cursor-pointer px-4 py-3 font-semibold text-ink-900">
               Tous les paramètres mesurés ({others.length})
             </summary>
@@ -285,7 +281,7 @@ const statusBadge = data.compliantOverall
       )}
 
       {/* Partage + téléchargement */}
-      <section aria-labelledby="share-title" class="mb-8 rounded-sm border border-ink-300 bg-surface p-5">
+      <section aria-labelledby="share-title" class="mb-8 rounded-xl bg-surface p-5 shadow-card">
         <h2 id="share-title" class="text-lg font-bold text-ink-900 mb-3">Partager et télécharger</h2>
         <div class="flex flex-wrap gap-3">
           <a href={csvDataUri} download={csvFilename} class="btn-primary text-sm inline-flex items-center gap-2">
@@ -308,7 +304,7 @@ const statusBadge = data.compliantOverall
       </section>
 
       {/* Source */}
-      <section aria-labelledby="source-title" class="rounded-sm bg-surface-muted p-5 text-sm">
+      <section aria-labelledby="source-title" class="rounded-xl bg-surface-muted p-5 text-sm">
         <h2 id="source-title" class="font-semibold text-ink-900 mb-2">Source des données</h2>
         <p class="text-ink-700">
           API publique <a href="https://hubeau.eaufrance.fr/page/api-qualite-eau-potable" target="_blank" rel="noopener noreferrer">Hub'Eau — Qualité de l'eau potable</a>,

@@ -1,0 +1,34 @@
+---
+interface Row {
+  label: string;
+  value: string;
+  link?: string;
+  external?: boolean;
+}
+
+interface Props {
+  rows: Row[];
+}
+
+const { rows } = Astro.props;
+---
+
+<dl class="not-prose my-10 divide-y divide-ink-300/40 rounded-xl border border-ink-300/40 bg-surface-muted">
+  {rows.map((row) => (
+    <div class="grid gap-2 px-6 py-4 md:grid-cols-[240px_1fr] md:gap-8">
+      <dt class="kicker self-center text-ink-500">{row.label}</dt>
+      <dd class="text-base text-ink-900">
+        {row.link ? (
+          <a
+            href={row.link}
+            target={row.external ? '_blank' : undefined}
+            rel={row.external ? 'noopener noreferrer' : undefined}
+            class="text-brand-600 hover:text-brand-700"
+          >
+            {row.value}
+          </a>
+        ) : row.value}
+      </dd>
+    </div>
+  ))}
+</dl>

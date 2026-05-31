@@ -2,6 +2,7 @@
 import logoBlanc from '../assets/logo/logo-blanc.svg';
 
 const year = new Date().getFullYear();
+const DONATE_URL = 'https://www.helloasso.com/associations/l-observatoire-citoyen/formulaires/1';
 
 const columns = [
   {
@@ -17,6 +18,7 @@ const columns = [
     items: [
       { label: 'Accueil', href: '/' },
       { label: 'Cartographies', href: '/cartographies/' },
+      { label: 'Carte de France', href: '/carte-france/' },
       { label: 'Je participe', href: '/je-participe/' },
       { label: 'Contact', href: '/contact/' },
     ],
@@ -24,9 +26,9 @@ const columns = [
   {
     title: 'Soutenir',
     items: [
-      { label: 'Faire un don', href: 'https://www.helloasso.com/associations/l-observatoire-citoyen/formulaires/1', external: true },
+      { label: 'Faire un don', href: DONATE_URL, external: true },
       { label: 'Devenir bénévole', href: '/je-participe/#benevolat' },
-      { label: 'Diffuser', href: '/je-participe/#diffusion' },
+      { label: 'Diffuser les cartes', href: '/je-participe/#diffusion' },
     ],
   },
   {
@@ -42,50 +44,93 @@ const columns = [
 ---
 
 <footer id="footer" class="bg-ink-900 text-white">
-  <div class="container-page py-12">
-    <a href="/" class="inline-block mb-8 no-underline" aria-label="Mes données locales — accueil">
-      <img src={logoBlanc.src} alt="" class="h-12 w-auto" />
-    </a>
+  <div class="container-page py-20">
+    <div class="grid gap-16 lg:grid-cols-[1.4fr_2fr]">
+      {/* Bloc gauche — identité + manifeste répété */}
+      <div>
+        <a
+          href="/"
+          class="inline-block mb-8 no-underline"
+          aria-label="Mes données locales — accueil"
+        >
+          <img src={logoBlanc.src} alt="" class="h-14 w-auto" />
+        </a>
+        <p class="display text-2xl md:text-3xl font-medium text-white tracking-tight leading-tight max-w-md mb-8">
+          L'information publique est un bien commun.
+        </p>
+        <p class="text-base text-white/70 max-w-md leading-relaxed">
+          Cartographies citoyennes, données ouvertes, méthodologie publique. Projet associatif sans
+          publicité, sans inscription, sans collecte de données.
+        </p>
 
-    <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
-      {columns.map((col) => (
-        <nav aria-label={col.title}>
-          <h2 class="text-sm font-semibold uppercase tracking-wide text-white mb-4">{col.title}</h2>
-          <ul class="space-y-2">
-            {col.items.map((item) => (
-              <li>
-                <a
-                  href={item.href}
-                  target={item.external ? '_blank' : undefined}
-                  rel={item.external ? 'noopener noreferrer' : undefined}
-                  class="text-sm text-white/80 no-underline hover:text-white hover:underline break-words"
-                >
-                  {item.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      ))}
+        {/* Liens externes sobres */}
+        <div class="mt-8 flex flex-wrap gap-6">
+          <a
+            href={DONATE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-sm text-white/80 hover:text-accent-500 transition-colors no-underline"
+          >
+            Faire un don
+          </a>
+          <a
+            href="/llms.txt"
+            class="text-sm text-white/80 hover:text-accent-500 transition-colors no-underline"
+          >
+            llms.txt
+          </a>
+          <a
+            href="/sitemap-index.xml"
+            class="text-sm text-white/80 hover:text-accent-500 transition-colors no-underline"
+          >
+            Plan XML
+          </a>
+        </div>
+      </div>
+
+      {/* Bloc droit — 4 colonnes aérées */}
+      <div class="grid gap-10 sm:grid-cols-2 md:grid-cols-4">
+        {columns.map((col) => (
+          <nav aria-label={col.title}>
+            <p class="kicker mb-5 text-white/60">{col.title}</p>
+            <ul class="space-y-3">
+              {col.items.map((item) => (
+                <li>
+                  <a
+                    href={item.href}
+                    target={item.external ? '_blank' : undefined}
+                    rel={item.external ? 'noopener noreferrer' : undefined}
+                    class="text-base text-white/90 no-underline hover:text-accent-500 transition-colors"
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ))}
+      </div>
     </div>
   </div>
 
-  <div class="border-t border-white/15">
-    <div class="container-page py-6 flex flex-col gap-2 text-sm text-white/70 md:flex-row md:items-center md:justify-between">
+  {/* Pied de footer — crédits sobres */}
+  <div class="border-t border-white/10">
+    <div class="container-page py-6 flex flex-col gap-3 text-sm text-white/60 md:flex-row md:items-center md:justify-between">
       <p>
-        &copy; {year} <strong class="text-white">L'Observatoire citoyen</strong> &mdash; Association loi 1901 (SIRET 924 676 570 00014)
+        &copy; {year} <strong class="text-white/80">L'Observatoire citoyen</strong> — Association
+        loi 1901
+        <span class="text-white/40">·</span> SIRET 924 676 570 00014
       </p>
       <p>
-        Contenu éditorial sous licence
+        Contenu sous licence
         <a
           href="https://creativecommons.org/licenses/by-sa/4.0/deed.fr"
           target="_blank"
           rel="noopener noreferrer"
-          class="text-white/90 hover:text-white"
+          class="text-white/80 hover:text-white underline"
         >
           CC BY-SA 4.0
-        </a> &middot;
-        Données sous leur licence d'origine
+        </a>
       </p>
     </div>
   </div>

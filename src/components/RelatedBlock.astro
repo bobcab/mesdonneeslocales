@@ -7,7 +7,6 @@ interface Props {
 
 const { carto } = Astro.props;
 const d = carto.data;
-const currentSlug = carto.id.replace(/\.md$/, '');
 
 // Cartographies liées : même catégorie, hors page courante
 const allCartos = await getCollection('cartographies');

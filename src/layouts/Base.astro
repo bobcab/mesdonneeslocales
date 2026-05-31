@@ -48,9 +48,9 @@ const ogImageUrl = new URL(ogImage ?? '/og-default.png', siteUrl).toString();
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#4f46e5" />
 
-    {/* Préchargement des fonts critiques (auto-hébergées, RGPD-friendly) */}
-    <link rel="preload" as="font" type="font/woff2" href="/fonts/open-sans.woff2" crossorigin />
-    <link rel="preload" as="font" type="font/woff2" href="/fonts/poppins-600.woff2" crossorigin />
+    {/* Préchargement de la font critique Inter (auto-hébergée, RGPD-friendly).
+        Space Grotesk n'est précharger que par les pages qui en ont besoin (hero). */}
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/inter.woff2" crossorigin />
 
     {/* Open Graph */}
     <meta property="og:type" content="website" />

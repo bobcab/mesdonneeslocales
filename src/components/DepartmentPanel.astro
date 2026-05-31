@@ -21,7 +21,7 @@ const dateFmt = new Intl.DateTimeFormat('fr-FR', { month: 'short', year: 'numeri
 <aside
   data-department-panel
   aria-label="Panneau contextuel"
-  class="rounded-sm border border-ink-300 bg-surface lg:h-[600px] lg:overflow-y-auto"
+  class="rounded-2xl bg-surface shadow-card lg:h-[600px] lg:overflow-y-auto"
 >
   {/* ÉTAT INITIAL — résumé national */}
   <div data-panel-state="initial" class="p-5">
@@ -37,7 +37,7 @@ const dateFmt = new Intl.DateTimeFormat('fr-FR', { month: 'short', year: 'numeri
       {cartos.map((c) => {
         const slug = c.id.replace(/\.md$/, '');
         return (
-          <li class="rounded-sm bg-surface-muted p-3">
+          <li class="rounded-lg bg-surface-muted p-3">
             <a
               href={`/cartographies/${slug}/`}
               class="text-sm font-semibold text-ink-900 no-underline hover:text-brand-500"
@@ -62,7 +62,7 @@ const dateFmt = new Intl.DateTimeFormat('fr-FR', { month: 'short', year: 'numeri
       <h2 class="text-lg font-bold text-ink-900 mb-1">{dept.name}</h2>
       <p class="text-sm text-ink-500 mb-4">{dept.code} · {dept.region}</p>
 
-      <div class="rounded-sm bg-surface-muted p-3 mb-4">
+      <div class="rounded-lg bg-surface-muted p-3 mb-4">
         <p class="kicker mb-1">En bref</p>
         <p class="text-sm text-ink-700">
           <strong class="text-ink-900">{dept.population.toLocaleString('fr-FR')}</strong> milliers d'habitants
@@ -75,7 +75,7 @@ const dateFmt = new Intl.DateTimeFormat('fr-FR', { month: 'short', year: 'numeri
           const slug = c.id.replace(/\.md$/, '');
           // MVP : toutes les cartos sont nationales. On affiche un message générique.
           return (
-            <li class="rounded-sm bg-surface-muted p-3">
+            <li class="rounded-lg bg-surface-muted p-3">
               <a
                 href={`/cartographies/${slug}/`}
                 class="text-sm font-semibold text-ink-900 no-underline hover:text-brand-500"

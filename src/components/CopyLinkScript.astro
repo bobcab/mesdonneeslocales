@@ -2,7 +2,7 @@
 // Petit script global pour gérer les boutons [data-copy-link]
 ---
 
-<div id="copy-toast" class="pointer-events-none fixed top-24 right-4 z-50 hidden rounded-sm px-4 py-3 text-sm font-medium text-white shadow-lg" role="status" aria-live="polite"></div>
+<div id="copy-toast" class="pointer-events-none fixed top-24 right-4 z-50 hidden rounded-lg px-4 py-3 text-sm font-medium text-white shadow-card-hover" role="status" aria-live="polite"></div>
 
 <script>
   const toast = document.getElementById('copy-toast');
@@ -30,6 +30,8 @@
         input.value = url;
         document.body.appendChild(input);
         input.select();
+        // Fallback historique pour navigateurs sans Clipboard API (legacy Safari/IE).
+        // execCommand est déprécié mais reste implémenté partout.
         document.execCommand('copy');
         document.body.removeChild(input);
       }

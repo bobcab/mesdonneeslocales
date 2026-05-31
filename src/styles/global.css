@@ -3,37 +3,23 @@
 
 /* ============================================================
    FONTS — auto-hébergées (public/fonts/), RGPD-friendly
+   Inter (body + heading) + Space Grotesk (display, gros titres
+   éditoriaux). Subset latin uniquement (~70 KB total).
    ============================================================ */
 @font-face {
-  font-family: 'Open Sans';
+  font-family: 'Inter';
   font-style: normal;
   font-weight: 400 700;
   font-display: swap;
-  src: url('/fonts/open-sans.woff2') format('woff2-variations');
+  src: url('/fonts/inter.woff2') format('woff2-variations');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 @font-face {
-  font-family: 'Poppins';
+  font-family: 'Space Grotesk';
   font-style: normal;
-  font-weight: 500;
+  font-weight: 500 700;
   font-display: swap;
-  src: url('/fonts/poppins-500.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'Poppins';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url('/fonts/poppins-600.woff2') format('woff2');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
-}
-@font-face {
-  font-family: 'Poppins';
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url('/fonts/poppins-700.woff2') format('woff2');
+  src: url('/fonts/space-grotesk.woff2') format('woff2-variations');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
@@ -54,7 +40,7 @@
   --color-brand-700: #3730a3;
   --color-brand-800: #312e81;
 
-  /* Accent — ambre éditorial (NOUVEAU)
+  /* Accent — ambre éditorial.
      Usage strict : "En ce moment", badges "Nouveau", callouts.
      JAMAIS sur un bouton primaire (couleur d'attention, pas d'action). */
   --color-accent-50:  #fffbeb;
@@ -65,35 +51,42 @@
   --color-accent-700: #b45309;
 
   /* Texte / encres (Piste A — neutres légèrement plus chauds) */
-  --color-ink-900: #111827; /* texte principal, headings, footer */
-  --color-ink-700: #374151; /* texte courant */
-  --color-ink-500: #6b7280; /* texte secondaire, méta */
-  --color-ink-300: #9ca3af; /* bordures, placeholders */
+  --color-ink-900: #111827;
+  --color-ink-700: #374151;
+  --color-ink-500: #6b7280;
+  --color-ink-300: #9ca3af;
 
   /* Surfaces */
   --color-surface:       #ffffff;
-  --color-surface-muted: #f5f4f0; /* warm beige signature MDL */
+  --color-surface-muted: #f5f4f0;
 
   /* Couleurs sémantiques */
-  --color-success-500: #1D9E75; /* teal — conformité, validation */
+  --color-success-500: #1D9E75;
   --color-success-50:  #e6f5ef;
   --color-success-700: #157053;
 
-  --color-warning-500: #F0997B; /* coral — alerte modérée */
+  --color-warning-500: #F0997B;
   --color-warning-50:  #fdf0eb;
   --color-warning-700: #c66a48;
 
-  --color-danger-500: #D85A30;  /* alerte forte */
+  --color-danger-500: #D85A30;
   --color-danger-700: #993C1D;
   --color-danger-50:  #fbeae3;
 
-  --color-energy-500: #BA7517;  /* énergie / nucléaire */
+  --color-energy-500: #BA7517;
   --color-energy-700: #854F0B;
   --color-energy-50:  #f5eadb;
 
-  /* Polices */
-  --font-sans: "Open Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-heading: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Polices — Inter (body + heading), Space Grotesk (display gros titres) */
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-heading: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Space Grotesk", "Inter", system-ui, -apple-system, sans-serif;
+
+  /* Ombres modernes multi-couches — plus douces que shadow-md Tailwind par défaut.
+     Utilisées via les classes .shadow-card / .shadow-card-hover / .shadow-hero. */
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 12px rgb(0 0 0 / 0.04);
+  --shadow-card-hover: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px rgb(0 0 0 / 0.08), 0 16px 48px rgb(0 0 0 / 0.04);
+  --shadow-hero: 0 1px 3px rgb(0 0 0 / 0.06), 0 20px 60px rgb(0 0 0 / 0.08);
 }
 
 @layer base {
@@ -104,18 +97,24 @@
     @apply bg-surface text-ink-900 font-sans antialiased;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading;
+    @apply font-heading tracking-tight;
+  }
+  /* Classe display pour les très gros titres éditoriaux (hero principal, manifestes).
+     Plus serrée (tracking-tighter) car Space Grotesk a une chasse plus large que Inter. */
+  .display {
+    font-family: var(--font-display);
+    @apply tracking-tighter font-medium;
   }
   a {
     @apply text-brand-500 transition-colors;
   }
   a:hover {
-    @apply text-brand-600; /* Piste A : brand-600 plus contrasté que brand-400 sur fond blanc */
+    @apply text-brand-600;
   }
 
   /* Focus visible accessible (anneau indigo) */
   :focus-visible {
-    @apply outline-2 outline-offset-2 outline-brand-500 rounded-sm;
+    @apply outline-2 outline-offset-2 outline-brand-500 rounded-md;
   }
 
   /* Respect des préférences utilisateur — accessibilité (WCAG 2.3.3) */
@@ -150,15 +149,33 @@
     @apply mt-4 text-ink-500;
   }
 
-  /* Boutons (Piste A : rounded-md pour adoucir le style civic-tech) */
+  /* Boutons — style moderne : rounded-lg, ombres colorées qui élèvent au hover.
+     Plus de bordure 2px sur le primary (look civic-tech moderne 2026). */
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-md border-2 border-brand-500 bg-brand-500 px-6 py-3 font-medium text-white transition-all hover:bg-brand-600 hover:border-brand-600 active:scale-[0.98];
+    @apply inline-flex items-center justify-center rounded-lg bg-brand-500 px-6 py-3 font-medium text-white transition-all hover:bg-brand-600 active:scale-[0.98];
+    box-shadow: 0 1px 2px rgb(79 70 229 / 0.2), 0 4px 12px rgb(79 70 229 / 0.15);
+  }
+  .btn-primary:hover {
+    box-shadow: 0 2px 4px rgb(79 70 229 / 0.25), 0 8px 24px rgb(79 70 229 / 0.2);
+    transform: translateY(-1px);
   }
   .btn-outline {
-    @apply inline-flex items-center justify-center rounded-md border-2 border-brand-500 bg-transparent px-6 py-3 font-medium text-brand-500 transition-all hover:bg-brand-500 hover:text-white active:scale-[0.98];
+    @apply inline-flex items-center justify-center rounded-lg border border-brand-500 bg-transparent px-6 py-3 font-medium text-brand-500 transition-all hover:bg-brand-50 active:scale-[0.98];
   }
   .btn-ghost {
-    @apply inline-flex items-center justify-center rounded-md px-4 py-2 font-medium text-ink-700 transition-colors hover:text-brand-600 hover:bg-brand-50 active:scale-[0.98] min-h-[40px];
+    @apply inline-flex items-center justify-center rounded-lg px-4 py-2 font-medium text-ink-700 transition-colors hover:text-brand-600 hover:bg-brand-50 active:scale-[0.98] min-h-[40px];
+  }
+
+  /* Ombres modernes en classes utilitaires.
+     Préférer ces classes à shadow-md de Tailwind pour la cohérence. */
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+  .shadow-card-hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+  .shadow-hero {
+    box-shadow: var(--shadow-hero);
   }
 
   /* Kickers — étiquettes de bloc (Synthèse UX §08) */
@@ -191,7 +208,7 @@
     @apply inline-flex items-center rounded-full border border-ink-300 bg-white px-4 py-2 text-sm font-medium text-ink-700 transition-colors cursor-pointer min-h-[36px];
   }
   .cat-chip:hover {
-    @apply border-brand-500 text-brand-700; /* Piste A : text-brand-700 plus lisible que brand-500 */
+    @apply border-brand-500 text-brand-700;
   }
   .cat-chip-active {
     @apply border-brand-500 bg-brand-500 text-white;
@@ -205,17 +222,16 @@
     @apply sr-only;
   }
   .skip-link:focus {
-    @apply not-sr-only fixed left-4 top-4 z-[60] bg-brand-600 text-white px-4 py-2 rounded-md shadow-lg no-underline;
+    @apply not-sr-only fixed left-4 top-4 z-[60] bg-brand-600 text-white px-4 py-2 rounded-lg shadow-lg no-underline;
   }
 
-  /* Pill accent (NOUVEAU — pour badges « Nouveau » et bloc « En ce moment »).
-     Le texte est en ink-900 car le contraste blanc/ambre-500 est insuffisant. */
+  /* Pill accent — badges "Nouveau" et bloc "En ce moment".
+     Texte en ink-900 car le contraste blanc/ambre-500 est insuffisant. */
   .pill-accent {
     @apply inline-flex items-center rounded-full bg-accent-500 px-2.5 py-0.5 text-xs font-semibold text-ink-900;
   }
 
-  /* Micro-interaction : fade-out doux des cards filtrées dans le catalogue.
-     Désactivée par prefers-reduced-motion. */
+  /* Micro-interaction : fade-out doux des cards filtrées dans le catalogue. */
   [data-carto-card] {
     transition: opacity 200ms ease, transform 200ms ease;
   }
@@ -228,10 +244,9 @@
     [data-carto-card] { transition: none; }
   }
 
-  /* Skeletons — placeholder visuel pendant un chargement.
-     L'animation pulse est désactivée par prefers-reduced-motion via le @media base. */
+  /* Skeletons — placeholder visuel pendant un chargement. */
   .skeleton {
-    @apply block bg-ink-300/40 rounded-sm relative overflow-hidden;
+    @apply block bg-ink-300/40 rounded-md relative overflow-hidden;
     animation: skeleton-pulse 1.4s ease-in-out infinite;
   }
   @keyframes skeleton-pulse {
@@ -243,7 +258,7 @@
   }
 
   /* ============================================================
-     Editorial prose — surcharge des classes `prose` de
+     Editorial prose — surcharge des classes prose de
      @tailwindcss/typography avec nos tokens.
      ============================================================ */
   .prose-editorial {
@@ -267,6 +282,7 @@
   }
   .prose-editorial :where(h1, h2, h3, h4) {
     font-family: var(--font-heading);
+    @apply tracking-tight;
   }
   .prose-editorial :where(a) {
     @apply underline decoration-brand-500/40 underline-offset-2 transition-colors;

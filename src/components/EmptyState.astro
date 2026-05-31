@@ -41,7 +41,7 @@ interface Props {
 const { variant = 'info', title, description, actions = [], liveAnnounce } = Astro.props;
 
 const variantStyles = {
-  search: { wrapper: 'border-ink-300 bg-surface-muted', icon: 'text-ink-500' },
+  search: { wrapper: 'bg-surface-muted', icon: 'text-ink-500' },
   error: { wrapper: 'border-l-4 border-danger-500 bg-danger-50', icon: 'text-danger-700' },
   info: { wrapper: 'border-l-4 border-brand-500 bg-brand-50', icon: 'text-brand-500' },
 };
@@ -49,7 +49,7 @@ const s = variantStyles[variant];
 ---
 
 <div
-  class:list={['rounded-sm border p-6', s.wrapper]}
+  class:list={['rounded-xl p-6', s.wrapper]}
   role={variant === 'error' ? 'alert' : 'status'}
   aria-live={liveAnnounce ? (variant === 'error' ? 'assertive' : 'polite') : undefined}
 >

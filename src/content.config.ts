@@ -120,10 +120,11 @@ const cartographies = defineCollection({
 });
 
 /**
- * Pages éditoriales (à propos, FAQ, méthodologie, légal, etc.)
+ * Pages éditoriales (à propos, FAQ, méthodologie, légal, etc.).
+ * Supporte .md (legacy) et .mdx (nouveau, permet d'utiliser les composants editorial/).
  */
 const pages = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/pages' }),
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/pages' }),
   schema: z.object({
     title: z.string(),
     slug: z.string(),
@@ -135,6 +136,19 @@ const pages = defineCollection({
     schemaType: z
       .enum(['AboutPage', 'TechArticle', 'FAQPage', 'ContactPage', 'WebPage'])
       .default('WebPage'),
+
+    // Nouveau gabarit éditorial (optionnel — legacy md sans ces champs continuent de fonctionner)
+    kicker: z.string().optional(),
+    lead: z.string().min(20).optional(),
+    toc: z
+      .array(
+        z.object({
+          id: z.string(),
+          label: z.string(),
+          level: z.union([z.literal(2), z.literal(3)]).default(2),
+        }),
+      )
+      .default([]),
   }),
 });
 
@@ -144,20 +158,25 @@ const pages = defineCollection({
  */
 const highlights = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/highlights' }),
-  schema: z.object({
-    /** Question éditorialisée affichée en intro */
-    question: z.string(),
-    /** Chiffre fort (peut contenir des espaces/unités) */
-    figure: z.string(),
-    /** Contexte sous le chiffre (ex. "sur 188 établissements au 1er avril 2026") */
-    context: z.string(),
-    /** Lien vers la cartographie référencée */
-    href: z.string(),
-    /** Label du lien (ex. "Voir la cartographie complète") */
-    linkLabel: z.string().default('Voir la cartographie'),
-    /** Date d'édition de ce highlight (pour cache busting) */
-    publishedAt: z.coerce.date(),
-  }),
+  schema: ({ image }) =>
+    z.object({
+      /** Question éditorialisée affichée en intro */
+      question: z.string(),
+      /** Chiffre fort (peut contenir des espaces/unités) */
+      figure: z.string(),
+      /** Contexte sous le chiffre (ex. "sur 188 établissements au 1er avril 2026") */
+      context: z.string(),
+      /** Lien vers la cartographie référencée */
+      href: z.string(),
+      /** Label du lien (ex. "Voir la cartographie complète") */
+      linkLabel: z.string().default('Voir la cartographie'),
+      /** Image isométrique 3D de la cartographie référencée, affichée en arrière-plan du hero magazine */
+      heroImage: image().optional(),
+      /** Texte alternatif de heroImage (vide = décorative). */
+      heroImageAlt: z.string().default(''),
+      /** Date d'édition de ce highlight (pour cache busting) */
+      publishedAt: z.coerce.date(),
+    }),
 });
 
 export const collections = { cartographies, pages, highlights };

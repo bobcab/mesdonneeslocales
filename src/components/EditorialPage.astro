@@ -3,6 +3,8 @@ import type { CollectionEntry } from 'astro:content';
 import Breadcrumbs from './Breadcrumbs.astro';
 import JsonLd from './JsonLd.astro';
 import FAQPageJsonLd from './FAQPageJsonLd.astro';
+import EditorialHero from './editorial/EditorialHero.astro';
+import EditorialTOC from './editorial/EditorialTOC.astro';
 
 interface Props {
   page: CollectionEntry<'pages'>;
@@ -11,7 +13,7 @@ interface Props {
 }
 
 const { page, body } = Astro.props;
-const { title, description, lastUpdated, schemaType } = page.data;
+const { title, description, lastUpdated, schemaType, kicker, lead, toc } = page.data;
 
 const site = Astro.site?.toString() ?? 'https://mesdonneeslocales.fr/';
 const url = new URL(Astro.url.pathname, site).toString();
@@ -38,32 +40,71 @@ const pageJsonLd =
         publisher: { '@id': `${site}#organization` },
       }
     : null;
+
+// Mode éditorial moderne : si la page a un `lead`, on bascule en layout 2 colonnes
+// avec EditorialHero + sommaire sticky. Sinon, gabarit legacy centré.
+const useModernLayout = Boolean(lead);
+const hasToc = toc && toc.length > 0;
 ---
 
-<article class="py-12 md:py-16">
-  <div class="container-page max-w-3xl">
-    <Breadcrumbs
-      items={[
-        { href: '/', label: 'Accueil' },
-        { label: title },
-      ]}
-    />
+{useModernLayout ? (
+  <article class="py-12 md:py-16">
+    <div class="container-page">
+      <Breadcrumbs
+        items={[
+          { href: '/', label: 'Accueil' },
+          { label: title },
+        ]}
+      />
 
-    <header class="mb-10">
-      <h1 class="text-4xl font-bold text-ink-900 md:text-5xl">{title}</h1>
-      <p class="mt-4 text-lg text-ink-500">
-        Dernière mise à jour le
-        <time datetime={lastUpdated.toISOString().slice(0, 10)}>
-          {dateFmt.format(lastUpdated)}
-        </time>
-      </p>
-    </header>
+      <EditorialHero
+        kicker={kicker}
+        title={title}
+        lead={lead!}
+        lastUpdated={lastUpdated}
+      />
 
-    <div class="prose-editorial">
-      <slot />
+      {hasToc ? (
+        <div class="grid gap-12 lg:grid-cols-[220px_1fr] lg:gap-16">
+          <EditorialTOC items={toc} />
+          <div class="prose-editorial max-w-2xl">
+            <slot />
+          </div>
+        </div>
+      ) : (
+        <div class="prose-editorial max-w-2xl">
+          <slot />
+        </div>
+      )}
     </div>
-  </div>
-</article>
+  </article>
+) : (
+  /* Gabarit legacy — conservé pour les pages md non encore migrées */
+  <article class="py-12 md:py-16">
+    <div class="container-page max-w-3xl">
+      <Breadcrumbs
+        items={[
+          { href: '/', label: 'Accueil' },
+          { label: title },
+        ]}
+      />
+
+      <header class="mb-10">
+        <h1 class="text-4xl font-bold text-ink-900 md:text-5xl tracking-tight">{title}</h1>
+        <p class="mt-4 text-lg text-ink-500">
+          Dernière mise à jour le
+          <time datetime={lastUpdated.toISOString().slice(0, 10)}>
+            {dateFmt.format(lastUpdated)}
+          </time>
+        </p>
+      </header>
+
+      <div class="prose-editorial">
+        <slot />
+      </div>
+    </div>
+  </article>
+)}
 
 {pageJsonLd && <JsonLd data={pageJsonLd} />}
 {schemaType === 'FAQPage' && <FAQPageJsonLd body={body} />}

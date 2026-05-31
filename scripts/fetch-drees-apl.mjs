@@ -15,7 +15,7 @@
  * Cache : .cache/drees-apl/{code}.json — 1 JSON par commune (5 professions × 2 millésimes).
  */
 
-import { mkdirSync, existsSync, writeFileSync, readFileSync, statSync } from 'node:fs';
+import { mkdirSync, existsSync, writeFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import XLSX from 'xlsx';
