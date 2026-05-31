@@ -113,15 +113,16 @@ for (const a of aggregates) {
 
   // Couleurs alignées sur la palette UX
   // Couleurs sémantiques cartographiques (conservées) + neutres Piste A.
-  // Le bleu indigo de sélection vient directement de la palette brand-* (#4f46e5).
+  // Couleurs Piste B : bleu de Prusse pour le chrome carte, couleurs sémantiques
+  // désaturées (data-good/warn/bad/none) pour les indicateurs de conformité.
   const COLORS = {
-    deptStroke: '#374151',         // ink-700
-    deptStrokeSelected: '#111827', // ink-900
-    deptFillNoData: '#9ca3af',     // ink-300
-    deptFillSuccess: '#1D9E75',    // success-500 (teal sémantique)
-    deptFillWarning: '#F0997B',    // warning-500 (coral sémantique)
-    pointCompliant: '#1D9E75',
-    pointNonCompliant: '#D85A30',
+    deptStroke: '#506a8e',         // ink-400 (bleu de Prusse moyen)
+    deptStrokeSelected: '#0a1f3d', // ink-900 (bleu de Prusse profond)
+    deptFillNoData: '#888780',     // data-none (gris désaturé)
+    deptFillSuccess: '#3b6d11',    // data-good (vert mat désaturé)
+    deptFillWarning: '#854f0b',    // data-warn (brun)
+    pointCompliant: '#3b6d11',     // data-good
+    pointNonCompliant: '#791f1f',  // data-bad (rouge profond)
     pointRing: '#ffffff',
   };
 
@@ -149,7 +150,7 @@ for (const a of aggregates) {
       name: 'mdl-eau',
       sources: {},
       layers: [
-        { id: 'background', type: 'background', paint: { 'background-color': '#F5F4F0' } },
+        { id: 'background', type: 'background', paint: { 'background-color': '#f5f4f0' } },
       ],
     };
 
@@ -210,7 +211,7 @@ for (const a of aggregates) {
           'fill-color': [
             'case',
             ['boolean', ['feature-state', 'selected'], false],
-            '#4f46e5', // brand-500 — département sélectionné (indigo Piste A)
+            '#0a1f3d', // ink-900 — département sélectionné (bleu de Prusse Piste B)
             ['<', ['get', 'rate'], 0],
             COLORS.deptFillNoData,
             ['>=', ['get', 'rate'], 1],

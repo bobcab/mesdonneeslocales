@@ -74,15 +74,14 @@
   import type { Map as MapInstance, StyleSpecification } from 'maplibre-gl';
   import 'maplibre-gl/dist/maplibre-gl.css';
 
-  // Couleurs cohérentes avec la palette UX. Contraste suffisant pour distinguer
-  // les départements du fond `surface-muted` (#F5F4F0).
-  // Couleurs alignées sur la palette Piste A (indigo civic-tech).
+  // Couleurs cohérentes avec la palette Piste B (bleu de Prusse + ocre).
+  // Contraste suffisant pour distinguer les départements du fond paper-100 (#f5f4f0).
   const COLORS = {
-    fill: '#c7d2fe',          // brand-200 indigo pâle — visible sur warm beige
-    fillHover: '#818cf8',     // brand-400 indigo médian
-    fillSelected: '#4f46e5',  // brand-500 indigo (action primaire)
-    stroke: '#374151',        // ink-700 — contours nets
-    strokeSelected: '#111827',// ink-900
+    fill: '#dde3ed',          // ink-100 — bleu très clair, visible sur paper
+    fillHover: '#8595b0',     // ink-300 — bleu de Prusse moyen au survol
+    fillSelected: '#0a1f3d',  // ink-900 — bleu de Prusse profond (action primaire)
+    stroke: '#506a8e',        // ink-400 — contours bleus
+    strokeSelected: '#0a1f3d',// ink-900
   };
 
   const FRANCE_BOUNDS: [number, number, number, number] = [-5.2, 41.3, 9.6, 51.1];

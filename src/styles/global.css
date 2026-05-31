@@ -2,91 +2,169 @@
 @plugin "@tailwindcss/typography";
 
 /* ============================================================
-   FONTS — auto-hébergées (public/fonts/), RGPD-friendly
-   Inter (body + heading) + Space Grotesk (display, gros titres
-   éditoriaux). Subset latin uniquement (~70 KB total).
+   FONTS — Piste B : Playfair Display (sérif éditorial) + Inter (sans-serif).
+   Auto-hébergées (public/fonts/), RGPD-friendly. Subset latin uniquement
+   (~93 KB total pour les 4 fichiers).
    ============================================================ */
 @font-face {
-  font-family: 'Inter';
+  font-family: 'Playfair Display';
+  src: url('/fonts/playfair-display-700-roman.woff2') format('woff2');
+  font-weight: 700;
   font-style: normal;
-  font-weight: 400 700;
   font-display: swap;
-  src: url('/fonts/inter.woff2') format('woff2-variations');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 @font-face {
-  font-family: 'Space Grotesk';
-  font-style: normal;
-  font-weight: 500 700;
+  font-family: 'Playfair Display';
+  src: url('/fonts/playfair-display-900-italic.woff2') format('woff2');
+  font-weight: 900;
+  font-style: italic;
   font-display: swap;
-  src: url('/fonts/space-grotesk.woff2') format('woff2-variations');
-  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter-400-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter-500-medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
 }
 
 @theme {
   /* ============================================================
-     Palette Piste A — civic-tech moderne (indigo + ambre)
-     Cf. note-claude-code-charte-piste-A.md
+     Palette Piste B — bleu de Prusse + ocre terre de Sienne + paper beige.
+     Cf. charte-piste-B.md (mai 2026, remplace Piste A indigo/ambre).
+
+     Les noms Tailwind `brand-*` et `accent-*` sont conservés en alias pour ne
+     pas casser le code existant : seules les valeurs basculent vers Piste B.
+     Les nouveaux noms `ink-*`, `ochre-*`, `paper-*` sont disponibles en parallèle.
      ============================================================ */
 
-  /* Brand — indigo civic-tech (action primaire, liens, focus) */
-  --color-brand-50:  #eef2ff;
-  --color-brand-100: #e0e7ff;
-  --color-brand-200: #c7d2fe;
-  --color-brand-300: #a5b4fc;
-  --color-brand-400: #818cf8;
-  --color-brand-500: #4f46e5;
-  --color-brand-600: #4338ca;
-  --color-brand-700: #3730a3;
-  --color-brand-800: #312e81;
+  /* ===== Ink — bleu de Prusse (primaire identitaire) ===== */
+  --color-ink-50:  #f0f3f8;
+  --color-ink-100: #dde3ed;
+  --color-ink-200: #b6c2d4;
+  --color-ink-300: #8595b0;
+  --color-ink-400: #506a8e;
+  --color-ink-500: #364c70;
+  --color-ink-600: #233b5a;
+  --color-ink-700: #182e48;
+  --color-ink-800: #0f223a;
+  --color-ink-900: #0a1f3d;  /* couleur identitaire principale */
+  --color-ink-950: #050e1f;
 
-  /* Accent — ambre éditorial.
-     Usage strict : "En ce moment", badges "Nouveau", callouts.
-     JAMAIS sur un bouton primaire (couleur d'attention, pas d'action). */
-  --color-accent-50:  #fffbeb;
-  --color-accent-100: #fef3c7;
-  --color-accent-300: #fcd34d;
-  --color-accent-500: #f59e0b;
-  --color-accent-600: #d97706;
-  --color-accent-700: #b45309;
+  /* ===== Ochre — terre de Sienne (accent identitaire) ===== */
+  --color-ochre-50:  #faf0e7;
+  --color-ochre-100: #f3dcc5;
+  --color-ochre-200: #e9bf95;
+  --color-ochre-300: #dca264;
+  --color-ochre-400: #c98237;
+  --color-ochre-500: #b56a1f;
+  --color-ochre-600: #92400e;  /* accent principal (filets, badges, focus) */
+  --color-ochre-700: #7a350b;
+  --color-ochre-800: #5e2807;
+  --color-ochre-900: #401b05;
 
-  /* Texte / encres (Piste A — neutres légèrement plus chauds) */
-  --color-ink-900: #111827;
-  --color-ink-700: #374151;
-  --color-ink-500: #6b7280;
-  --color-ink-300: #9ca3af;
+  /* ===== Paper — beige chaud (fond du site) ===== */
+  --color-paper-50:  #faf9f5;
+  --color-paper-100: #f5f4f0;  /* fond principal */
+  --color-paper-200: #edebe2;
+  --color-paper-300: #ddd9cc;
 
-  /* Surfaces */
+  /* ===== Alias rétro-compatibilité Piste A ===== */
+  /* L'ancien `brand-*` (indigo) pointe désormais vers `ink-*` (bleu de Prusse).
+     Le shift sur 600/700/800 est volontaire : le "primary" Piste A était brand-500
+     (indigo clair) ; en Piste B il devient ink-900 (bleu profond). */
+  --color-brand-50:  var(--color-ink-50);
+  --color-brand-100: var(--color-ink-100);
+  --color-brand-200: var(--color-ink-200);
+  --color-brand-300: var(--color-ink-300);
+  --color-brand-400: var(--color-ink-400);
+  --color-brand-500: var(--color-ink-900);  /* primary → bleu profond */
+  --color-brand-600: var(--color-ink-700);  /* hover primary */
+  --color-brand-700: var(--color-ink-800);
+  --color-brand-800: var(--color-ink-900);
+
+  /* L'ancien `accent-*` (ambre) pointe désormais vers `ochre-*` (terre de Sienne). */
+  --color-accent-50:  var(--color-ochre-50);
+  --color-accent-100: var(--color-ochre-100);
+  --color-accent-300: var(--color-ochre-300);
+  --color-accent-500: var(--color-ochre-600);  /* accent principal Piste B */
+  --color-accent-600: var(--color-ochre-700);
+  --color-accent-700: var(--color-ochre-700);
+
+  /* ===== Surfaces ===== */
   --color-surface:       #ffffff;
-  --color-surface-muted: #f5f4f0;
+  --color-surface-muted: var(--color-paper-100);
 
-  /* Couleurs sémantiques */
-  --color-success-500: #1D9E75;
-  --color-success-50:  #e6f5ef;
-  --color-success-700: #157053;
+  /* ===== Couleurs sémantiques (cartos uniquement, jamais sur le chrome) =====
+     Volontairement désaturées pour ne pas concurrencer l'ocre identitaire. */
+  --color-data-good: #3b6d11;
+  --color-data-warn: #854f0b;
+  --color-data-bad:  #791f1f;
+  --color-data-none: #888780;
 
-  --color-warning-500: #F0997B;
-  --color-warning-50:  #fdf0eb;
-  --color-warning-700: #c66a48;
+  /* Alias compat — couleurs sémantiques Piste A. */
+  --color-success-500: var(--color-data-good);
+  --color-success-50:  #eaf1e0;
+  --color-success-700: #2b510c;
 
-  --color-danger-500: #D85A30;
-  --color-danger-700: #993C1D;
-  --color-danger-50:  #fbeae3;
+  --color-warning-500: #c98237;  /* ocre-400 */
+  --color-warning-50:  var(--color-ochre-50);
+  --color-warning-700: var(--color-ochre-700);
 
-  --color-energy-500: #BA7517;
-  --color-energy-700: #854F0B;
-  --color-energy-50:  #f5eadb;
+  --color-danger-500: var(--color-data-bad);
+  --color-danger-700: #5e1818;
+  --color-danger-50:  #f5e3e3;
 
-  /* Polices — Inter (body + heading), Space Grotesk (display gros titres) */
-  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-heading: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: "Space Grotesk", "Inter", system-ui, -apple-system, sans-serif;
+  --color-energy-500: var(--color-ochre-500);
+  --color-energy-700: var(--color-ochre-700);
+  --color-energy-50:  var(--color-ochre-50);
 
-  /* Ombres modernes multi-couches — plus douces que shadow-md Tailwind par défaut.
-     Utilisées via les classes .shadow-card / .shadow-card-hover / .shadow-hero. */
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 12px rgb(0 0 0 / 0.04);
-  --shadow-card-hover: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px rgb(0 0 0 / 0.08), 0 16px 48px rgb(0 0 0 / 0.04);
-  --shadow-hero: 0 1px 3px rgb(0 0 0 / 0.06), 0 20px 60px rgb(0 0 0 / 0.08);
+  /* ===== Typographie Piste B ===== */
+  --font-serif:   'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-sans:    'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-heading: 'Playfair Display', Georgia, serif;
+  --font-display: 'Playfair Display', Georgia, serif;
+
+  /* ===== Espacement Piste B (échelle aérée) ===== */
+  --space-xs:  0.5rem;   /* 8px  — intra-composant */
+  --space-sm:  1rem;     /* 16px — padding interne */
+  --space-md:  1.5rem;   /* 24px — gap éléments connexes */
+  --space-lg:  2.5rem;   /* 40px — padding card / gap paragraphes */
+  --space-xl:  4rem;     /* 64px — marges section compactes */
+  --space-2xl: 6rem;     /* 96px — marges entre sections (défaut) */
+  --space-3xl: 8rem;     /* 128px — marges entre sections home */
+  --space-4xl: 10rem;    /* 160px — hero, section manifeste */
+
+  /* ===== Conteneurs ===== */
+  --container-prose:   720px;
+  --container-narrow:  880px;
+  --container-default: 1100px;
+  --container-wide:    1280px;
+
+  /* ===== Rayons (modérés, pas SaaS 2022) ===== */
+  --radius-none: 0;
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+
+  /* ===== Ombres Piste B ===== */
+  /* Toutes les shadow-card / -hover / -hero de Piste A sont supprimées :
+     la hiérarchie passe désormais par les filets et l'espace. */
+  --shadow-focus:    0 0 0 3px var(--color-ochre-300);
+  --shadow-elevated: 0 2px 8px rgba(10, 31, 61, 0.06);
+
+  /* Alias compat Piste A — neutralisés (no-op) pour ne plus créer d'élévation. */
+  --shadow-card: none;
+  --shadow-card-hover: none;
+  --shadow-hero: none;
 }
 
 @layer base {
@@ -94,30 +172,83 @@
     scroll-behavior: smooth;
   }
   body {
-    @apply bg-surface text-ink-900 font-sans antialiased;
+    background: var(--color-paper-100);
+    color: var(--color-ink-800);
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: 1.0625rem;       /* 17px */
+    line-height: 1.75;          /* aération signature Piste B */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+  /* Titres : Playfair Display Roman pour H1-H4 par défaut.
+     Pour l'italique display (hero), utiliser explicitement `.display-italic`. */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-heading tracking-tight;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    color: var(--color-ink-900);
+    letter-spacing: -0.02em;
+    line-height: 1.15;
   }
-  /* Classe display pour les très gros titres éditoriaux (hero principal, manifestes).
-     Plus serrée (tracking-tighter) car Space Grotesk a une chasse plus large que Inter. */
-  .display {
-    font-family: var(--font-display);
-    @apply tracking-tighter font-medium;
+  /* Display italic — réservé au hero principal et aux gros chiffres manifestes. */
+  .display-italic {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 900;
+    line-height: 0.92;
+    letter-spacing: -0.04em;
   }
+  /* Heading roman — sections principales (calme la lecture après l'italique). */
+  .heading-roman {
+    font-family: var(--font-serif);
+    font-style: normal;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+  /* Caption — kickers, tags, signatures. Inter 500 uppercase letter-spaced. */
+  .caption {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.6875rem;       /* 11px */
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ink-700);
+  }
+  .caption-ochre {
+    color: var(--color-ochre-600);
+  }
+  /* Meta — méta-données, légendes, dates. */
+  .meta {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.8125rem;       /* 13px */
+    letter-spacing: 0.04em;
+    color: var(--color-ink-400);
+  }
+
+  /* Liens de body — soulignement ocre, signature éditoriale Piste B. */
   a {
-    @apply text-brand-500 transition-colors;
+    color: var(--color-ink-700);
+    text-decoration: underline;
+    text-decoration-color: var(--color-ochre-600);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
+    transition: color 150ms ease, text-decoration-color 150ms ease;
   }
   a:hover {
-    @apply text-brand-600;
+    color: var(--color-ink-900);
+    text-decoration-color: var(--color-ochre-700);
   }
 
-  /* Focus visible accessible (anneau indigo) */
+  /* Focus accessibilité — anneau ocre clair (charte §5 ombres autorisées) */
   :focus-visible {
-    @apply outline-2 outline-offset-2 outline-brand-500 rounded-md;
+    outline: none;
+    box-shadow: var(--shadow-focus);
+    border-radius: var(--radius-md);
   }
 
-  /* Respect des préférences utilisateur — accessibilité (WCAG 2.3.3) */
+  /* Respect des préférences utilisateur (WCAG 2.3.3) */
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     *, *::before, *::after {
@@ -131,90 +262,223 @@
 
 @layer components {
   .container-page {
-    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+    @apply mx-auto w-full px-4 sm:px-6 lg:px-8;
+    max-width: var(--container-default);
   }
+  .container-narrow {
+    @apply mx-auto w-full px-4 sm:px-6 lg:px-8;
+    max-width: var(--container-narrow);
+  }
+  .container-wide {
+    @apply mx-auto w-full px-4 sm:px-6 lg:px-8;
+    max-width: var(--container-wide);
+  }
+  .container-prose {
+    @apply mx-auto w-full px-4 sm:px-6 lg:px-8;
+    max-width: var(--container-prose);
+  }
+
   .section-title {
     @apply mb-12 text-center;
   }
   .section-title h2,
   .section-title h1 {
-    @apply text-3xl font-bold text-ink-900 uppercase relative pb-5 inline-block;
+    font-family: var(--font-serif);
+    font-weight: 700;
+    color: var(--color-ink-900);
+    position: relative;
+    display: inline-block;
+    padding-bottom: 1.25rem;
   }
   .section-title h2::after,
   .section-title h1::after {
     content: "";
-    @apply absolute left-1/2 bottom-0 h-1 w-12 -translate-x-1/2 bg-brand-500;
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    height: 2px;
+    width: 3rem;
+    transform: translateX(-50%);
+    background: var(--color-ochre-600);
   }
   .section-title p {
-    @apply mt-4 text-ink-500;
+    margin-top: 1rem;
+    color: var(--color-ink-400);
   }
 
-  /* Boutons — style moderne : rounded-lg, ombres colorées qui élèvent au hover.
-     Plus de bordure 2px sur le primary (look civic-tech moderne 2026). */
+  /* ===== Boutons Piste B ===== */
+  /* Primaire — bleu de Prusse plein, pas d'ombre. Hover : ink-700 + translateY. */
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-lg bg-brand-500 px-6 py-3 font-medium text-white transition-all hover:bg-brand-600 active:scale-[0.98];
-    box-shadow: 0 1px 2px rgb(79 70 229 / 0.2), 0 4px 12px rgb(79 70 229 / 0.15);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-ink-900);
+    color: white;
+    padding: 0.875rem 1.5rem;
+    border-radius: var(--radius-md);
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.875rem;
+    letter-spacing: 0.02em;
+    border: none;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 150ms ease, transform 150ms ease;
   }
   .btn-primary:hover {
-    box-shadow: 0 2px 4px rgb(79 70 229 / 0.25), 0 8px 24px rgb(79 70 229 / 0.2);
+    background: var(--color-ink-700);
+    color: white;
+    text-decoration: none;
     transform: translateY(-1px);
   }
+  .btn-primary:focus-visible {
+    box-shadow: var(--shadow-focus);
+  }
+
+  /* Secondaire — fond transparent, fine bordure ink-300, hover paper-200. */
+  .btn-secondary,
   .btn-outline {
-    @apply inline-flex items-center justify-center rounded-lg border border-brand-500 bg-transparent px-6 py-3 font-medium text-brand-500 transition-all hover:bg-brand-50 active:scale-[0.98];
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    color: var(--color-ink-900);
+    padding: 0.875rem 1.5rem;
+    border: 0.5px solid var(--color-ink-300);
+    border-radius: var(--radius-md);
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.875rem;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 150ms ease;
   }
+  .btn-secondary:hover,
+  .btn-outline:hover {
+    background: var(--color-paper-200);
+    color: var(--color-ink-900);
+    text-decoration: none;
+  }
+
+  /* Tertiaire — texte seul + soulignement ocre épais (signature éditoriale). */
+  .btn-tertiary,
   .btn-ghost {
-    @apply inline-flex items-center justify-center rounded-lg px-4 py-2 font-medium text-ink-700 transition-colors hover:text-brand-600 hover:bg-brand-50 active:scale-[0.98] min-h-[40px];
+    display: inline-flex;
+    align-items: center;
+    background: transparent;
+    color: var(--color-ink-900);
+    padding: 0;
+    border: none;
+    text-decoration: underline;
+    text-decoration-color: var(--color-ochre-600);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
+    min-height: 40px;
+  }
+  .btn-tertiary:hover,
+  .btn-ghost:hover {
+    color: var(--color-ink-700);
+    text-decoration-color: var(--color-ochre-700);
   }
 
-  /* Ombres modernes en classes utilitaires.
-     Préférer ces classes à shadow-md de Tailwind pour la cohérence. */
-  .shadow-card {
-    box-shadow: var(--shadow-card);
-  }
-  .shadow-card-hover {
-    box-shadow: var(--shadow-card-hover);
-  }
+  /* Ombres legacy neutralisées — préserver la compat mais sans effet visuel. */
+  .shadow-card,
+  .shadow-card-hover,
   .shadow-hero {
-    box-shadow: var(--shadow-hero);
+    box-shadow: none;
   }
 
-  /* Kickers — étiquettes de bloc (Synthèse UX §08) */
+  /* Kickers — étiquettes de bloc (signature presse) */
   .kicker {
-    @apply text-[11px] font-semibold tracking-[0.12em] uppercase text-ink-500;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ochre-600);
   }
 
-  /* Pills / chips — utilisés pour catégories, métadonnées */
+  /* Pills / badges — bordures fines, fonds ocre clair ou ink, jamais d'ombre */
   .pill {
-    @apply inline-flex items-center rounded-full bg-ink-300/20 px-2.5 py-0.5 text-xs font-medium text-ink-700;
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-sans);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border: 0.5px solid var(--color-ink-300);
+    color: var(--color-ink-700);
+    background: transparent;
   }
   .pill-brand {
-    @apply inline-flex items-center rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-medium text-brand-700;
+    background: var(--color-ink-900);
+    color: var(--color-paper-100);
+    border-color: var(--color-ink-900);
+  }
+  .pill-accent {
+    background: var(--color-ochre-100);
+    color: var(--color-ochre-800);
+    border-color: var(--color-ochre-200);
   }
   .pill-success {
-    @apply inline-flex items-center rounded-full bg-success-50 px-2.5 py-0.5 text-xs font-medium text-success-700;
+    background: transparent;
+    color: var(--color-data-good);
+    border-color: var(--color-data-good);
   }
   .pill-warning {
-    @apply inline-flex items-center rounded-full bg-warning-50 px-2.5 py-0.5 text-xs font-medium text-warning-700;
+    background: transparent;
+    color: var(--color-data-warn);
+    border-color: var(--color-data-warn);
   }
   .pill-danger {
-    @apply inline-flex items-center rounded-full bg-danger-50 px-2.5 py-0.5 text-xs font-medium text-danger-700;
+    background: transparent;
+    color: var(--color-data-bad);
+    border-color: var(--color-data-bad);
   }
   .pill-energy {
-    @apply inline-flex items-center rounded-full bg-energy-50 px-2.5 py-0.5 text-xs font-medium text-energy-700;
+    background: transparent;
+    color: var(--color-ochre-700);
+    border-color: var(--color-ochre-400);
   }
 
   /* Chips de filtre catégorie (catalogue cartographies) */
   .cat-chip {
-    @apply inline-flex items-center rounded-full border border-ink-300 bg-white px-4 py-2 text-sm font-medium text-ink-700 transition-colors cursor-pointer min-h-[36px];
+    display: inline-flex;
+    align-items: center;
+    border-radius: var(--radius-sm);
+    border: 0.5px solid var(--color-ink-300);
+    background: transparent;
+    padding: 0.5rem 1rem;
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-ink-700);
+    text-decoration: none;
+    transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+    cursor: pointer;
+    min-height: 36px;
   }
   .cat-chip:hover {
-    @apply border-brand-500 text-brand-700;
+    border-color: var(--color-ochre-600);
+    color: var(--color-ink-900);
   }
   .cat-chip-active {
-    @apply border-brand-500 bg-brand-500 text-white;
+    border-color: var(--color-ink-900);
+    background: var(--color-ink-900);
+    color: var(--color-paper-100);
   }
   .cat-chip-active:hover {
-    @apply border-brand-600 bg-brand-600 text-white;
+    border-color: var(--color-ink-700);
+    background: var(--color-ink-700);
+    color: var(--color-paper-100);
   }
 
   /* Skip-link accessibilité (WCAG 2.4.1) */
@@ -222,16 +486,14 @@
     @apply sr-only;
   }
   .skip-link:focus {
-    @apply not-sr-only fixed left-4 top-4 z-[60] bg-brand-600 text-white px-4 py-2 rounded-lg shadow-lg no-underline;
+    @apply not-sr-only fixed left-4 top-4 z-[60] px-4 py-2 no-underline;
+    background: var(--color-ink-900);
+    color: white;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-focus);
   }
 
-  /* Pill accent — badges "Nouveau" et bloc "En ce moment".
-     Texte en ink-900 car le contraste blanc/ambre-500 est insuffisant. */
-  .pill-accent {
-    @apply inline-flex items-center rounded-full bg-accent-500 px-2.5 py-0.5 text-xs font-semibold text-ink-900;
-  }
-
-  /* Micro-interaction : fade-out doux des cards filtrées dans le catalogue. */
+  /* Micro-interaction : fade-out doux des cards filtrées dans le catalogue */
   [data-carto-card] {
     transition: opacity 200ms ease, transform 200ms ease;
   }
@@ -244,9 +506,13 @@
     [data-carto-card] { transition: none; }
   }
 
-  /* Skeletons — placeholder visuel pendant un chargement. */
+  /* Skeletons — placeholder visuel pendant un chargement */
   .skeleton {
-    @apply block bg-ink-300/40 rounded-md relative overflow-hidden;
+    display: block;
+    background: var(--color-ink-100);
+    border-radius: var(--radius-md);
+    position: relative;
+    overflow: hidden;
     animation: skeleton-pulse 1.4s ease-in-out infinite;
   }
   @keyframes skeleton-pulse {
@@ -259,41 +525,95 @@
 
   /* ============================================================
      Editorial prose — surcharge des classes prose de
-     @tailwindcss/typography avec nos tokens.
+     @tailwindcss/typography avec les tokens Piste B.
+     Body Inter 17px line-height 1.75, titres Playfair Roman, liens
+     soulignés ocre.
      ============================================================ */
   .prose-editorial {
-    @apply prose prose-lg max-w-none;
-    --tw-prose-body: var(--color-ink-700);
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: 1.0625rem;
+    line-height: 1.75;
+    color: var(--color-ink-800);
+    max-width: var(--container-prose);
+
+    --tw-prose-body: var(--color-ink-800);
     --tw-prose-headings: var(--color-ink-900);
     --tw-prose-lead: var(--color-ink-700);
-    --tw-prose-links: var(--color-brand-500);
+    --tw-prose-links: var(--color-ink-700);
     --tw-prose-bold: var(--color-ink-900);
-    --tw-prose-counters: var(--color-ink-500);
-    --tw-prose-bullets: var(--color-brand-300);
-    --tw-prose-hr: var(--color-ink-300);
+    --tw-prose-counters: var(--color-ink-400);
+    --tw-prose-bullets: var(--color-ochre-600);
+    --tw-prose-hr: var(--color-ink-100);
     --tw-prose-quotes: var(--color-ink-900);
-    --tw-prose-quote-borders: var(--color-brand-500);
-    --tw-prose-captions: var(--color-ink-500);
+    --tw-prose-quote-borders: var(--color-ochre-600);
+    --tw-prose-captions: var(--color-ink-400);
     --tw-prose-code: var(--color-ink-900);
     --tw-prose-pre-code: var(--color-ink-700);
-    --tw-prose-pre-bg: var(--color-surface-muted);
-    --tw-prose-th-borders: var(--color-ink-300);
-    --tw-prose-td-borders: var(--color-ink-300);
+    --tw-prose-pre-bg: var(--color-paper-200);
+    --tw-prose-th-borders: var(--color-ink-200);
+    --tw-prose-td-borders: var(--color-ink-100);
   }
-  .prose-editorial :where(h1, h2, h3, h4) {
-    font-family: var(--font-heading);
-    @apply tracking-tight;
+  .prose-editorial :where(h2) {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: clamp(2rem, 3vw, 2.5rem);
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: var(--color-ink-900);
+    margin-top: var(--space-2xl);
+    margin-bottom: var(--space-md);
+  }
+  .prose-editorial :where(h3) {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: clamp(1.5rem, 2vw, 1.75rem);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: var(--color-ink-900);
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-sm);
+  }
+  .prose-editorial :where(h4) {
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 1.125rem;
+    color: var(--color-ink-900);
+    margin-top: var(--space-lg);
+    margin-bottom: 0.5rem;
+  }
+  .prose-editorial :where(p) {
+    margin-bottom: var(--space-md);
   }
   .prose-editorial :where(a) {
-    @apply underline decoration-brand-500/40 underline-offset-2 transition-colors;
+    color: var(--color-ink-700);
+    text-decoration: underline;
+    text-decoration-color: var(--color-ochre-600);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 3px;
   }
   .prose-editorial :where(a):hover {
-    @apply decoration-brand-500;
+    color: var(--color-ink-900);
+    text-decoration-color: var(--color-ochre-700);
+  }
+  .prose-editorial :where(strong) {
+    color: var(--color-ink-900);
+    font-weight: 500;
+  }
+  .prose-editorial :where(blockquote) {
+    border-left: 2px solid var(--color-ochre-600);
+    padding-left: var(--space-md);
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 700;
+    color: var(--color-ink-900);
   }
   .prose-editorial :where(table) {
-    @apply text-sm;
+    font-size: 0.9375rem;
   }
   .prose-editorial :where(table th) {
-    @apply bg-surface-muted text-left;
+    background: var(--color-paper-200);
+    text-align: left;
+    color: var(--color-ink-900);
   }
 }

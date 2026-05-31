@@ -46,11 +46,12 @@ const ogImageUrl = new URL(ogImage ?? '/og-default.png', siteUrl).toString();
     <link rel="alternate icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#4f46e5" />
+    <meta name="theme-color" content="#0a1f3d" />
 
-    {/* Préchargement de la font critique Inter (auto-hébergée, RGPD-friendly).
-        Space Grotesk n'est précharger que par les pages qui en ont besoin (hero). */}
-    <link rel="preload" as="font" type="font/woff2" href="/fonts/inter.woff2" crossorigin />
+    {/* Préchargement des fonts critiques Piste B (Inter 400 pour body, Playfair 900 italic
+        pour le hero display). Auto-hébergées, RGPD-friendly. */}
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/inter-400-regular.woff2" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href="/fonts/playfair-display-900-italic.woff2" crossorigin />
 
     {/* Open Graph */}
     <meta property="og:type" content="website" />

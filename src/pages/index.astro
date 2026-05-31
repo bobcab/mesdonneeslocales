@@ -82,9 +82,9 @@ const DONATE_URL = 'https://www.helloasso.com/associations/l-observatoire-citoye
         <div>
           <p class="kicker mb-3">Cartographies disponibles</p>
           <h2 id="bloc-cartos" class="text-3xl md:text-5xl font-semibold text-ink-900 tracking-tight">
-            {featured.length === 1
+            {allCartos.length === 1
               ? 'La cartographie actuelle'
-              : `${featured.length} cartographies, ${featured.length === 3 ? 'trois' : featured.length} questions citoyennes`}
+              : `${allCartos.length} cartographies, autant de questions citoyennes`}
           </h2>
         </div>
         <a

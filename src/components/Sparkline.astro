@@ -24,7 +24,7 @@ interface Props {
   color?: string;
 }
 
-const { points, width = 100, height = 24, label, color = '#4B5563' } = Astro.props;
+const { points, width = 100, height = 24, label, color = '#92400e' } = Astro.props;
 
 if (points.length < 2) return null;
 
@@ -63,6 +63,6 @@ const lastNonCompliant = lastPoint.c === 0;
     cx={lastX}
     cy={lastY}
     r="2"
-    fill={lastNonCompliant ? '#D85A30' : color}
+    fill={lastNonCompliant ? '#791f1f' : color}
   />
 </svg>

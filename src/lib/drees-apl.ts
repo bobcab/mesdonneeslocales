@@ -98,15 +98,15 @@ export const PROFESSION_ORDER: readonly Profession[] = [
  * directement aux tokens `brand-*` ni `accent-*` de la palette globale (cf. note §6.4).
  */
 export const CATEGORY_COLORS: Record<APLCategory, string> = {
-  critique: '#993c1d', // rouge profond
-  desert: '#d85a30', // rouge-orange
-  sous_densite: '#f0997b', // corail
-  correct: '#fcd34d', // ambre clair
-  bon: '#1d9e75', // teal
+  critique: '#791f1f',     // data-bad — rouge profond désaturé (Piste B)
+  desert: '#a13e2b',       // mix data-bad/data-warn — rouge-brun
+  sous_densite: '#b76234', // brun-corail désaturé
+  correct: '#dca264',      // ochre-300 — ambre désaturé
+  bon: '#3b6d11',          // data-good — vert mat désaturé
 };
 
 /** Couleur appliquée aux communes sans donnée APL (DROM, communes hors champ). */
-export const CATEGORY_COLOR_NODATA = '#9ca3af'; // ink-300
+export const CATEGORY_COLOR_NODATA = '#888780'; // data-none (gris désaturé Piste B)
 
 export const CATEGORY_LABELS: Record<APLCategory, string> = {
   critique: 'Désert médical critique',
