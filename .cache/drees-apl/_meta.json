@@ -1,7 +1,7 @@
 {
-  "fetchedAt": "2026-05-30T06:25:21.012Z",
+  "fetchedAt": "2026-05-30T10:36:48.295Z",
   "source": "data.drees.solidarites-sante.gouv.fr — dataset 530",
-  "totalCommunes": 10,
+  "totalCommunes": 34967,
   "millesimesDispos": [
     2022,
     2023
@@ -14,11 +14,11 @@
     "dentiste"
   ],
   "categoryCounts": {
-    "critique": 0,
-    "desert": 1,
-    "sous_densite": 2,
-    "correct": 3,
-    "bon": 4
+    "critique": 3897,
+    "desert": 8965,
+    "sous_densite": 15753,
+    "correct": 5653,
+    "bon": 686
   },
-  "withoutMG": 0
+  "withoutMG": 13
 }
